@@ -113,12 +113,12 @@
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Sculpt the form</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:26px">Shape it freely — every slider updates the preview instantly.</p>
           <div style="display:flex;flex-direction:column;gap:22px">
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Body curve</span><span style="font-weight:600" id="v-curve">55%</span></div><input type="range" id="sc-curve" min="0" max="100" step="1" value="55"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Straight-sided</span><span>Full belly</span></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Base taper</span><span style="font-weight:600" id="v-taper">40%</span></div><input type="range" id="sc-taper" min="0" max="100" step="1" value="40"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Monolithic</span><span>Pedestal</span></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge angle</span><span style="font-weight:600" id="v-flare">0°</span></div><input type="range" id="sc-flare" min="0" max="100" step="1" value="50"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Tucked in</span><span>Flared out</span></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge roundness</span><span style="font-weight:600" id="v-edge">35%</span></div><input type="range" id="sc-edge" min="0" max="100" step="1" value="35"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Crisp edge</span><span>Rolled lip</span></div></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Wall thickness</span><span style="font-weight:600" id="v-wall">32 mm</span></div><input type="range" id="sc-wall" min="0" max="100" step="1" value="45"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Thin slab</span><span>Substantial</span></div></div>
-            <div id="cornerRow"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Corner sharpness</span><span style="font-weight:600" id="v-corner">55%</span></div><input type="range" id="sc-corner" min="0" max="100" step="1" value="55"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Soft radius</span><span>Near-square</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Body curve</span><span style="display:flex;align-items:center;gap:6px"><input id="n-curve" type="number" min="0" max="100" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">%</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-curve" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-curve" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-curve" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Straight-sided</span><span>Full belly</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Base taper</span><span style="display:flex;align-items:center;gap:6px"><input id="n-taper" type="number" min="0" max="100" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">%</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-taper" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-taper" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-taper" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Monolithic</span><span>Pedestal</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge angle</span><span style="display:flex;align-items:center;gap:6px"><input id="n-flare" type="number" min="-25" max="25" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">°</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-flare" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-flare" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-flare" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Tucked in</span><span>Flared out</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge roundness</span><span style="display:flex;align-items:center;gap:6px"><input id="n-edge" type="number" min="0" max="100" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">%</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-edge" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-edge" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-edge" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Crisp edge</span><span>Rolled lip</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Wall thickness</span><span style="display:flex;align-items:center;gap:6px"><input id="n-wall" type="number" min="8" max="62" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">mm</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-wall" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-wall" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-wall" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Thin slab</span><span>Substantial</span></div></div>
+            <div id="cornerRow"><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Corner sharpness</span><span style="display:flex;align-items:center;gap:6px"><input id="n-corner" type="number" min="0" max="100" style="width:70px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">%</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="sc-corner" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="sc-corner" min="0" max="100" step="1" style="flex:1"><button data-plus="sc-corner" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px;padding:0 46px"><span>Soft radius</span><span>Near-square</span></div></div>
           </div>
         </div>
 
@@ -146,7 +146,7 @@
             </button>
           </div>
           <label style="display:flex;align-items:center;gap:14px;margin-top:12px;background:#fff;border:2px solid transparent;border-radius:14px;padding:12px;cursor:pointer" id="customCard">
-            <input type="color" id="customColor" value="#7aa6c2" style="width:52px;height:52px;border:none;background:none;cursor:pointer;border-radius:11px;padding:0">
+            <input type="color" id="customColor" style="width:52px;height:52px;border:none;background:none;cursor:pointer;border-radius:11px;padding:0">
             <span style="font-size:15px;font-weight:600">Custom colour-match</span>
           </label>
         </div>
@@ -156,9 +156,9 @@
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Dimensions</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:26px">Drag to size it to your room. Capacity updates live.</p>
           <div style="display:flex;flex-direction:column;gap:26px">
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Length</span><span style="font-weight:600"><span id="v-len">1700</span> mm</span></div><input type="range" id="len" min="1300" max="2200" step="10" value="1700"></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Width</span><span style="font-weight:600"><span id="v-wid">800</span> mm</span></div><input type="range" id="wid" min="650" max="1100" step="10" value="800"></div>
-            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Depth</span><span style="font-weight:600"><span id="v-dep">580</span> mm</span></div><input type="range" id="dep" min="400" max="750" step="10" value="580"></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Length</span><span style="display:flex;align-items:center;gap:6px"><input id="n-len" type="number" min="1300" max="2200" step="10" style="width:82px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">mm</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="len" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="len" min="1300" max="2200" step="10" style="flex:1"><button data-plus="len" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Width</span><span style="display:flex;align-items:center;gap:6px"><input id="n-wid" type="number" min="650" max="1100" step="10" style="width:82px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">mm</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="wid" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="wid" min="650" max="1100" step="10" style="flex:1"><button data-plus="wid" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div></div>
+            <div><div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Depth</span><span style="display:flex;align-items:center;gap:6px"><input id="n-dep" type="number" min="400" max="750" step="10" style="width:82px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:6px 8px;font-family:inherit;font-size:14px;font-weight:600;text-align:right;color:#1b1a16"><span style="color:#8a8478;font-size:13px">mm</span></span></div><div style="display:flex;align-items:center;gap:12px"><button data-minus="dep" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">−</button><input type="range" id="dep" min="400" max="750" step="10" style="flex:1"><button data-plus="dep" style="flex:none;width:34px;height:34px;border-radius:50%;border:1px solid #cdc7b9;background:#fff;cursor:pointer;font-size:18px;line-height:1;color:#1b1a16;font-family:inherit">+</button></div></div>
           </div>
           <div style="margin-top:28px;padding:20px 22px;background:#fff;border:1px solid #e6e1d5;border-radius:14px;display:flex;justify-content:space-between;align-items:center">
             <span style="color:#66614f;font-size:14px">Approx. capacity</span>
@@ -222,6 +222,20 @@ class Component extends DCLogic {
     try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
     this.viewers = [];
     this.STEP_NAMES = ['Silhouette','Sculpt','Material & finish','Size','Add-ons','Review'];
+    // unified slider/number/± controls (values live in state2; DOM synced in _render)
+    this.CTRLS = [
+      { slider:'len',       num:'n-len',    key:'len',      min:1300, max:2200, step:10 },
+      { slider:'wid',       num:'n-wid',    key:'wid',      min:650,  max:1100, step:10 },
+      { slider:'dep',       num:'n-dep',    key:'dep',      min:400,  max:750,  step:10 },
+      { slider:'sc-curve',  num:'n-curve',  key:'curve',    min:0, max:100, step:1 },
+      { slider:'sc-taper',  num:'n-taper',  key:'taper',    min:0, max:100, step:1 },
+      { slider:'sc-flare',  num:'n-flare',  key:'flare',    min:0, max:100, step:2,
+        toDisp:v=>Math.round((v-50)/2), fromDisp:d=>Math.round(d*2+50) },
+      { slider:'sc-edge',   num:'n-edge',   key:'edgeSoft', min:0, max:100, step:1 },
+      { slider:'sc-wall',   num:'n-wall',   key:'wall',     min:0, max:100, step:2,
+        toDisp:v=>Math.round(8+v*0.54), fromDisp:d=>Math.round((d-8)/0.54) },
+      { slider:'sc-corner', num:'n-corner', key:'corner',   min:0, max:100, step:1 }
+    ];
     try {
       const mod = await import('./tub3d.js');
       this.TubViewer = mod.TubViewer;
@@ -258,12 +272,20 @@ class Component extends DCLogic {
       S.finish = b.getAttribute('data-finish'); S.base = b.getAttribute('data-base'); S.custom = false; this._render();
     }));
     const cc = document.getElementById('customColor');
-    if (cc) cc.addEventListener('input', () => { S.finish = 'Custom — ' + cc.value.toUpperCase(); S.base = cc.value; S.custom = true; this._render(); });
-    // dims
-    ['len','wid','dep'].forEach(k => { const el = document.getElementById(k); if (el) el.addEventListener('input', () => { S[k] = parseInt(el.value,10); this._render(); }); });
-    // sculpt sliders → live preview
-    [['sc-curve','curve'],['sc-taper','taper'],['sc-flare','flare'],['sc-edge','edgeSoft'],['sc-wall','wall'],['sc-corner','corner']].forEach(([id,key]) => {
-      const el = document.getElementById(id); if (el) el.addEventListener('input', () => { S[key] = parseInt(el.value,10); this._render(); });
+    if (cc) { cc.value = '#7aa6c2'; cc.addEventListener('input', () => { S.finish = 'Custom — ' + cc.value.toUpperCase(); S.base = cc.value; S.custom = true; this._render(); }); }
+    // sliders + number inputs + ± buttons (dims & sculpt) → live preview
+    this.CTRLS.forEach(c => {
+      const sl = document.getElementById(c.slider), nu = document.getElementById(c.num);
+      if (!sl) return;
+      const clamp = v => Math.min(c.max, Math.max(c.min, v));
+      const toD = c.toDisp || (v=>v), fromD = c.fromDisp || (d=>d);
+      sl.value = S[c.key];
+      if (nu) nu.value = toD(S[c.key]);
+      sl.addEventListener('input', () => { const v = parseInt(sl.value,10); if (!isNaN(v)) { S[c.key] = clamp(v); this._render(); } });
+      if (nu) nu.addEventListener('change', () => { const d = parseFloat(nu.value); if (!isNaN(d)) S[c.key] = clamp(Math.round(fromD(d))); this._render(); });
+      document.querySelectorAll('[data-minus="'+c.slider+'"],[data-plus="'+c.slider+'"]').forEach(b => {
+        b.addEventListener('click', () => { const dir = b.hasAttribute('data-plus') ? 1 : -1; S[c.key] = clamp(S[c.key] + dir*c.step); this._render(); });
+      });
     });
     // addons
     document.querySelectorAll('#addonCards [data-addon]').forEach(b => b.addEventListener('click', () => {
@@ -302,11 +324,15 @@ class Component extends DCLogic {
     // spec bar
     set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-material', this._tr(S.material)); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
     set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
-    set('v-len',S.len); set('v-wid',S.wid); set('v-dep',S.dep); set('capBig','≈ '+this._cap(S)+' L');
-    // sculpt readouts
+    set('capBig','≈ '+this._cap(S)+' L');
+    // sync sliders + number inputs from state (skip a number box while the user is typing in it)
+    (this.CTRLS||[]).forEach(c => {
+      const sl = document.getElementById(c.slider), nu = document.getElementById(c.num);
+      const toD = c.toDisp || (v=>v);
+      if (sl && document.activeElement !== sl) sl.value = S[c.key];
+      if (nu && document.activeElement !== nu) nu.value = toD(S[c.key]);
+    });
     const deg = Math.round((S.flare-50)/50*25), mm = Math.round(8 + S.wall*0.54);
-    set('v-curve', S.curve+'%'); set('v-taper', S.taper+'%'); set('v-flare', (deg>0?'+':'')+deg+'°');
-    set('v-edge', S.edgeSoft+'%'); set('v-wall', mm+' mm'); set('v-corner', S.corner+'%');
     const cr = document.getElementById('cornerRow'); if (cr) cr.style.display = S.shape==='rect' ? 'block' : 'none';
     // selection highlight
     document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.style.borderColor = b.getAttribute('data-shape')===S.shape ? '#1b1a16' : 'transparent');
