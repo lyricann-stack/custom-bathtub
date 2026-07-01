@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Studio — Customize Your Own Bathtub | Kreiner Atelier</title>
+<meta name="description" content="Shape your own acrylic bathtub: choose silhouette, finish, dimensions and add-ons with a live preview, then send it to our atelier for a 3D render in 48 hours.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">KREINER <b>Atelier</b></a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="customize.html" class="active">Customize</a>
+      <a href="why-acrylic.html">Why Acrylic</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="designers.html">For Designers</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a class="navbtn" href="contact.html">Start Your Design</a>
+    </div>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">The Design Studio</span>
+    <h1>Shape it your way — watch it come to life.</h1>
+    <p>Give us a starting point: a silhouette, a finish, a size. That's all we need. Our team takes your concept the rest of the way to a finished, installable bathtub.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="studio-grid">
+      <div class="stage">
+        <span class="badge">Live preview</span>
+        <div id="preview"></div>
+        <div class="specline">
+          <span>Silhouette <b id="sp-shape">Freestanding Oval</b></span>
+          <span>Finish <b id="sp-finish">Gloss White</b></span>
+          <span>Size <b id="sp-size">1700 × 800 × 580 mm</b></span>
+          <span>Capacity <b id="sp-cap">≈ 245 L</b></span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <h4>1 · Silhouette</h4>
+          <div class="opts" id="shapeOpts">
+            <div class="opt active" data-shape="oval"><span class="ic">⬭</span>Freestanding Oval</div>
+            <div class="opt" data-shape="rect"><span class="ic">▭</span>Modern Rectangle</div>
+            <div class="opt" data-shape="slipper"><span class="ic">◗</span>Slipper</div>
+            <div class="opt" data-shape="round"><span class="ic">◯</span>Round Drum</div>
+            <div class="opt" data-shape="japanese"><span class="ic">⬛</span>Japanese Soaking</div>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <h4>2 · Finish &amp; Colour</h4>
+          <div class="swatches" id="finishSwatches">
+            <div class="sw active" data-finish="Gloss White"  data-base="#f4f6f8" style="background:linear-gradient(145deg,#ffffff,#d7dde3)"><small>Gloss White</small></div>
+            <div class="sw" data-finish="Matte Black" data-base="#22252b" style="background:linear-gradient(145deg,#3a3e46,#15171b)"><small>Matte Black</small></div>
+            <div class="sw" data-finish="Gold Leaf"   data-base="#cBa45a" style="background:linear-gradient(145deg,#f0d68f,#a8843f)"><small>Gold Leaf</small></div>
+            <div class="sw" data-finish="Stone / Marble" data-base="#e7e3da" style="background:linear-gradient(145deg,#f3f1ec,#bdb6a6)"><small>Marble</small></div>
+            <div class="sw-custom">
+              <input type="color" id="customColor" value="#7aa6c2" title="Custom colour">
+              <span>Custom</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <h4>3 · Dimensions</h4>
+          <div class="slider"><label>Length <b><span id="v-len">1700</span> mm</b></label><input type="range" id="len" min="1300" max="2200" step="10" value="1700"></div>
+          <div class="slider"><label>Width <b><span id="v-wid">800</span> mm</b></label><input type="range" id="wid" min="650" max="1100" step="10" value="800"></div>
+          <div class="slider"><label>Depth <b><span id="v-dep">580</span> mm</b></label><input type="range" id="dep" min="400" max="750" step="10" value="580"></div>
+        </div>
+
+        <div class="ctl">
+          <h4>4 · Add-ons</h4>
+          <div class="chips" id="addons">
+            <div class="chip" data-addon="Slotted overflow">Slotted overflow</div>
+            <div class="chip" data-addon="Freestanding filler tap">Freestanding tap</div>
+            <div class="chip" data-addon="Chromotherapy LED">Chromotherapy LED</div>
+            <div class="chip" data-addon="Air massage jets">Air massage</div>
+            <div class="chip" data-addon="Integrated headrest">Headrest</div>
+          </div>
+        </div>
+
+        <a class="btn btn-gold" id="toContact" href="contact.html" style="justify-content:center">Send this design to our atelier →</a>
+        <p class="note">Your selections travel with you to the next page. Acrylic's light density means our 3D and AR previews are faster than stone resin.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="brand">KREINER <b>Atelier</b></div>
+        <p style="color:var(--muted2);margin-top:10px;max-width:34ch">Bespoke acrylic bathtubs, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
+        <p style="margin-top:10px">concierge@kreinergroups.com</p>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a href="index.html">Home</a><a href="customize.html">Customize</a><a href="why-acrylic.html">Why Acrylic</a><a href="how-it-works.html">How It Works</a>
+      </div>
+      <div>
+        <h5>More</h5>
+        <a href="designers.html">For Designers</a><a href="portfolio.html">Portfolio</a><a href="acrylic-vs-stone-resin.html">Acrylic vs Stone Resin</a><a href="contact.html">Contact</a>
+      </div>
+    </div>
+    <div class="legal"><span>© 2026 Kreiner Atelier — Kreiner Group</span><span>Factory-direct OEM · Made in Australia</span></div>
+  </div>
+</footer>
+
+<button class="concierge" id="concierge"><span class="dot"></span> Chat with our design concierge</button>
+<script src="app.js"></script>
+</body>
+</html>

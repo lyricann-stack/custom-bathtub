@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customize Your Own Bathtub — The Only One in the World</title>
+<style>
+  :root{
+    --bg:#0e1014; --bg2:#141821; --panel:#171b24; --panel2:#1d2230;
+    --line:#2a3140; --gold:#c8a96a; --gold-soft:#e0c790; --gold-deep:#a8843f;
+    --ink:#ecebe6; --muted:#9aa2ad; --muted2:#6f7783; --white:#ffffff;
+    --ok:#6fcf97;
+    --radius:16px; --shadow:0 18px 50px rgba(0,0,0,.45);
+    --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.12;letter-spacing:.2px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  .gold{color:var(--gold-soft)}
+  .eyebrow{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);font-weight:600}
+  a{color:inherit}
+
+  /* Nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(14,16,20,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{font-family:var(--serif);font-size:21px;letter-spacing:1px}
+  .brand b{color:var(--gold-soft);font-weight:600}
+  .navlinks{display:flex;gap:26px;font-size:14px;color:var(--muted)}
+  .navlinks a:hover{color:var(--ink)}
+  .navbtn{background:var(--gold);color:#1a1407;padding:9px 18px;border-radius:999px;font-weight:700;font-size:13px;text-decoration:none;letter-spacing:.3px}
+  @media(max-width:760px){.navlinks{display:none}}
+
+  /* Hero */
+  .hero{position:relative;padding:84px 0 64px;background:
+     radial-gradient(900px 500px at 78% -10%, rgba(200,169,106,.16), transparent 60%),
+     radial-gradient(700px 600px at 0% 110%, rgba(60,90,120,.18), transparent 55%);}
+  .hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero h1{font-size:clamp(38px,5.4vw,68px);margin:18px 0 18px}
+  .hero h1 i{font-style:italic;color:var(--gold-soft)}
+  .lede{font-size:18px;color:var(--muted);max-width:540px}
+  .hero-cta{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+  .btn{cursor:pointer;border:none;font-family:var(--sans);font-weight:700;font-size:15px;padding:15px 26px;border-radius:999px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+  .btn-gold{background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#1a1407}
+  .btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(200,169,106,.32)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--gold)}
+  .trust{display:flex;gap:26px;margin-top:34px;flex-wrap:wrap}
+  .trust div{font-size:13px;color:var(--muted2)}
+  .trust b{display:block;font-family:var(--serif);font-size:26px;color:var(--ink);font-weight:600}
+  .hero-art{background:linear-gradient(160deg,#1a1f2b,#0f131a);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow)}
+  @media(max-width:880px){.hero .wrap{grid-template-columns:1fr;gap:30px}.hero-art{order:-1}}
+
+  /* Section */
+  section{padding:76px 0}
+  .sec-head{max-width:680px;margin-bottom:42px}
+  .sec-head h2{font-size:clamp(28px,3.6vw,42px);margin:12px 0 14px}
+  .sec-head p{color:var(--muted);font-size:17px}
+
+  /* Configurator */
+  #studio{background:linear-gradient(180deg,var(--bg),var(--bg2))}
+  .studio-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:start}
+  @media(max-width:980px){.studio-grid{grid-template-columns:1fr}}
+  .stage{position:sticky;top:84px;background:radial-gradient(120% 120% at 50% 0%, #20283a, #0d1018);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+  .stage svg{width:100%;height:auto;display:block;filter:drop-shadow(0 30px 40px rgba(0,0,0,.5))}
+  .stage .badge{display:inline-block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-deep);padding:5px 12px;border-radius:999px;margin-bottom:14px}
+  .specline{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);border-top:1px dashed var(--line);padding-top:14px;margin-top:16px;flex-wrap:wrap}
+  .specline span b{color:var(--ink)}
+
+  .controls{display:flex;flex-direction:column;gap:24px}
+  .ctl{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .ctl h4{font-family:var(--sans);font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;font-weight:700}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px}
+  .opt{cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:11px;padding:12px 10px;text-align:center;font-size:13px;color:var(--muted);transition:.15s;user-select:none}
+  .opt:hover{border-color:var(--gold-deep);color:var(--ink)}
+  .opt.active{border-color:var(--gold);background:rgba(200,169,106,.12);color:var(--ink);font-weight:600}
+  .opt .ic{display:block;font-size:20px;margin-bottom:5px}
+  .swatches{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .sw{width:46px;height:46px;border-radius:50%;cursor:pointer;border:2px solid transparent;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  .sw.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,169,106,.25)}
+  .sw small{position:absolute;bottom:-19px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted2);white-space:nowrap}
+  .sw-custom{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-left:6px}
+  .sw-custom input[type=color]{width:40px;height:40px;border:none;background:none;cursor:pointer;border-radius:50%}
+  .slider{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .slider:last-child{margin-bottom:0}
+  .slider label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+  .slider label b{color:var(--gold-soft);font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:5px;border-radius:5px;background:var(--line);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(180deg,var(--gold-soft),var(--gold));cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .chips{display:flex;flex-wrap:wrap;gap:9px}
+  .chip{cursor:pointer;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:8px 14px;transition:.15s;user-select:none}
+  .chip:hover{border-color:var(--gold-deep);color:var(--ink)}
+  .chip.active{background:var(--gold);color:#1a1407;border-color:var(--gold);font-weight:600}
+
+  /* Why / features */
+  .grid3{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  @media(max-width:900px){.grid3{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.grid3{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+  .card .ic{font-size:26px;margin-bottom:12px}
+  .card h3{font-size:21px;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:14.5px}
+
+  /* Steps */
+  #how{background:linear-gradient(180deg,var(--bg2),var(--bg))}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  @media(max-width:900px){.steps{grid-template-columns:1fr;gap:16px}}
+  .step{position:relative;padding:26px 22px}
+  .step:not(:last-child){border-right:1px solid var(--line)}
+  @media(max-width:900px){.step{border-right:none;border-bottom:1px solid var(--line);border-radius:12px;background:var(--panel)}}
+  .step .n{font-family:var(--serif);font-size:46px;color:var(--gold-deep);line-height:1}
+  .step h3{font-size:20px;margin:10px 0 8px}
+  .step p{color:var(--muted);font-size:14px}
+  .step .t{font-size:12px;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-top:10px}
+
+  /* Designer band */
+  .band{background:linear-gradient(120deg,#191e2a,#11151d);border:1px solid var(--line);border-radius:24px;padding:46px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  @media(max-width:820px){.band{grid-template-columns:1fr;padding:32px}}
+  .band ul{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:8px}
+  .band li{display:flex;gap:12px;font-size:15px;color:var(--ink)}
+  .band li::before{content:"✦";color:var(--gold)}
+
+  /* Inquiry */
+  #inquiry .panelbox{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:40px;display:grid;grid-template-columns:.9fr 1.1fr;gap:40px}
+  @media(max-width:880px){#inquiry .panelbox{grid-template-columns:1fr;padding:28px}}
+  .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .form-row label{font-size:12.5px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase;font-weight:600}
+  .form-row input,.form-row select,.form-row textarea{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:14.5px;font-family:var(--sans);outline:none}
+  .form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--gold)}
+  .form2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  @media(max-width:520px){.form2{grid-template-columns:1fr}}
+  .filedrop{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13.5px;cursor:pointer}
+  .filedrop:hover{border-color:var(--gold)}
+  .summary-card{background:var(--bg);border:1px solid var(--gold-deep);border-radius:16px;padding:22px}
+  .summary-card h4{font-family:var(--serif);font-size:22px;margin-bottom:4px}
+  .summary-card .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .sumrow{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .sumrow span{color:var(--muted)}.sumrow b{color:var(--ink);text-align:right}
+  .note{font-size:12.5px;color:var(--muted2);margin-top:14px;display:flex;gap:8px;align-items:flex-start}
+  .ok-banner{display:none;background:rgba(111,207,151,.1);border:1px solid var(--ok);color:#bdeccb;border-radius:12px;padding:16px;margin-top:16px;font-size:14px}
+
+  /* Comparison */
+  #compare{background:linear-gradient(180deg,var(--bg),var(--bg2))}
+  .cmp{display:grid;grid-template-columns:1.2fr 1fr 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .cmp>div{padding:16px 18px;border-bottom:1px solid var(--line);font-size:14.5px;display:flex;align-items:center}
+  .cmp .h{font-family:var(--serif);font-size:18px;background:var(--panel2);font-weight:600}
+  .cmp .h.us{color:#1a1407;background:linear-gradient(180deg,var(--gold-soft),var(--gold))}
+  .cmp .row-label{color:var(--muted);font-weight:600;background:var(--panel)}
+  .cmp .us{background:rgba(200,169,106,.07);color:var(--ink)}
+  .cmp .them{color:var(--muted)}
+  .cmp .us b{color:var(--gold-soft)}
+  @media(max-width:760px){.cmp{grid-template-columns:1fr;border:none}.cmp>div{border:1px solid var(--line);border-radius:10px;margin-bottom:-1px}.cmp .row-label{margin-top:14px}}
+  /* Offers */
+  .offers{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.offers{grid-template-columns:1fr}}
+  .offer{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:26px;position:relative}
+  .offer .tag{position:absolute;top:18px;right:18px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-deep);padding:4px 10px;border-radius:999px}
+  .offer h3{font-size:22px;margin-bottom:8px}
+  .offer .price{font-family:var(--serif);font-size:30px;color:var(--gold-soft);margin:6px 0}
+  .offer p{color:var(--muted);font-size:14.5px}
+  .offer .free{font-family:var(--serif);font-size:30px;color:var(--ok)}
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted2);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  .concierge{position:fixed;right:22px;bottom:22px;z-index:60;background:linear-gradient(180deg,var(--gold-soft),var(--gold));color:#1a1407;border-radius:999px;padding:13px 20px;font-weight:700;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.4);cursor:pointer;border:none;display:flex;gap:9px;align-items:center}
+  .concierge .dot{width:8px;height:8px;border-radius:50%;background:#1a7a3f;box-shadow:0 0 0 3px rgba(26,122,63,.3)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">KREINER <b>Atelier</b></div>
+    <div class="navlinks">
+      <a href="#studio">Design Studio</a>
+      <a href="#why">Why Us</a>
+      <a href="#how">How It Works</a>
+      <a href="#designers">For Designers</a>
+    </div>
+    <a class="navbtn" href="#inquiry">Start Your Design</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Custom Acrylic Bathtubs · Made in Australia · Factory-Direct</span>
+      <h1>Your client imagined it.<br>We make it <i>the only one</i> in the world.</h1>
+      <p class="lede">Premium acrylic is the most shapeable bathtub material there is — lighter to install and <b style="color:var(--gold-soft)">30–50% less than stone resin</b>. Sketch it, shape it, and our AI atelier turns your concept into a manufacturing-ready 3D model. We build it in our own factory and ship across Australia. No catalogue limits. No MOQ — every tub is a one-off.</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="#studio">Customize Your Own Bathtub →</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <div class="trust">
+        <div><b>48h</b>concept → 3D render</div>
+        <div><b>No MOQ</b>single-piece production</div>
+        <div><b>Any curve</b>built from your CAD</div>
+        <div><b>AU-made</b>local service &amp; turnaround</div>
+      </div>
+    </div>
+    <div class="hero-art" id="heroArt">
+      <!-- live preview is injected here by JS (mirrors studio) -->
+    </div>
+  </div>
+</header>
+
+<!-- CONFIGURATOR -->
+<section id="studio">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The Design Studio</span>
+      <h2>Shape it your way — watch it come to life.</h2>
+      <p>Give us a starting point: a silhouette, a finish, a size. That's all we need. Our team takes your concept the rest of the way to a finished, installable bathtub.</p>
+    </div>
+
+    <div class="studio-grid">
+      <!-- Live stage -->
+      <div class="stage">
+        <span class="badge" id="stageBadge">Live preview</span>
+        <div id="preview"></div>
+        <div class="specline">
+          <span>Silhouette <b id="sp-shape">Freestanding Oval</b></span>
+          <span>Finish <b id="sp-finish">Gloss White</b></span>
+          <span>Size <b id="sp-size">1700 × 800 × 580 mm</b></span>
+          <span>Capacity <b id="sp-cap">≈ 230 L</b></span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <div class="ctl">
+          <h4>1 · Silhouette</h4>
+          <div class="opts" id="shapeOpts">
+            <div class="opt active" data-shape="oval"><span class="ic">⬭</span>Freestanding Oval</div>
+            <div class="opt" data-shape="rect"><span class="ic">▭</span>Modern Rectangle</div>
+            <div class="opt" data-shape="slipper"><span class="ic">◗</span>Slipper</div>
+            <div class="opt" data-shape="round"><span class="ic">◯</span>Round Drum</div>
+            <div class="opt" data-shape="japanese"><span class="ic">⬛</span>Japanese Soaking</div>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <h4>2 · Finish &amp; Colour</h4>
+          <div class="swatches" id="finishSwatches">
+            <div class="sw active" data-finish="Gloss White"  data-base="#f4f6f8" style="background:linear-gradient(145deg,#ffffff,#d7dde3)"><small>Gloss White</small></div>
+            <div class="sw" data-finish="Matte Black" data-base="#22252b" style="background:linear-gradient(145deg,#3a3e46,#15171b)"><small>Matte Black</small></div>
+            <div class="sw" data-finish="Gold Leaf"   data-base="#cBa45a" style="background:linear-gradient(145deg,#f0d68f,#a8843f)"><small>Gold Leaf</small></div>
+            <div class="sw" data-finish="Stone / Marble" data-base="#e7e3da" style="background:linear-gradient(145deg,#f3f1ec,#bdb6a6)"><small>Marble</small></div>
+            <div class="sw-custom">
+              <input type="color" id="customColor" value="#7aa6c2" title="Custom colour">
+              <span>Custom</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ctl">
+          <h4>3 · Dimensions</h4>
+          <div class="slider">
+            <label>Length <b><span id="v-len">1700</span> mm</b></label>
+            <input type="range" id="len" min="1300" max="2200" step="10" value="1700">
+          </div>
+          <div class="slider">
+            <label>Width <b><span id="v-wid">800</span> mm</b></label>
+            <input type="range" id="wid" min="650" max="1100" step="10" value="800">
+          </div>
+          <div class="slider">
+            <label>Depth <b><span id="v-dep">580</span> mm</b></label>
+            <input type="range" id="dep" min="400" max="750" step="10" value="580">
+          </div>
+        </div>
+
+        <div class="ctl">
+          <h4>4 · Add-ons</h4>
+          <div class="chips" id="addons">
+            <div class="chip" data-addon="Slotted overflow">Slotted overflow</div>
+            <div class="chip" data-addon="Freestanding filler tap">Freestanding tap</div>
+            <div class="chip" data-addon="Chromotherapy LED">Chromotherapy LED</div>
+            <div class="chip" data-addon="Air massage jets">Air massage</div>
+            <div class="chip" data-addon="Integrated headrest">Headrest</div>
+          </div>
+        </div>
+
+        <a class="btn btn-gold" href="#inquiry" id="toInquiry" style="justify-content:center">Send this design to our atelier →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Why Kreiner Atelier</span>
+      <h2>The only brand combining acrylic, true shape customisation, and B2C online ordering.</h2>
+      <p>No competitor occupies this space. Premium players push stone resin and call acrylic "cheap" — but on the things that matter to a real project, acrylic wins.</p>
+    </div>
+    <div class="grid3">
+      <div class="card"><div class="ic">🌍</div><h3>One in the world</h3><p>Your sketch, photo or CAD becomes a real, one-of-a-kind bathtub. No MOQ — single-piece production, nothing off-the-shelf.</p></div>
+      <div class="card"><div class="ic">✏️</div><h3>Built from your CAD</h3><p>Any curve, any dimension — we manufacture directly from your design files. Competitors won't even accept external CAD; we start there.</p></div>
+      <div class="card"><div class="ic">🪶</div><h3>Lighter, simpler install</h3><p>Acrylic is the lightest tub material. No 200–350 lb stone slab, no 3–4-person curbside crew — it just goes in.</p></div>
+      <div class="card"><div class="ic">💸</div><h3>30–50% less + financing</h3><p>Premium look for a fraction of stone resin. Spread it from ~AUD $130/month with Afterpay or Zip.</p></div>
+      <div class="card"><div class="ic">🇦🇺</div><h3>Made &amp; serviced in Australia</h3><p>Local production, local turnaround, local after-sales — a moat US brands like Badeloft can't match for AU/NZ.</p></div>
+      <div class="card"><div class="ic">⚡</div><h3>AI speed</h3><p>A 24/7 design concierge handles intake and fast 3D iterations, so you go from inquiry to quote without waiting overnight.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Acrylic vs Stone Resin</span>
+      <h2>The premium players don't want this comparison made.</h2>
+      <p>Stone-resin brands market acrylic as "cheaper material." Here's how the two actually stack up on the things a client lives with.</p>
+    </div>
+    <div class="cmp">
+      <div class="h"></div>
+      <div class="h us">Kreiner — Custom Acrylic</div>
+      <div class="h them">Typical stone-resin brand</div>
+
+      <div class="row-label">Shape customisation</div>
+      <div class="us"><b>Genuine</b> — any curve from your sketch or CAD</div>
+      <div class="them">Size &amp; colour only; "custom builder" is a relabelled catalogue</div>
+
+      <div class="row-label">Weight &amp; install</div>
+      <div class="us"><b>Light</b> — two-person install, fits standard floors</div>
+      <div class="them">200–350 lb; curbside-only, needs a 3–4-person crew</div>
+
+      <div class="row-label">Price</div>
+      <div class="us"><b>30–50% less</b>, financing from ~$130/mo</div>
+      <div class="them">Premium pricing, US-style checkout</div>
+
+      <div class="row-label">Returns</div>
+      <div class="us"><b>Fair</b> — bespoke spec signed off before we build</div>
+      <div class="them">14-day window + both-way freight + 10% restock ($600–$900 on a $3k tub)</div>
+
+      <div class="row-label">Service area</div>
+      <div class="us"><b>Made &amp; serviced in Australia</b></div>
+      <div class="them">US / Canada only — no AU/NZ shipping or support</div>
+
+      <div class="row-label">Repairs</div>
+      <div class="us"><b>Easy</b> surface repair on acrylic</div>
+      <div class="them">Chips in stone resin are hard to fix</div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFERS -->
+<section id="offers" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Two Easy Ways to Start</span>
+      <h2>Touch it first, or go straight to a 3D design.</h2>
+    </div>
+    <div class="offers">
+      <div class="offer">
+        <span class="tag">Lead magnet</span>
+        <h3>Free Sample Kit</h3>
+        <div class="free">FREE</div>
+        <p>Acrylic finish swatches (gloss, matte, colours) plus a life-size paper floor template so you can lay out the tub in the actual room — shipped to your door. Acrylic's lighter density also makes our 3D and AR previews faster than stone resin.</p>
+      </div>
+      <div class="offer">
+        <span class="tag">Best for serious projects</span>
+        <h3>Paid Design Consultation</h3>
+        <div class="price">AUD $399 <span style="font-size:14px;color:var(--muted)">— fully credited to your order</span></div>
+        <p>A designer delivers a photoreal 3D render plus a <b style="color:var(--ink)">signed design specification sheet</b> within 48 hours. Unlike a stone-resin brand's flat fee, this buys <b style="color:var(--ink)">genuine shape customisation</b> — and the fee comes straight off your final price.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">From Concept to Delivery</span>
+      <h2>You give us a starting point. We carry it to the finish.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Sketch your idea</h3><p>Use the studio above, upload a sketch, photo, floor plan or CAD file — or request the free sample kit first. A rough direction is enough.</p><div class="t">You · 5 min</div></div>
+      <div class="step"><div class="n">02</div><h3>3D in 48 hours</h3><p>Our AI atelier turns your concept into a photoreal 3D render plus a signed design spec sheet. The $399 consultation fee is credited to your order.</p><div class="t">Us · 48h</div></div>
+      <div class="step"><div class="n">03</div><h3>Refine together</h3><p>Tweak curves, edges and dimensions over 2–3 quick rounds until it's exactly right — then we lock the manufacturing files.</p><div class="t">Together</div></div>
+      <div class="step"><div class="n">04</div><h3>Built &amp; shipped</h3><p>We open the mould and build it, sending production progress photos throughout. One bathtub, made only for your project, delivered across Australia.</p><div class="t">Us · production</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DESIGNERS -->
+<section id="designers">
+  <div class="wrap">
+    <div class="band">
+      <div>
+        <span class="eyebrow">For Interior Designers &amp; Architects</span>
+        <h2 style="font-size:34px;margin-top:12px">Make the bathtub your signature, not your bottleneck.</h2>
+        <p style="color:var(--muted);margin-top:12px">You decide what belongs in your client's home. We become the silent workshop behind your most ambitious pieces — fast, discreet, and trade-priced.</p>
+      </div>
+      <ul>
+        <li>Trade pricing — 15–25% off retail, factory-direct</li>
+        <li>We build directly from your CAD — any curve, any dimension</li>
+        <li>Sample priority + a dedicated account contact, not a queue</li>
+        <li>White-glove 3D rounds you can present straight to your client</li>
+        <li>Specialty finishes: gold leaf, matte, stone-look, custom colour-match</li>
+        <li>$500 credit when you share the finished installation photos</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- INQUIRY -->
+<section id="inquiry">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Start Your Design</span>
+      <h2>Draw us the bathtub your client wants — get 3D back in 48 hours.</h2>
+      <p>Your current studio selections are attached automatically. The $399 design fee is fully credited to your order, or start with a free sample kit. Financing from ~AUD $130/month.</p>
+    </div>
+
+    <div class="panelbox">
+      <!-- live summary -->
+      <div>
+        <div class="summary-card">
+          <h4>Your design</h4>
+          <div class="sub">Auto-captured from the studio above</div>
+          <div class="sumrow"><span>Silhouette</span><b id="f-shape">Freestanding Oval</b></div>
+          <div class="sumrow"><span>Finish</span><b id="f-finish">Gloss White</b></div>
+          <div class="sumrow"><span>Dimensions</span><b id="f-size">1700 × 800 × 580 mm</b></div>
+          <div class="sumrow"><span>Capacity</span><b id="f-cap">≈ 230 L</b></div>
+          <div class="sumrow"><span>Add-ons</span><b id="f-addons">None</b></div>
+          <div class="note">🔒 We never share your project. Renders are for your eyes and your client's only.</div>
+        </div>
+      </div>
+
+      <!-- form -->
+      <form id="leadForm">
+        <div class="form-row"><label>What would you like?</label>
+          <select name="want">
+            <option>A photoreal 3D design — start my consultation ($399, credited to order)</option>
+            <option>Free sample kit + life-size floor template</option>
+            <option>Trade pricing — I'm a designer / architect</option>
+            <option>Just an estimate for now</option>
+          </select>
+        </div>
+        <div class="form2">
+          <div class="form-row"><label>Name</label><input required name="name" placeholder="Your name"></div>
+          <div class="form-row">
+            <label>You are a…</label>
+            <select name="role">
+              <option>Interior Designer</option>
+              <option>Architect</option>
+              <option>Marketer / Brand</option>
+              <option>Homeowner</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form2">
+          <div class="form-row"><label>Email</label><input required type="email" name="email" placeholder="you@studio.com"></div>
+          <div class="form-row"><label>Country / City</label><input name="country" placeholder="e.g. Sydney, Australia"></div>
+        </div>
+        <div class="form-row"><label>Tell us about the project (optional)</label><textarea name="brief" rows="3" placeholder="Client style, the room, deadline, anything that helps…"></textarea></div>
+        <div class="form-row">
+          <label>Reference sketch / photo (optional)</label>
+          <label class="filedrop" for="ref">📎 <span id="fileLabel">Click to attach a sketch, photo or floor plan</span></label>
+          <input type="file" id="ref" accept="image/*,.pdf" style="display:none">
+        </div>
+        <button class="btn btn-gold" type="submit" style="width:100%;justify-content:center">Send my design — get 3D in 48h</button>
+        <div class="ok-banner" id="okBanner"></div>
+        <div class="note">⚡ A reply usually lands within hours. Our AI concierge confirms instantly, then a designer follows up with your first 3D render.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 Kreiner Atelier — Bespoke Bathtubs, Made One at a Time.</div>
+    <div>Factory-direct OEM · Made in Australia · concierge@kreinergroups.com</div>
+  </div>
+</footer>
+
+<button class="concierge" id="concierge"><span class="dot"></span> Chat with our design concierge</button>
+
+<script>
+(function(){
+  "use strict";
+  // ---------- state ----------
+  var state = {
+    shape:"oval",
+    shapeName:"Freestanding Oval",
+    finish:"Gloss White",
+    base:"#f4f6f8",
+    len:1700, wid:800, dep:580,
+    addons:[]
+  };
+  var shapeNames={oval:"Freestanding Oval",rect:"Modern Rectangle",slipper:"Slipper",round:"Round Drum",japanese:"Japanese Soaking"};
+
+  function shade(hex,amt){ // amt -1..1
+    hex=hex.replace('#','');
+    if(hex.length===3)hex=hex.split('').map(function(c){return c+c}).join('');
+    var r=parseInt(hex.substr(0,2),16),g=parseInt(hex.substr(2,2),16),b=parseInt(hex.substr(4,2),16);
+    function adj(v){ return Math.max(0,Math.min(255, Math.round(amt<0? v*(1+amt) : v+(255-v)*amt))); }
+    function h(v){var s=v.toString(16);return s.length<2?'0'+s:s;}
+    return '#'+h(adj(r))+h(adj(g))+h(adj(b));
+  }
+
+  function capacity(){ // litres, rough usable water volume (tapered tub)
+    var l=state.len/1000, w=state.wid/1000, d=(state.dep-150)/1000; // 150mm freeboard
+    if(d<0.05)d=0.05;
+    var fill={oval:0.42,rect:0.5,slipper:0.36,round:0.4,japanese:0.55}[state.shape];
+    return Math.round(l*w*d*fill*1000/5)*5; // round to nearest 5L
+  }
+
+  // ---------- SVG builder ----------
+  function buildSVG(){
+    var W=600,H=360;
+    var base=state.base, light=shade(base,0.55), lighter=shade(base,0.8), dark=shade(base,-0.32), darker=shade(base,-0.55);
+    // proportion scaling
+    var lenK=(state.len-1300)/(2200-1300);     // 0..1
+    var widK=(state.wid-650)/(1100-650);
+    var depK=(state.dep-400)/(750-400);
+    var bodyW=300+lenK*150;                      // 300..450
+    var bodyH=120+depK*70;                        // side height feel
+    var cx=W/2, topY=120, ellH=46+widK*34;       // rim ellipse height (width feel)
+    var leftX=cx-bodyW/2, rightX=cx+bodyW/2;
+    var floorY=topY+bodyH;
+    var gid="g"+Math.random().toString(36).slice(2,7);
+
+    function defs(){
+      return '<defs>'+
+        '<linearGradient id="body'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+          '<stop offset="0" stop-color="'+light+'"/>'+
+          '<stop offset="0.5" stop-color="'+base+'"/>'+
+          '<stop offset="1" stop-color="'+dark+'"/>'+
+        '</linearGradient>'+
+        '<linearGradient id="rim'+gid+'" x1="0" y1="0" x2="1" y2="0">'+
+          '<stop offset="0" stop-color="'+dark+'"/>'+
+          '<stop offset="0.5" stop-color="'+lighter+'"/>'+
+          '<stop offset="1" stop-color="'+dark+'"/>'+
+        '</linearGradient>'+
+        '<radialGradient id="basin'+gid+'" cx="0.5" cy="0.35" r="0.75">'+
+          '<stop offset="0" stop-color="'+darker+'"/>'+
+          '<stop offset="1" stop-color="'+dark+'"/>'+
+        '</radialGradient>'+
+        '<linearGradient id="floor'+gid+'" x1="0" y1="0" x2="0" y2="1">'+
+          '<stop offset="0" stop-color="rgba(255,255,255,0.05)"/>'+
+          '<stop offset="1" stop-color="rgba(0,0,0,0)"/>'+
+        '</linearGradient>'+
+      '</defs>';
+    }
+
+    function shadow(){ return '<ellipse cx="'+cx+'" cy="'+(floorY+34)+'" rx="'+(bodyW/2+20)+'" ry="22" fill="rgba(0,0,0,0.45)"/>'; }
+    function veins(){ // marble veins on body
+      if(state.finish!=="Stone / Marble")return '';
+      return '<g stroke="rgba(120,120,120,0.35)" stroke-width="1.4" fill="none" opacity="0.7">'+
+        '<path d="M'+(leftX+30)+' '+(topY+30)+' q60 25 120 5 q70 -20 150 25"/>'+
+        '<path d="M'+(leftX+60)+' '+(topY+80)+' q90 -15 180 30 q40 18 90 5"/>'+
+        '<path d="M'+(leftX+20)+' '+(topY+110)+' q120 30 240 -10"/></g>';
+    }
+    function sparkle(){ // gold shimmer
+      if(state.finish!=="Gold Leaf")return '';
+      return '<g fill="rgba(255,248,220,0.85)">'+
+        '<circle cx="'+(cx-60)+'" cy="'+(topY+40)+'" r="2.2"/>'+
+        '<circle cx="'+(cx+40)+'" cy="'+(topY+70)+'" r="1.6"/>'+
+        '<circle cx="'+(cx+90)+'" cy="'+(topY+30)+'" r="1.8"/>'+
+        '<circle cx="'+(cx-30)+'" cy="'+(topY+100)+'" r="1.4"/></g>';
+    }
+
+    var body="";
+    if(state.shape==="oval"||state.shape==="round"){
+      var rx=(state.shape==="round")? bodyW/2*0.7 : bodyW/2;
+      if(state.shape==="round"){ leftX=cx-rx; rightX=cx+rx; }
+      // outer body: rounded tub
+      body =
+        '<ellipse cx="'+cx+'" cy="'+floorY+'" rx="'+rx+'" ry="'+ellH+'" fill="url(#body'+gid+')"/>'+
+        '<rect x="'+(cx-rx)+'" y="'+topY+'" width="'+(2*rx)+'" height="'+bodyH+'" fill="url(#body'+gid+')"/>'+
+        '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+rx+'" ry="'+ellH+'" fill="url(#rim'+gid+')"/>'+
+        '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+(rx-22)+'" ry="'+(ellH-15)+'" fill="url(#basin'+gid+')"/>';
+    } else if(state.shape==="rect"||state.shape==="japanese"){
+      var r=(state.shape==="japanese")?10:26;
+      var bw=(state.shape==="japanese")? bodyW*0.78 : bodyW;
+      leftX=cx-bw/2; rightX=cx+bw/2;
+      var bh=(state.shape==="japanese")? bodyH+30 : bodyH;
+      body =
+        '<path d="M'+leftX+' '+topY+' h'+bw+' v'+bh+' q0 18 -18 18 h'+(-(bw-36))+' q-18 0 -18 -18 z" fill="url(#body'+gid+')"/>'+
+        '<rect x="'+leftX+'" y="'+(topY-ellH*0.5)+'" width="'+bw+'" height="'+ellH+'" rx="'+r+'" fill="url(#rim'+gid+')"/>'+
+        '<rect x="'+(leftX+20)+'" y="'+(topY-ellH*0.5+10)+'" width="'+(bw-40)+'" height="'+(ellH-16)+'" rx="'+(r-4)+'" fill="url(#basin'+gid+')"/>';
+    } else if(state.shape==="slipper"){
+      // oval tub body with one end (left) raised into a sloped backrest
+      var rx=bodyW/2;
+      var backTop=topY-72;            // height of the raised back
+      body =
+        '<ellipse cx="'+cx+'" cy="'+floorY+'" rx="'+rx+'" ry="'+ellH+'" fill="url(#body'+gid+')"/>'+
+        '<rect x="'+(cx-rx)+'" y="'+topY+'" width="'+(2*rx)+'" height="'+bodyH+'" fill="url(#body'+gid+')"/>'+
+        // raised backrest rising from the left rim
+        '<path d="M'+(cx-rx)+' '+(topY+6)+' '+
+              'Q'+(cx-rx-8)+' '+backTop+' '+(cx-rx+52)+' '+(backTop-2)+' '+
+              'Q'+(cx-rx+110)+' '+backTop+' '+(cx-rx+96)+' '+(topY+4)+' Z" '+
+              'fill="url(#body'+gid+')" stroke="'+shade(base,-0.12)+'" stroke-width="1"/>'+
+        '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+rx+'" ry="'+ellH+'" fill="url(#rim'+gid+')"/>'+
+        '<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+(rx-22)+'" ry="'+(ellH-15)+'" fill="url(#basin'+gid+')"/>';
+    }
+
+    // add-on hints
+    var extras="";
+    if(state.addons.indexOf("Freestanding filler tap")>-1){
+      extras+='<g stroke="'+shade(base,-0.1)+'" stroke-width="6" fill="none" stroke-linecap="round">'+
+        '<path d="M'+(rightX+30)+' '+(floorY+30)+' V'+(topY-30)+' q0 -18 -26 -18"/></g>';
+    }
+    if(state.addons.indexOf("Chromotherapy LED")>-1){
+      extras+='<ellipse cx="'+cx+'" cy="'+(topY+ (state.shape==="oval"||state.shape==="round"? 0:0))+'" rx="'+( (rightX-leftX)/2 )+'" ry="'+ellH+'" fill="none" stroke="rgba(120,200,255,0.8)" stroke-width="2.5"><animate attributeName="stroke" values="rgba(120,200,255,.8);rgba(200,140,255,.8);rgba(140,255,190,.8);rgba(120,200,255,.8)" dur="4s" repeatCount="indefinite"/></ellipse>';
+    }
+    if(state.addons.indexOf("Integrated headrest")>-1){
+      extras+='<rect x="'+(leftX+14)+'" y="'+(topY-6)+'" width="46" height="14" rx="7" fill="'+shade(base,-0.2)+'"/>';
+    }
+
+    return '<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bathtub preview">'+
+      defs()+shadow()+body+veins()+sparkle()+extras+
+      '<rect x="0" y="'+(floorY+50)+'" width="'+W+'" height="40" fill="url(#floor'+gid+')"/>'+
+    '</svg>';
+  }
+
+  // ---------- render ----------
+  function fmtAddons(){ return state.addons.length? state.addons.join(", ") : "None"; }
+  function fmtSize(){ return state.len+" × "+state.wid+" × "+state.dep+" mm"; }
+
+  function render(){
+    var svg=buildSVG();
+    document.getElementById("preview").innerHTML=svg;
+    var hero=document.getElementById("heroArt"); if(hero) hero.innerHTML=svg;
+    // spec lines
+    var cap="≈ "+capacity()+" L";
+    set("sp-shape",state.shapeName); set("sp-finish",state.finish);
+    set("sp-size",fmtSize()); set("sp-cap",cap);
+    set("f-shape",state.shapeName); set("f-finish",state.finish);
+    set("f-size",fmtSize()); set("f-cap",cap); set("f-addons",fmtAddons());
+    set("v-len",state.len); set("v-wid",state.wid); set("v-dep",state.dep);
+  }
+  function set(id,val){var el=document.getElementById(id); if(el)el.textContent=val;}
+
+  // ---------- events ----------
+  document.getElementById("shapeOpts").addEventListener("click",function(e){
+    var t=e.target.closest(".opt"); if(!t)return;
+    this.querySelectorAll(".opt").forEach(function(o){o.classList.remove("active");});
+    t.classList.add("active");
+    state.shape=t.getAttribute("data-shape");
+    state.shapeName=shapeNames[state.shape];
+    render();
+  });
+
+  document.getElementById("finishSwatches").addEventListener("click",function(e){
+    var s=e.target.closest(".sw"); if(!s)return;
+    this.querySelectorAll(".sw").forEach(function(o){o.classList.remove("active");});
+    s.classList.add("active");
+    state.finish=s.getAttribute("data-finish");
+    state.base=s.getAttribute("data-base");
+    render();
+  });
+  document.getElementById("customColor").addEventListener("input",function(){
+    document.querySelectorAll("#finishSwatches .sw").forEach(function(o){o.classList.remove("active");});
+    state.finish="Custom — "+this.value.toUpperCase();
+    state.base=this.value;
+    render();
+  });
+
+  ["len","wid","dep"].forEach(function(k){
+    document.getElementById(k).addEventListener("input",function(){
+      state[k]=parseInt(this.value,10); render();
+    });
+  });
+
+  document.getElementById("addons").addEventListener("click",function(e){
+    var c=e.target.closest(".chip"); if(!c)return;
+    var a=c.getAttribute("data-addon"); var i=state.addons.indexOf(a);
+    if(i>-1){state.addons.splice(i,1); c.classList.remove("active");}
+    else{state.addons.push(a); c.classList.add("active");}
+    render();
+  });
+
+  // file label
+  document.getElementById("ref").addEventListener("change",function(){
+    document.getElementById("fileLabel").textContent = this.files.length? this.files[0].name : "Click to attach a sketch, photo or floor plan";
+  });
+
+  // form submit (no backend — instant confirmation + mailto fallback)
+  document.getElementById("leadForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var f=e.target;
+    var el=function(n){return f.elements.namedItem(n);};
+    var name=(el("name")&&el("name").value)||"there";
+    var summary="• Silhouette: "+state.shapeName+"\\n• Finish: "+state.finish+"\\n• Dimensions: "+fmtSize()+"\\n• Capacity: ≈"+capacity()+" L\\n• Add-ons: "+fmtAddons();
+    var banner=document.getElementById("okBanner");
+    banner.style.display="block";
+    banner.innerHTML="✅ Thank you, "+name.replace(/[<>]/g,'')+"! Your design is in. Our AI concierge has logged it and a designer will send your first 3D render within 48 hours.<br><br><b>Captured:</b><br>"+summary.replace(/\\n/g,"<br>")+
+      '<br><br><a style="color:#e0c790;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design%20Request&body='+encodeURIComponent("Hi Kreiner Atelier,\n\nMy custom bathtub design:\n"+summary.replace(/\\n/g,"\n")+"\n\nName: "+name+"\nRole: "+(el("role")?el("role").value:"")+"\nEmail: "+(el("email")?el("email").value:"")+"\nCountry: "+(el("country")?el("country").value:"")+"\nProject: "+(el("brief")?el("brief").value:"")+"\\nInterested in: "+(el("want")?el("want").value:""))+'">Open this as an email instead →</a>';
+    if(banner.scrollIntoView)banner.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+
+  // concierge stub
+  document.getElementById("concierge").addEventListener("click",function(){
+    alert("👋 Hi! I'm your design concierge.\n\nTell me what you're picturing — a shape, a vibe, a reference — and I'll get a 3D render started. (Live chat connects to the team; this demo button is a placeholder.)");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

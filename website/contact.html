@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start Your Design — Contact | Kreiner Atelier</title>
+<meta name="description" content="Send us your bathtub concept and get a 3D render back in 48 hours. Request a free sample kit, book a design consultation, or apply for trade pricing.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html">KREINER <b>Atelier</b></a>
+    <button class="menu-toggle" aria-label="Menu">☰</button>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="customize.html">Customize</a>
+      <a href="why-acrylic.html">Why Acrylic</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="designers.html">For Designers</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a class="navbtn active" href="contact.html">Start Your Design</a>
+    </div>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <span class="eyebrow">Start Your Design</span>
+    <h1>Draw us the bathtub your client wants — get 3D back in 48 hours.</h1>
+    <p id="designHint">If you came from the design studio, your selections are attached below. The $399 design fee is fully credited to your order, or start with a free sample kit. Financing from ~AUD $130/month.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="wrap">
+    <div class="panelbox">
+      <div>
+        <div class="summary-card">
+          <h4>Your design</h4>
+          <div class="sub">Carried over from the design studio</div>
+          <div id="contactPreview" style="margin-bottom:14px"></div>
+          <div class="sumrow"><span>Silhouette</span><b id="f-shape">Freestanding Oval</b></div>
+          <div class="sumrow"><span>Finish</span><b id="f-finish">Gloss White</b></div>
+          <div class="sumrow"><span>Dimensions</span><b id="f-size">1700 × 800 × 580 mm</b></div>
+          <div class="sumrow"><span>Capacity</span><b id="f-cap">≈ 245 L</b></div>
+          <div class="sumrow"><span>Add-ons</span><b id="f-addons">None</b></div>
+          <div class="note">🔒 We never share your project. Renders are for your eyes and your client's only.</div>
+        </div>
+      </div>
+
+      <form id="leadForm">
+        <div class="form-row"><label>What would you like?</label>
+          <select name="want">
+            <option>A photoreal 3D design — start my consultation ($399, credited to order)</option>
+            <option>Free sample kit + life-size floor template</option>
+            <option>Trade pricing — I'm a designer / architect</option>
+            <option>Just an estimate for now</option>
+          </select>
+        </div>
+        <div class="form2">
+          <div class="form-row"><label>Name</label><input required name="name" placeholder="Your name"></div>
+          <div class="form-row"><label>You are a…</label>
+            <select name="role"><option>Interior Designer</option><option>Architect</option><option>Marketer / Brand</option><option>Homeowner</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="form2">
+          <div class="form-row"><label>Email</label><input required type="email" name="email" placeholder="you@studio.com"></div>
+          <div class="form-row"><label>Country / City</label><input name="country" placeholder="e.g. Sydney, Australia"></div>
+        </div>
+        <div class="form-row"><label>Tell us about the project (optional)</label><textarea name="brief" rows="3" placeholder="Client style, the room, deadline, anything that helps…"></textarea></div>
+        <div class="form-row">
+          <label>Reference sketch / photo (optional)</label>
+          <label class="filedrop" for="ref">📎 <span id="fileLabel">Click to attach a sketch, photo or floor plan</span></label>
+          <input type="file" id="ref" accept="image/*,.pdf" style="display:none">
+        </div>
+        <button class="btn btn-gold" type="submit" style="width:100%;justify-content:center">Send my request →</button>
+        <div class="ok-banner" id="okBanner"></div>
+        <div class="note">⚡ A reply usually lands within hours. Our AI concierge confirms instantly, then a designer follows up with your first 3D render.</div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <div class="brand">KREINER <b>Atelier</b></div>
+        <p style="color:var(--muted2);margin-top:10px;max-width:34ch">Bespoke acrylic bathtubs, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
+        <p style="margin-top:10px">concierge@kreinergroups.com</p>
+      </div>
+      <div><h5>Explore</h5><a href="index.html">Home</a><a href="customize.html">Customize</a><a href="why-acrylic.html">Why Acrylic</a><a href="how-it-works.html">How It Works</a></div>
+      <div><h5>More</h5><a href="designers.html">For Designers</a><a href="portfolio.html">Portfolio</a><a href="acrylic-vs-stone-resin.html">Acrylic vs Stone Resin</a><a href="contact.html">Contact</a></div>
+    </div>
+    <div class="legal"><span>© 2026 Kreiner Atelier — Kreiner Group</span><span>Factory-direct OEM · Made in Australia</span></div>
+  </div>
+</footer>
+
+<button class="concierge" id="concierge"><span class="dot"></span> Chat with our design concierge</button>
+<script src="app.js"></script>
+</body>
+</html>
