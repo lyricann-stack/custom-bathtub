@@ -104,7 +104,7 @@
 class Component extends DCLogic {
   async componentDidMount(){
     this.viewers=[]; this.want='consult';
-    try{ const {TubViewer}=await import('./tub3d.js'); const el=document.getElementById('contactTub'); if(el){const v=new TubViewer(el,{autoSpin:true,interactive:true,yaw:0.6,spinSpeed:0.004}); v.set({shape:'oval',len:1750,wid:840,dep:600,base:'#eef1f4',finish:'Gloss White',addons:['Freestanding filler tap']}); this.viewers.push(v);} }catch(e){console.error(e);}
+    try{ const {TubViewer}=await import('./tub3d.js'); const el=document.getElementById('contactTub'); if(el){const v=new TubViewer(el,{autoSpin:false,interactive:true,yaw:0.6,spinSpeed:0.004}); v.set({shape:'oval',len:1750,wid:840,dep:600,base:'#eef1f4',finish:'Gloss White',addons:['Freestanding filler tap']}); this.viewers.push(v);} }catch(e){console.error(e);}
     const cards=document.querySelectorAll('#wantCards [data-want]');
     const hi=()=>cards.forEach(b=>{const on=b.getAttribute('data-want')===this.want; b.style.borderColor=on?'#1b1a16':'transparent'; b.style.background=on?'#f4efe4':'#fff';});
     cards.forEach(b=>b.addEventListener('click',()=>{this.want=b.getAttribute('data-want'); hi();})); hi();

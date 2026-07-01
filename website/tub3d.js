@@ -46,16 +46,45 @@ function buildGeometry(p) {
   let height = (p.dep / p.len) * 1.85;
   if (shape === 'japanese') height *= 1.5;
 
+  /* ---- free-form sculpt params (0..100 slider values; defaults match old look) ---- */
+  const num = (v, d) => (v == null || isNaN(Number(v)) ? d : Number(v));
+  const curve    = num(p.curve, 55) / 100;          // body curvature: 0 straight-sided → 1 full belly
+  const taper    = num(p.taper, 40) / 100;          // base narrowing
+  const flare    = (num(p.flare, 50) - 50) / 50;    // edge angle: -1 tucked in … +1 flared out
+  const edgeSoft = num(p.edgeSoft, 35) / 100;       // edge roundness: 0 crisp → 1 rolled lip
+  const wallTh   = num(p.wall, 45) / 100;           // wall/rim thickness: 0 thin slab → 1 thick
+  const cornerK  = num(p.corner, 55) / 100;         // rect corner sharpness
+
+  const nExp = 2.2 + cornerK * 5.2;                 // superellipse exponent for rect corners
+  function section(t) {
+    const c = Math.cos(t), s = Math.sin(t);
+    if (shape === 'rect') {
+      const cx = Math.sign(c) * Math.pow(Math.abs(c), 2/nExp);
+      const sz = Math.sign(s) * Math.pow(Math.abs(s), 2/nExp);
+      return [cx, sz];
+    }
+    return [c, s];
+  }
+
   const SEG = 64;
-  // profile rings: [heightFrac, radiusMult] outer bottom -> outer top rim
-  const outer = [
-    [0.00, 0.66], [0.09, 0.79], [0.26, 0.92], [0.55, 1.00], [1.00, 1.00]
-  ];
-  // inner rings: inner rim (top) -> basin floor centre
+  // parametric outer profile: blend straight-sided ↔ bellied, with edge flare
+  const r0 = 1 - 0.55 * taper;                      // bottom radius
+  const rTop = 1 + flare * 0.14;                    // rim outer radius (edge angle)
+  function outerR(h) {
+    const straight = r0 + (rTop - r0) * h;
+    const belly = r0 + (rTop - r0) * Math.pow(h, 0.42) + Math.sin(Math.PI * h) * 0.09 * curve;
+    return straight * (1 - curve) + belly * curve;
+  }
+  const outer = [0, 0.09, 0.26, 0.55, 0.8, 0.94].map(h => [h, outerR(h)]);
+  outer.push([0.97, rTop + edgeSoft * 0.045]);      // rolled-lip ring (edge roundness)
+  outer.push([1.00, rTop]);
+  // rim thickness (thin slab ↔ thick rim) and matching inner basin
+  const rimOuterR = rTop;
+  const rimInnerR = Math.max(0.35, rTop - (0.035 + wallTh * 0.19));
   const inner = [
-    [1.00, 0.86], [0.74, 0.80], [0.40, 0.66], [0.17, 0.34], [0.135, 0.0]
+    [1.00, rimInnerR], [0.74, rimInnerR * 0.93],
+    [0.40, Math.min(rimInnerR * 0.8, 0.66)], [0.17, 0.34], [0.135, 0.0]
   ];
-  const rimOuterR = 1.00, rimInnerR = 0.86;
 
   // slipper: raise the back of the rim (angles near t=PI) into a backrest
   function rimBoost(t) {
@@ -66,7 +95,7 @@ function buildGeometry(p) {
 
   const quads = [];
   function ringPoint(radiusMult, hFrac, t, boost) {
-    const [ux, uz] = sectionXY(shape, t);
+    const [ux, uz] = section(t);
     return [ux * a * radiusMult, hFrac * height + (boost || 0), uz * b * radiusMult];
   }
 
@@ -123,7 +152,7 @@ export class TubViewer {
     this.yaw = opts.yaw != null ? opts.yaw : 0.7;
     this.targetYaw = this.yaw;
     this.pitch = opts.pitch != null ? opts.pitch : 0.42;
-    this.autoSpin = opts.autoSpin != null ? opts.autoSpin : true;
+    this.autoSpin = opts.autoSpin != null ? opts.autoSpin : false;  // manual drag only by default
     this.interactive = opts.interactive != null ? opts.interactive : true;
     this.spinSpeed = opts.spinSpeed != null ? opts.spinSpeed : 0.0045;
     this.dragging = false;

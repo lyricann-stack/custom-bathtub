@@ -214,7 +214,7 @@ class Component extends DCLogic {
     try {
       const { TubViewer } = await import('./tub3d.js');
       const hero = document.getElementById('heroTub');
-      if (hero) this.viewers.push(new TubViewer(hero, { autoSpin:true, interactive:true, yaw:0.6 }));
+      if (hero) this.viewers.push(new TubViewer(hero, { autoSpin:false, interactive:true, yaw:0.6 }));
       const statics = [
         ['why1', { shape:'oval', len:1700, wid:800, dep:580, base:'#eef1f4', finish:'Gloss White' }, 0.5],
         ['why2', { shape:'rect', len:1900, wid:900, dep:600, base:'#23262c', finish:'Matte Black' }, -0.6],

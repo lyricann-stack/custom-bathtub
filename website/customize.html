@@ -75,8 +75,9 @@
         <div data-dot="2" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
         <div data-dot="3" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
         <div data-dot="4" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
+        <div data-dot="5" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a8f7c;margin-bottom:26px"><span id="stepLabel">Step 1 of 5</span><span id="stepName">Silhouette</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a8f7c;margin-bottom:26px"><span id="stepLabel">Step 1 of 6</span><span id="stepName">Silhouette</span></div>
 
       <div style="flex:1">
         <!-- Panel 0: Silhouette -->
@@ -107,8 +108,22 @@
           </div>
         </div>
 
-        <!-- Panel 1: Finish -->
+        <!-- Panel 1: Sculpt (free-form) -->
         <div data-panel="1" style="display:none">
+          <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Sculpt the form</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:26px">Shape it freely — every slider updates the preview instantly.</p>
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Body curve</span><span style="font-weight:600" id="v-curve">55%</span></div><input type="range" id="sc-curve" min="0" max="100" step="1" value="55"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Straight-sided</span><span>Full belly</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Base taper</span><span style="font-weight:600" id="v-taper">40%</span></div><input type="range" id="sc-taper" min="0" max="100" step="1" value="40"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Monolithic</span><span>Pedestal</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge angle</span><span style="font-weight:600" id="v-flare">0°</span></div><input type="range" id="sc-flare" min="0" max="100" step="1" value="50"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Tucked in</span><span>Flared out</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Edge roundness</span><span style="font-weight:600" id="v-edge">35%</span></div><input type="range" id="sc-edge" min="0" max="100" step="1" value="35"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Crisp edge</span><span>Rolled lip</span></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Wall thickness</span><span style="font-weight:600" id="v-wall">32 mm</span></div><input type="range" id="sc-wall" min="0" max="100" step="1" value="45"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Thin slab</span><span>Substantial</span></div></div>
+            <div id="cornerRow"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Corner sharpness</span><span style="font-weight:600" id="v-corner">55%</span></div><input type="range" id="sc-corner" min="0" max="100" step="1" value="55"><div style="display:flex;justify-content:space-between;font-size:11.5px;color:#9a8f7c;margin-top:4px"><span>Soft radius</span><span>Near-square</span></div></div>
+          </div>
+        </div>
+
+        <!-- Panel 2: Finish -->
+        <div data-panel="2" style="display:none">
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Material &amp; finish</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:16px">Choose your material — we craft both in-house.</p>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:22px" id="materialCards">
@@ -136,8 +151,8 @@
           </label>
         </div>
 
-        <!-- Panel 2: Dimensions -->
-        <div data-panel="2" style="display:none">
+        <!-- Panel 3: Dimensions -->
+        <div data-panel="3" style="display:none">
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Dimensions</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:26px">Drag to size it to your room. Capacity updates live.</p>
           <div style="display:flex;flex-direction:column;gap:26px">
@@ -151,8 +166,8 @@
           </div>
         </div>
 
-        <!-- Panel 3: Add-ons -->
-        <div data-panel="3" style="display:none">
+        <!-- Panel 4: Add-ons -->
+        <div data-panel="4" style="display:none">
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Add-ons</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:22px">Optional touches — tap to include.</p>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="addonCards">
@@ -164,12 +179,13 @@
           </div>
         </div>
 
-        <!-- Panel 4: Review & send -->
-        <div data-panel="4" style="display:none">
+        <!-- Panel 5: Review & send -->
+        <div data-panel="5" style="display:none">
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Review &amp; send</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:20px">We reply with a photoreal 3D render in 48 hours. The $399 fee is credited to your order.</p>
           <div style="background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:18px 20px;margin-bottom:18px">
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Silhouette</span><b id="r-shape">Freestanding Oval</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Sculpting</span><b id="r-sculpt" style="text-align:right;max-width:62%;font-weight:600">—</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Material</span><b id="r-mat">Premium Acrylic</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Finish</span><b id="r-finish">Gloss White</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Size</span><b id="r-size">1700×800×580 mm</b></div>
@@ -201,15 +217,16 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   async componentDidMount() {
-    this.state2 = { shape:'oval', material:'Premium Acrylic', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0 };
+    this.state2 = { shape:'oval', material:'Premium Acrylic', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0,
+      curve:55, taper:40, flare:50, edgeSoft:35, wall:45, corner:55 };
     try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
     this.viewers = [];
-    this.STEP_NAMES = ['Silhouette','Material & finish','Size','Add-ons','Review'];
+    this.STEP_NAMES = ['Silhouette','Sculpt','Material & finish','Size','Add-ons','Review'];
     try {
       const mod = await import('./tub3d.js');
       this.TubViewer = mod.TubViewer;
       const big = document.getElementById('studioTub');
-      this.big = new this.TubViewer(big, { autoSpin:true, interactive:true, yaw:0.6, spinSpeed:0.004 });
+      this.big = new this.TubViewer(big, { autoSpin:false, interactive:true, yaw:0.6 });
       this.big.set(this.state2);
       this.viewers.push(this.big);
       // shape thumbnails
@@ -244,6 +261,10 @@ class Component extends DCLogic {
     if (cc) cc.addEventListener('input', () => { S.finish = 'Custom — ' + cc.value.toUpperCase(); S.base = cc.value; S.custom = true; this._render(); });
     // dims
     ['len','wid','dep'].forEach(k => { const el = document.getElementById(k); if (el) el.addEventListener('input', () => { S[k] = parseInt(el.value,10); this._render(); }); });
+    // sculpt sliders → live preview
+    [['sc-curve','curve'],['sc-taper','taper'],['sc-flare','flare'],['sc-edge','edgeSoft'],['sc-wall','wall'],['sc-corner','corner']].forEach(([id,key]) => {
+      const el = document.getElementById(id); if (el) el.addEventListener('input', () => { S[key] = parseInt(el.value,10); this._render(); });
+    });
     // addons
     document.querySelectorAll('#addonCards [data-addon]').forEach(b => b.addEventListener('click', () => {
       const a = b.getAttribute('data-addon'); const i = S.addons.indexOf(a);
@@ -251,7 +272,7 @@ class Component extends DCLogic {
     }));
     // nav
     document.getElementById('backBtn').addEventListener('click', () => { if (S.step>0){S.step--; this._render();} });
-    document.getElementById('nextBtn').addEventListener('click', () => { if (S.step<4){S.step++; this._render();} });
+    document.getElementById('nextBtn').addEventListener('click', () => { if (S.step<5){S.step++; this._render();} });
     // dropzone
     const dz = document.getElementById('dropzone'), fi = document.getElementById('fileInput'), dl = document.getElementById('dropLabel');
     if (dz) {
@@ -271,7 +292,8 @@ class Component extends DCLogic {
   _render() {
     const S = this.state2;
     const lang = this._lang || 'en';
-    if (this.big) this.big.set({ shape:S.shape, finish:S.finish, base:S.base, len:S.len, wid:S.wid, dep:S.dep, addons:S.addons });
+    if (this.big) this.big.set({ shape:S.shape, finish:S.finish, base:S.base, len:S.len, wid:S.wid, dep:S.dep, addons:S.addons,
+      curve:S.curve, taper:S.taper, flare:S.flare, edgeSoft:S.edgeSoft, wall:S.wall, corner:S.corner });
     // translate all static nodes first (dynamic fields are re-set below and win)
     if (lang !== 'en') this._applyLang(lang);
     const set = (id,v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
@@ -281,6 +303,11 @@ class Component extends DCLogic {
     set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-material', this._tr(S.material)); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
     set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
     set('v-len',S.len); set('v-wid',S.wid); set('v-dep',S.dep); set('capBig','≈ '+this._cap(S)+' L');
+    // sculpt readouts
+    const deg = Math.round((S.flare-50)/50*25), mm = Math.round(8 + S.wall*0.54);
+    set('v-curve', S.curve+'%'); set('v-taper', S.taper+'%'); set('v-flare', (deg>0?'+':'')+deg+'°');
+    set('v-edge', S.edgeSoft+'%'); set('v-wall', mm+' mm'); set('v-corner', S.corner+'%');
+    const cr = document.getElementById('cornerRow'); if (cr) cr.style.display = S.shape==='rect' ? 'block' : 'none';
     // selection highlight
     document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.style.borderColor = b.getAttribute('data-shape')===S.shape ? '#1b1a16' : 'transparent');
     document.querySelectorAll('#materialCards [data-material]').forEach(b => { const on = b.getAttribute('data-material')===S.material; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
@@ -290,20 +317,23 @@ class Component extends DCLogic {
     // review
     set('r-shape', this._tr(this._shapeName(S.shape))); set('r-mat', this._tr(S.material)); set('r-finish', S.custom ? S.finish : this._tr(S.finish)); set('r-size', S.len+'×'+S.wid+'×'+S.dep+' mm'); set('r-cap','≈ '+this._cap(S)+' L');
     set('r-addons', S.addons.length ? S.addons.map(trAddon).join(', ') : this._tr('None'));
+    set('r-sculpt', this._tr('Body curve')+' '+S.curve+'% · '+this._tr('Edge angle')+' '+(deg>0?'+':'')+deg+'° · '+this._tr('Edge roundness')+' '+S.edgeSoft+'% · '+this._tr('Wall thickness')+' '+mm+' mm');
     // steps
     document.querySelectorAll('[data-panel]').forEach(p => { const on = Number(p.getAttribute('data-panel'))===S.step; const wasHidden = p.style.display==='none'; p.style.display = on ? 'block':'none'; if (on && wasHidden) { p.style.animation='none'; void p.offsetWidth; p.style.animation='fadeUp .4s both'; } });
     document.querySelectorAll('#stepper [data-dot]').forEach(d => d.style.background = Number(d.getAttribute('data-dot'))<=S.step ? '#1b1a16' : '#ddd8cc');
     const n = S.step+1;
-    set('stepLabel', lang==='zh' ? ('第 '+n+' 步 / 共 5') : lang==='th' ? ('ขั้นที่ '+n+' จาก 5') : ('Step '+n+' of 5'));
+    set('stepLabel', lang==='zh' ? ('第 '+n+' 步 / 共 6') : lang==='th' ? ('ขั้นที่ '+n+' จาก 6') : ('Step '+n+' of 6'));
     set('stepName', this._tr(this.STEP_NAMES[S.step]));
     document.getElementById('backBtn').style.visibility = S.step===0 ? 'hidden':'visible';
-    document.getElementById('nextBtn').style.display = S.step===4 ? 'none':'inline-flex';
+    document.getElementById('nextBtn').style.display = S.step===5 ? 'none':'inline-flex';
   }
 
   _send() {
     const S = this.state2, name = (document.getElementById('f-name').value||'there').replace(/[<>]/g,'');
     const banner = document.getElementById('okBanner');
-    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
+    const sdeg = Math.round((S.flare-50)/50*25), smm = Math.round(8 + S.wall*0.54);
+    const sculpt = 'body curve '+S.curve+'%, base taper '+S.taper+'%, edge angle '+(sdeg>0?'+':'')+sdeg+' deg, edge roundness '+S.edgeSoft+'%, wall ~'+smm+' mm'+(S.shape==='rect' ? (', corner sharpness '+S.corner+'%') : '');
+    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+sculpt+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
     const msg = this._lang==='zh' ? ('✅ 谢谢你，'+name+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。') : this._lang==='th' ? ('✅ ขอบคุณ '+name+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง') : ('✅ Thank you, '+name+'! Your design is in — a designer will follow up with a 3D render within 48 hours.');
     banner.style.display = 'block';
     banner.innerHTML = msg + '<br><br><a style="color:#2f5d3a;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">Open as an email instead →</a>';

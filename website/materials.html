@@ -110,7 +110,7 @@
 class Component extends DCLogic {
   async componentDidMount(){
     this.viewers=[];
-    try{ const {TubViewer}=await import('./tub3d.js'); const el=document.getElementById('whyTub'); if(el){const v=new TubViewer(el,{autoSpin:true,interactive:true,yaw:0.6,spinSpeed:0.004}); v.set({shape:'oval',len:1750,wid:840,dep:600,base:'#eef1f4',finish:'Gloss White',addons:['Freestanding filler tap']}); this.viewers.push(v);} }catch(e){console.error('tub',e);}
+    try{ const {TubViewer}=await import('./tub3d.js'); const el=document.getElementById('whyTub'); if(el){const v=new TubViewer(el,{autoSpin:false,interactive:true,yaw:0.6}); v.set({shape:'oval',len:1750,wid:840,dep:600,base:'#eef1f4',finish:'Gloss White',addons:['Freestanding filler tap']}); this.viewers.push(v);} }catch(e){console.error('tub',e);}
     try{ const sk=await import('./sitekit.js'); sk.initReveal(); await sk.initLang(); }catch(e){console.error('i18n',e);}
   }
   componentWillUnmount(){(this.viewers||[]).forEach(v=>v.destroy&&v.destroy());}
