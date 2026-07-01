@@ -147,10 +147,20 @@ function buildGeometry(p) {
     }
   }
 
+  // LED strip path: follows the actual rim (any shape incl. freeform & slipper backrest)
+  const led = [];
+  const rMid = (rimOuterR + rimInnerR) / 2;
+  for (let i = 0; i <= SEG; i++) {
+    const t = (i / SEG) * Math.PI * 2;
+    const [ux, uz] = section(t);
+    led.push([ux * a * rMid, height + rimBoost(t), uz * b * rMid]);
+  }
+
   // centre so vertical middle ~ 0
   const cy = height * 0.5;
   quads.forEach(q => q.v.forEach(pt => { pt[1] -= cy; }));
-  return { quads, height, a, b };
+  led.forEach(pt => { pt[1] -= cy; });
+  return { quads, height, a, b, led };
 }
 
 /* ---------- viewer ---------- */
@@ -201,8 +211,8 @@ export class TubViewer {
       if (!this.dragging) return;
       const x = (e.touches ? e.touches[0].clientX : e.clientX);
       const y = (e.touches ? e.touches[0].clientY : e.clientY);
-      this.yaw -= (x - lastX) * 0.012;                                   // full 360° horizontal
-      this.pitch = Math.max(0.05, Math.min(1.35, this.pitch + (y - lastY) * 0.008)); // vertical tilt
+      this.yaw -= (x - lastX) * 0.012;          // full 360° horizontal
+      this.pitch += (y - lastY) * 0.008;        // full 360° vertical — flip it right over
       this.targetYaw = this.yaw;
       lastX = x; lastY = y; this._dirty = true;
       this._draw(); this._dirty = false;
@@ -250,21 +260,24 @@ export class TubViewer {
       return [x, y2, z2];
     };
 
-    // fit
+    // fit (abs() keeps the model framed at any vertical angle, incl. upside-down)
     const geo = this.geo;
-    const spanX = 2 * geo.a, spanY = geo.height + 2*Math.max(geo.a,geo.b)*Math.sin(this.pitch);
+    const spanX = 2 * geo.a, spanY = geo.height + 2*Math.max(geo.a,geo.b)*Math.abs(sy);
     const scale = Math.min(W / (spanX*1.15), H / (spanY*1.32 + 0.5));
     const cx = W/2, ccy = H*0.47;
     const project = (pt) => [cx + pt[0]*scale, ccy - pt[1]*scale];
 
-    // ground shadow
-    const shW = geo.a*scale*1.35, shH = geo.b*scale*Math.sin(this.pitch)*1.6 + 8;
+    // ground shadow — only meaningful while viewing from above-ish; fades out otherwise
     const shY = ccy + (geo.height*0.52)*scale*cy + 6;
-    const gsh = ctx.createRadialGradient(cx, shY, 4, cx, shY, shW);
-    gsh.addColorStop(0, 'rgba(20,22,28,0.30)');
-    gsh.addColorStop(1, 'rgba(20,22,28,0)');
-    ctx.save(); ctx.translate(cx, shY); ctx.scale(1, shH/shW); ctx.beginPath();
-    ctx.arc(0, 0, shW, 0, Math.PI*2); ctx.fillStyle = gsh; ctx.fill(); ctx.restore();
+    if (sy > 0.08 && cy > 0.12) {
+      const shW = geo.a*scale*1.35, shH = geo.b*scale*sy*1.6 + 8;
+      const gsh = ctx.createRadialGradient(cx, shY, 4, cx, shY, shW);
+      const shA = 0.30 * Math.min(1, cy*2);
+      gsh.addColorStop(0, 'rgba(20,22,28,'+shA.toFixed(3)+')');
+      gsh.addColorStop(1, 'rgba(20,22,28,0)');
+      ctx.save(); ctx.translate(cx, shY); ctx.scale(1, shH/shW); ctx.beginPath();
+      ctx.arc(0, 0, shW, 0, Math.PI*2); ctx.fillStyle = gsh; ctx.fill(); ctx.restore();
+    }
 
     // rotate + shade + sort
     const base = hexToRgb(this.params.base || '#eef1f4');
@@ -328,17 +341,30 @@ export class TubViewer {
       ctx.beginPath(); ctx.moveTo(bx, botY); ctx.lineTo(bx, topY);
       ctx.quadraticCurveTo(bx, topY-14, bx-26, topY-14); ctx.stroke();
     }
-    // addon: chromotherapy LED — glowing rim
-    if ((this.params.addons||[]).indexOf('Chromotherapy LED') > -1) {
+    // addon: chromotherapy LED — glowing strip that hugs the actual rim geometry,
+    // rotates with the tub, and takes a chosen colour (or cycles when 'rainbow')
+    if ((this.params.addons||[]).indexOf('Chromotherapy LED') > -1 && geo.led) {
+      let col = this.params.ledColor || 'rainbow';
+      if (col === 'rainbow') {
+        const t = performance.now()/1400;
+        const hue = (Math.sin(t)*0.5+0.5)*260 + 180;
+        col = `hsla(${hue|0},85%,64%,0.6)`;
+        this._dirty = true; // keep the cycle animating
+      } else {
+        const rgb = hexToRgb(col);
+        col = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.65)`;
+      }
+      const pts = geo.led.map(p => project(rotate(p)));
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const t = performance.now()/1400;
-      const hue = (Math.sin(t)*0.5+0.5)*260 + 180;
-      ctx.strokeStyle = `hsla(${hue|0},80%,65%,0.5)`;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.ellipse(cx, ccy - geo.height*0.5*scale*cy, geo.a*scale*0.86, geo.b*scale*Math.sin(this.pitch)*0.86, 0, 0, Math.PI*2);
-      ctx.stroke(); ctx.restore();
-      this._dirty = true; // keep animating glow
+      ctx.strokeStyle = col; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.shadowColor = col; ctx.shadowBlur = 12;
+      ctx.lineWidth = 4.5;
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
+      ctx.stroke();
+      ctx.lineWidth = 1.6; ctx.shadowBlur = 4;  // bright core pass
+      ctx.stroke();
+      ctx.restore();
     }
   }
 }

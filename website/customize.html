@@ -187,6 +187,22 @@
             <button data-addon="Air massage jets" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Air massage</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Warm-air jet system</div></button>
             <button data-addon="Integrated headrest" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Headrest</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Moulded cushioned rest</div></button>
           </div>
+          <div id="ledRow" style="display:none;margin-top:14px;background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:14px 18px">
+            <div style="font-size:14px;font-weight:600;margin-bottom:10px">LED colour</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center" id="ledSwatches">
+              <button data-led="rainbow" title="Rainbow cycle" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid #1b1a16;padding:0;background:conic-gradient(#ff5f5f,#ffc85f,#7be07b,#5fc8ff,#8f6fe8,#ff5fb0,#ff5f5f)"></button>
+              <button data-led="#5fc8ff" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;background:#5fc8ff"></button>
+              <button data-led="#7be0c8" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;background:#7be0c8"></button>
+              <button data-led="#8f6fe8" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;background:#8f6fe8"></button>
+              <button data-led="#ff7ba6" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;background:#ff7ba6"></button>
+              <button data-led="#ffc85f" style="cursor:pointer;width:40px;height:40px;border-radius:50%;border:2px solid transparent;padding:0;background:#ffc85f"></button>
+              <label id="ledCustomCard" style="display:flex;align-items:center;gap:8px;cursor:pointer;border:2px solid transparent;border-radius:999px;padding:3px 12px 3px 3px">
+                <input type="color" id="ledCustom" style="width:34px;height:34px;border:none;background:none;cursor:pointer;border-radius:50%;padding:0">
+                <span style="font-size:13.5px;font-weight:600">Custom colour-match</span>
+              </label>
+            </div>
+            <div style="font-size:12.5px;color:#9a8f7c;margin-top:10px">Rainbow cycle</div>
+          </div>
         </div>
 
         <!-- Panel 5: Review & send -->
@@ -228,7 +244,7 @@
 class Component extends DCLogic {
   async componentDidMount() {
     this.state2 = { shape:'oval', material:'Premium Acrylic', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0,
-      curve:55, taper:40, flare:52, edgeSoft:35, wall:45, corner:55, asym:35, waist:20, lobe:15 };
+      curve:55, taper:40, flare:52, edgeSoft:35, wall:45, corner:55, asym:35, waist:20, lobe:15, ledColor:'rainbow' };
     try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
     this.viewers = [];
     this.STEP_NAMES = ['Silhouette','Sculpt','Material & finish','Size','Add-ons','Review'];
@@ -310,6 +326,12 @@ class Component extends DCLogic {
       const a = b.getAttribute('data-addon'); const i = S.addons.indexOf(a);
       if (i>-1) S.addons.splice(i,1); else S.addons.push(a); this._render();
     }));
+    // LED colour swatches + custom picker
+    document.querySelectorAll('#ledSwatches [data-led]').forEach(b => b.addEventListener('click', () => {
+      S.ledColor = b.getAttribute('data-led'); this._render();
+    }));
+    const lc = document.getElementById('ledCustom');
+    if (lc) { lc.value = '#7ae0c8'; lc.addEventListener('input', () => { S.ledColor = lc.value; this._render(); }); }
     // nav
     document.getElementById('backBtn').addEventListener('click', () => { if (S.step>0){S.step--; this._render();} });
     document.getElementById('nextBtn').addEventListener('click', () => { if (S.step<5){S.step++; this._render();} });
@@ -333,13 +355,17 @@ class Component extends DCLogic {
     const S = this.state2;
     const lang = this._lang || 'en';
     if (this.big) this.big.set({ shape:S.shape, finish:S.finish, base:S.base, len:S.len, wid:S.wid, dep:S.dep, addons:S.addons,
-      curve:S.curve, taper:S.taper, flare:S.flare, edgeSoft:S.edgeSoft, wall:S.wall, corner:S.corner, asym:S.asym, waist:S.waist, lobe:S.lobe });
+      curve:S.curve, taper:S.taper, flare:S.flare, edgeSoft:S.edgeSoft, wall:S.wall, corner:S.corner, asym:S.asym, waist:S.waist, lobe:S.lobe, ledColor:S.ledColor });
     // translate all static nodes first (dynamic fields are re-set below and win);
     // always run so switching back to EN restores the English originals
     this._applyLang(lang);
     const set = (id,v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
     const addonLabel = { 'Freestanding filler tap':'Freestanding tap', 'Air massage jets':'Air massage', 'Integrated headrest':'Headrest' };
-    const trAddon = a => this._tr(addonLabel[a] || a);
+    const trAddon = a => {
+      let label = this._tr(addonLabel[a] || a);
+      if (a === 'Chromotherapy LED') label += ' ('+(S.ledColor==='rainbow' ? this._tr('Rainbow cycle') : S.ledColor.toUpperCase())+')';
+      return label;
+    };
     // spec bar
     set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-material', this._tr(S.material)); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
     set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
@@ -360,6 +386,12 @@ class Component extends DCLogic {
     document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.style.borderColor = (!S.custom && b.getAttribute('data-finish')===S.finish) ? '#1b1a16' : 'transparent');
     const ccard = document.getElementById('customCard'); if (ccard) ccard.style.borderColor = S.custom ? '#1b1a16' : 'transparent';
     document.querySelectorAll('#addonCards [data-addon]').forEach(b => { const on = S.addons.indexOf(b.getAttribute('data-addon'))>-1; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
+    // LED colour row: visible only when the LED add-on is selected; highlight active swatch
+    const lr = document.getElementById('ledRow');
+    if (lr) lr.style.display = S.addons.indexOf('Chromotherapy LED')>-1 ? 'block' : 'none';
+    document.querySelectorAll('#ledSwatches [data-led]').forEach(b => b.style.borderColor = b.getAttribute('data-led')===S.ledColor ? '#1b1a16' : 'transparent');
+    const lcc = document.getElementById('ledCustomCard');
+    if (lcc) lcc.style.borderColor = (S.ledColor!=='rainbow' && !document.querySelector('#ledSwatches [data-led="'+S.ledColor+'"]')) ? '#1b1a16' : 'transparent';
     // review
     set('r-shape', this._tr(this._shapeName(S.shape))); set('r-mat', this._tr(S.material)); set('r-finish', S.custom ? S.finish : this._tr(S.finish)); set('r-size', S.len+'×'+S.wid+'×'+S.dep+' mm'); set('r-cap','≈ '+this._cap(S)+' L');
     set('r-addons', S.addons.length ? S.addons.map(trAddon).join(', ') : this._tr('None'));
@@ -382,7 +414,7 @@ class Component extends DCLogic {
     const sculpt = 'body curve '+S.curve+'%, base taper '+S.taper+'%, edge angle '+(sdeg>0?'+':'')+sdeg+' deg, edge roundness '+S.edgeSoft+'%, rim ~'+smm+' mm'
       +(S.shape==='rect' ? (', corner sharpness '+S.corner+'%') : '')
       +(S.shape==='freeform' ? (', end asymmetry '+S.asym+'%, waist pinch '+S.waist+'%, organic lobes '+S.lobe+'%') : '');
-    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+sculpt+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
+    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+sculpt+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.map(a=>a==='Chromotherapy LED'?('Chromotherapy LED ['+(S.ledColor==='rainbow'?'rainbow cycle':S.ledColor)+']'):a).join(', '):'None');
     const msg = this._lang==='zh' ? ('✅ 谢谢你，'+name+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。') : this._lang==='th' ? ('✅ ขอบคุณ '+name+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง') : ('✅ Thank you, '+name+'! Your design is in — a designer will follow up with a 3D render within 48 hours.');
     banner.style.display = 'block';
     banner.innerHTML = msg + '<br><br><a style="color:#2f5d3a;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">Open as an email instead →</a>';
