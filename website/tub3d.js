@@ -50,10 +50,17 @@ function buildGeometry(p) {
   const num = (v, d) => (v == null || isNaN(Number(v)) ? d : Number(v));
   const curve    = num(p.curve, 55) / 100;          // body curvature: 0 straight-sided → 1 full belly
   const taper    = num(p.taper, 40) / 100;          // base narrowing
-  const flare    = (num(p.flare, 50) - 50) / 50;    // edge angle: -1 tucked in … +1 flared out
+  // edge angle: slider 0..100 → -5°..+20° (thermoform deep-draw draft ≥5-7°, so outward
+  // flare is the natural range; inward tuck limited to a subtle -5°). default 52 ≈ +8°.
+  const flareDeg = num(p.flare, 52) * 0.25 - 5;
+  const flare    = flareDeg / 20;                   // normalized: -0.25 … +1
   const edgeSoft = num(p.edgeSoft, 35) / 100;       // edge roundness: 0 crisp → 1 rolled lip
-  const wallTh   = num(p.wall, 45) / 100;           // wall/rim thickness: 0 thin slab → 1 thick
+  const wallTh   = num(p.wall, 45) / 100;           // rim width: 0 slim edge → 1 substantial
   const cornerK  = num(p.corner, 55) / 100;         // rect corner sharpness
+  // freeform (irregular) shape harmonics — only applied when shape === 'freeform'
+  const asymK    = num(p.asym, 0) / 100;            // one end fuller than the other
+  const waistK   = num(p.waist, 0) / 100;           // hourglass pinch at the middle
+  const lobeK    = num(p.lobe, 0) / 100;            // organic three-lobe undulation
 
   const nExp = 2.2 + cornerK * 5.2;                 // superellipse exponent for rect corners
   function section(t) {
@@ -62,6 +69,11 @@ function buildGeometry(p) {
       const cx = Math.sign(c) * Math.pow(Math.abs(c), 2/nExp);
       const sz = Math.sign(s) * Math.pow(Math.abs(s), 2/nExp);
       return [cx, sz];
+    }
+    if (shape === 'freeform') {
+      let m = 1 + asymK*0.22*Math.cos(t) - waistK*0.30*Math.sin(t)*Math.sin(t) + lobeK*0.12*Math.cos(3*t + 0.6);
+      m = Math.max(0.4, Math.min(1.5, m));
+      return [c*m, s*m];
     }
     return [c, s];
   }
@@ -177,19 +189,22 @@ export class TubViewer {
 
   _bindDrag() {
     const c = this.canvas;
-    let lastX = 0;
+    let lastX = 0, lastY = 0;
     const down = (e) => {
       this.dragging = true; this.autoSpin = false;
       lastX = (e.touches ? e.touches[0].clientX : e.clientX);
+      lastY = (e.touches ? e.touches[0].clientY : e.clientY);
       c.style.cursor = 'grabbing';
       e.preventDefault();
     };
     const move = (e) => {
       if (!this.dragging) return;
       const x = (e.touches ? e.touches[0].clientX : e.clientX);
-      this.yaw -= (x - lastX) * 0.012;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY);
+      this.yaw -= (x - lastX) * 0.012;                                   // full 360° horizontal
+      this.pitch = Math.max(0.05, Math.min(1.35, this.pitch + (y - lastY) * 0.008)); // vertical tilt
       this.targetYaw = this.yaw;
-      lastX = x; this._dirty = true;
+      lastX = x; lastY = y; this._dirty = true;
       this._draw(); this._dirty = false;
       e.preventDefault();
     };
