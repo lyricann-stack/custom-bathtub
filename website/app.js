@@ -509,6 +509,13 @@
     document.documentElement.lang=lang==="zh"?"zh-CN":(lang==="th"?"th":"en");
     rerender();
     var s=document.querySelector(".lang-select");if(s)s.value=lang;
+    // Sync Tidio chat language
+    var tidioLang=lang==="zh"?"zh":(lang==="th"?"th":"en");
+    if(window.tidioChatApi&&typeof window.tidioChatApi.setLanguage==="function"){
+      window.tidioChatApi.setLanguage(tidioLang);
+    } else {
+      window.tidioChatLang=tidioLang;
+    }
   }
   var rerenderFns=[];
   function rerender(){for(var i=0;i<rerenderFns.length;i++)rerenderFns[i]();}
