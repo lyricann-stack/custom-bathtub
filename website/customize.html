@@ -14,7 +14,7 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{background:#f4f1ea;color:#1b1a16;font-family:"Archivo","Noto Sans TC","Noto Sans Thai",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body{background:#f4f1ea;color:#1b1a16;font-family:"Archivo","Noto Sans TC","Noto Sans Thai",system-ui,sans-serif;font-weight:500;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   ::selection{background:#1b1a16;color:#f4f1ea}
   input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:#d8d3c7;outline:none;width:100%}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1b1a16;cursor:pointer;border:3px solid #f4f1ea;box-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -46,7 +46,7 @@
 <div style="max-width:1400px;margin:0 auto;padding:clamp(24px,4vw,44px) clamp(20px,4vw,48px) 80px">
   <div style="margin-bottom:clamp(24px,3vw,40px)">
     <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600">The design studio</div>
-    <h1 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:1.02;letter-spacing:-.01em;font-size:clamp(34px,5vw,64px);margin-top:12px">Shape it. Watch it turn.</h1>
+    <h1 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:700;line-height:1.02;letter-spacing:-.01em;font-size:clamp(34px,5vw,64px);margin-top:12px">Shape it. Watch it turn.</h1>
   </div>
 
   <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,3vw,44px);align-items:start" data-studio-grid>
@@ -80,7 +80,7 @@
       <div style="flex:1">
         <!-- Panel 0: Silhouette -->
         <div data-panel="0" style="display:block">
-          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Choose a silhouette</h2>
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:700;font-size:30px;margin-bottom:6px">Choose a silhouette</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:22px">A starting point — we sculpt any curve from here.</p>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="shapeCards">
             <button data-shape="oval" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:10px;font-family:inherit">
@@ -108,7 +108,7 @@
 
         <!-- Panel 1: Finish -->
         <div data-panel="1" style="display:none">
-          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Finish &amp; colour</h2>
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:700;font-size:30px;margin-bottom:6px">Finish &amp; colour</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:22px">Pick a surface — or match any colour you like.</p>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="finishCards">
             <button data-finish="Gloss White" data-base="#eef1f4" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
@@ -132,7 +132,7 @@
 
         <!-- Panel 2: Dimensions -->
         <div data-panel="2" style="display:none">
-          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Dimensions</h2>
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:700;font-size:30px;margin-bottom:6px">Dimensions</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:26px">Drag to size it to your room. Capacity updates live.</p>
           <div style="display:flex;flex-direction:column;gap:26px">
             <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Length</span><span style="font-weight:600"><span id="v-len">1700</span> mm</span></div><input type="range" id="len" min="1300" max="2200" step="10" value="1700"></div>
@@ -147,7 +147,7 @@
 
         <!-- Panel 3: Add-ons -->
         <div data-panel="3" style="display:none">
-          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Add-ons</h2>
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:700;font-size:30px;margin-bottom:6px">Add-ons</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:22px">Optional touches — tap to include.</p>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="addonCards">
             <button data-addon="Slotted overflow" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Slotted overflow</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Clean hidden waterline</div></button>
@@ -160,7 +160,7 @@
 
         <!-- Panel 4: Review & send -->
         <div data-panel="4" style="display:none">
-          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Review &amp; send</h2>
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:700;font-size:30px;margin-bottom:6px">Review &amp; send</h2>
           <p style="color:#66614f;font-size:15px;margin-bottom:20px">We reply with a photoreal 3D render in 48 hours. The $399 fee is credited to your order.</p>
           <div style="background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:18px 20px;margin-bottom:18px">
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Silhouette</span><b id="r-shape">Freestanding Oval</b></div>
