@@ -1,127 +1,326 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Design Studio — Customize Your Own Bathtub | Kreiner Atelier</title>
-<meta name="description" content="Shape your own acrylic bathtub: choose silhouette, finish, dimensions and add-ons with a live preview, then send it to our atelier for a 3D render in 48 hours.">
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
 </head>
 <body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Archivo:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:#f4f1ea;color:#1b1a16;font-family:"Archivo","Noto Sans TC","Noto Sans Thai",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:#1b1a16;color:#f4f1ea}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;background:#d8d3c7;outline:none;width:100%}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1b1a16;cursor:pointer;border:3px solid #f4f1ea;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border:3px solid #f4f1ea;border-radius:50%;background:#1b1a16;cursor:pointer}
+  @keyframes hintPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
 
-<nav class="site">
-  <div class="wrap">
-    <a class="brand" href="index.html">KREINER <b>Atelier</b></a>
-    <button class="menu-toggle" aria-label="Menu">☰</button>
-    <div class="navlinks">
-      <a href="index.html">Home</a>
-      <a href="customize.html" class="active">Customize</a>
-      <a href="why-acrylic.html">Why Acrylic</a>
-      <a href="how-it-works.html">How It Works</a>
-      <a href="designers.html">For Designers</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a class="navbtn" href="contact.html">Start Your Design</a>
+<nav style="position:sticky;top:0;z-index:60;height:70px;display:flex;align-items:center;background:rgba(244,241,234,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #ddd8cc">
+  <div style="width:100%;max-width:1400px;margin:0 auto;padding:0 clamp(20px,4vw,48px);display:flex;align-items:center;justify-content:space-between;gap:18px">
+    <a href="index.html" style="text-decoration:none;color:#1b1a16;display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Bodoni Moda',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></a>
+    <div style="display:flex;align-items:center;gap:26px">
+      <a href="why-acrylic.html" style="text-decoration:none;color:#4a463d;font-size:14px">Why acrylic</a>
+      <a href="how-it-works.html" style="text-decoration:none;color:#4a463d;font-size:14px">How it works</a>
+      <a href="designers.html" style="text-decoration:none;color:#4a463d;font-size:14px">For designers</a>
+      <a href="portfolio.html" style="text-decoration:none;color:#4a463d;font-size:14px">Portfolio</a>
+      <a href="customize.html" style="text-decoration:none;color:#9a7b43;font-size:14px;font-weight:600">Design studio</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <select id="langSel" aria-label="Language" style="appearance:none;-webkit-appearance:none;background:transparent;border:1px solid #ddd8cc;border-radius:999px;padding:7px 14px;font-size:12.5px;font-family:inherit;color:#4a463d;cursor:pointer">
+        <option value="en">EN</option><option value="zh">简中</option><option value="th">ไทย</option>
+      </select>
+      <a href="contact.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600">Start your design</a>
     </div>
   </div>
 </nav>
 
-<section class="page-hero">
-  <div class="wrap">
-    <span class="eyebrow">The Design Studio</span>
-    <h1>Shape it your way — watch it come to life.</h1>
-    <p>Give us a starting point: a silhouette, a finish, a size. That's all we need. Our team takes your concept the rest of the way to a finished, installable bathtub.</p>
+<div style="max-width:1400px;margin:0 auto;padding:clamp(24px,4vw,44px) clamp(20px,4vw,48px) 80px">
+  <div style="margin-bottom:clamp(24px,3vw,40px)">
+    <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600">The design studio</div>
+    <h1 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:1.02;letter-spacing:-.01em;font-size:clamp(34px,5vw,64px);margin-top:12px">Shape it. Watch it turn.</h1>
   </div>
-</section>
 
-<section class="tight">
-  <div class="wrap">
-    <div class="studio-grid">
-      <div class="stage">
-        <span class="badge">Live preview</span>
-        <div id="preview"></div>
-        <div class="specline">
-          <span>Silhouette <b id="sp-shape">Freestanding Oval</b></span>
-          <span>Finish <b id="sp-finish">Gloss White</b></span>
-          <span>Size <b id="sp-size">1700 × 800 × 580 mm</b></span>
-          <span>Capacity <b id="sp-cap">≈ 245 L</b></span>
+  <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(20px,3vw,44px);align-items:start" data-studio-grid>
+
+    <!-- ===== STAGE (sticky) ===== -->
+    <div style="position:sticky;top:92px" data-stage-col>
+      <div style="position:relative;aspect-ratio:1/.9;border-radius:22px;background:radial-gradient(120% 110% at 50% 4%,#fcfbf7,#e6e0d3);border:1px solid #e0dacd;overflow:hidden">
+        <canvas id="studioTub" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+        <div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8a8478;animation:hintPulse 2.6s ease-in-out infinite">↔ Drag to rotate</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px">
+        <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Silhouette</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-shape">Freestanding Oval</div></div>
+        <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Finish</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-finish">Gloss White</div></div>
+        <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Size</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-size">1700×800×580</div></div>
+        <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Capacity</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-cap">≈ 245 L</div></div>
+      </div>
+    </div>
+
+    <!-- ===== WIZARD ===== -->
+    <div style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:22px;padding:clamp(22px,2.6vw,34px);min-height:560px;display:flex;flex-direction:column">
+      <!-- stepper -->
+      <div style="display:flex;gap:8px;margin-bottom:6px" id="stepper">
+        <div data-dot="0" style="flex:1;height:4px;border-radius:4px;background:#1b1a16"></div>
+        <div data-dot="1" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
+        <div data-dot="2" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
+        <div data-dot="3" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
+        <div data-dot="4" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a8f7c;margin-bottom:26px"><span id="stepLabel">Step 1 of 5</span><span id="stepName">Silhouette</span></div>
+
+      <div style="flex:1">
+        <!-- Panel 0: Silhouette -->
+        <div data-panel="0" style="display:block">
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Choose a silhouette</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:22px">A starting point — we sculpt any curve from here.</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="shapeCards">
+            <button data-shape="oval" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:10px;font-family:inherit">
+              <div style="aspect-ratio:4/3;border-radius:8px;background:radial-gradient(120% 110% at 50% 6%,#fcfbf7,#eae4d7);position:relative;overflow:hidden"><canvas id="sc_oval" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+              <div style="font-size:14px;font-weight:600;margin-top:9px">Freestanding Oval</div>
+            </button>
+            <button data-shape="rect" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:10px;font-family:inherit">
+              <div style="aspect-ratio:4/3;border-radius:8px;background:radial-gradient(120% 110% at 50% 6%,#fcfbf7,#eae4d7);position:relative;overflow:hidden"><canvas id="sc_rect" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+              <div style="font-size:14px;font-weight:600;margin-top:9px">Modern Rectangle</div>
+            </button>
+            <button data-shape="slipper" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:10px;font-family:inherit">
+              <div style="aspect-ratio:4/3;border-radius:8px;background:radial-gradient(120% 110% at 50% 6%,#fcfbf7,#eae4d7);position:relative;overflow:hidden"><canvas id="sc_slipper" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+              <div style="font-size:14px;font-weight:600;margin-top:9px">Slipper</div>
+            </button>
+            <button data-shape="round" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:10px;font-family:inherit">
+              <div style="aspect-ratio:4/3;border-radius:8px;background:radial-gradient(120% 110% at 50% 6%,#fcfbf7,#eae4d7);position:relative;overflow:hidden"><canvas id="sc_round" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+              <div style="font-size:14px;font-weight:600;margin-top:9px">Round Drum</div>
+            </button>
+            <button data-shape="japanese" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:10px;font-family:inherit">
+              <div style="aspect-ratio:4/3;border-radius:8px;background:radial-gradient(120% 110% at 50% 6%,#fcfbf7,#eae4d7);position:relative;overflow:hidden"><canvas id="sc_japanese" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+              <div style="font-size:14px;font-weight:600;margin-top:9px">Japanese Soaking</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Panel 1: Finish -->
+        <div data-panel="1" style="display:none">
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Finish &amp; colour</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:22px">Pick a surface — or match any colour you like.</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="finishCards">
+            <button data-finish="Gloss White" data-base="#eef1f4" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
+              <span style="width:52px;height:52px;border-radius:11px;background:linear-gradient(145deg,#ffffff,#d7dde3);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"></span><span style="font-size:15px;font-weight:600">Gloss White</span>
+            </button>
+            <button data-finish="Matte Black" data-base="#23262c" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
+              <span style="width:52px;height:52px;border-radius:11px;background:linear-gradient(145deg,#3a3e46,#15171b)"></span><span style="font-size:15px;font-weight:600">Matte Black</span>
+            </button>
+            <button data-finish="Gold Leaf" data-base="#c9a34e" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
+              <span style="width:52px;height:52px;border-radius:11px;background:linear-gradient(145deg,#f0d68f,#a8843f)"></span><span style="font-size:15px;font-weight:600">Gold Leaf</span>
+            </button>
+            <button data-finish="Marble" data-base="#e7e3da" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
+              <span style="width:52px;height:52px;border-radius:11px;background:linear-gradient(145deg,#f3f1ec,#bdb6a6)"></span><span style="font-size:15px;font-weight:600">Stone / Marble</span>
+            </button>
+          </div>
+          <label style="display:flex;align-items:center;gap:14px;margin-top:12px;background:#fff;border:2px solid transparent;border-radius:14px;padding:12px;cursor:pointer" id="customCard">
+            <input type="color" id="customColor" value="#7aa6c2" style="width:52px;height:52px;border:none;background:none;cursor:pointer;border-radius:11px;padding:0">
+            <span style="font-size:15px;font-weight:600">Custom colour-match</span>
+          </label>
+        </div>
+
+        <!-- Panel 2: Dimensions -->
+        <div data-panel="2" style="display:none">
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Dimensions</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:26px">Drag to size it to your room. Capacity updates live.</p>
+          <div style="display:flex;flex-direction:column;gap:26px">
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Length</span><span style="font-weight:600"><span id="v-len">1700</span> mm</span></div><input type="range" id="len" min="1300" max="2200" step="10" value="1700"></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Width</span><span style="font-weight:600"><span id="v-wid">800</span> mm</span></div><input type="range" id="wid" min="650" max="1100" step="10" value="800"></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px"><span style="color:#66614f">Depth</span><span style="font-weight:600"><span id="v-dep">580</span> mm</span></div><input type="range" id="dep" min="400" max="750" step="10" value="580"></div>
+          </div>
+          <div style="margin-top:28px;padding:20px 22px;background:#fff;border:1px solid #e6e1d5;border-radius:14px;display:flex;justify-content:space-between;align-items:center">
+            <span style="color:#66614f;font-size:14px">Approx. capacity</span>
+            <span style="font-family:'Bodoni Moda',serif;font-size:34px;color:#9a7b43" id="capBig">≈ 245 L</span>
+          </div>
+        </div>
+
+        <!-- Panel 3: Add-ons -->
+        <div data-panel="3" style="display:none">
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Add-ons</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:22px">Optional touches — tap to include.</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="addonCards">
+            <button data-addon="Slotted overflow" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Slotted overflow</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Clean hidden waterline</div></button>
+            <button data-addon="Freestanding filler tap" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Freestanding tap</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Floor-mounted filler</div></button>
+            <button data-addon="Chromotherapy LED" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Chromotherapy LED</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Colour-shifting rim light</div></button>
+            <button data-addon="Air massage jets" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Air massage</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Warm-air jet system</div></button>
+            <button data-addon="Integrated headrest" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Headrest</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Moulded cushioned rest</div></button>
+          </div>
+        </div>
+
+        <!-- Panel 4: Review & send -->
+        <div data-panel="4" style="display:none">
+          <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:30px;margin-bottom:6px">Review &amp; send</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:20px">We reply with a photoreal 3D render in 48 hours. The $399 fee is credited to your order.</p>
+          <div style="background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:18px 20px;margin-bottom:18px">
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Silhouette</span><b id="r-shape">Freestanding Oval</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Finish</span><b id="r-finish">Gloss White</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Size</span><b id="r-size">1700×800×580 mm</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Capacity</span><b id="r-cap">≈ 245 L</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px"><span style="color:#8a8478">Add-ons</span><b id="r-addons" style="text-align:right;max-width:60%">None</b></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <input id="f-name" placeholder="Your name" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:#1b1a16">
+            <input id="f-email" placeholder="Email" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:#1b1a16">
+          </div>
+          <div id="dropzone" style="border:1.5px dashed #cdc7b9;border-radius:12px;padding:22px;text-align:center;color:#8a8478;font-size:14px;cursor:pointer;background:#fff;transition:.2s">
+            <span id="dropLabel">Drag a sketch, photo or floor plan here — or click to attach</span>
+            <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none">
+          </div>
+          <button id="sendBtn" style="cursor:pointer;width:100%;margin-top:16px;background:#1b1a16;color:#f4f1ea;border:none;padding:16px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:600">Send this design to our atelier →</button>
+          <div id="okBanner" style="display:none;margin-top:16px;background:#eef4ee;border:1px solid #9cc7a6;border-radius:12px;padding:16px;font-size:14px;color:#2f5d3a"></div>
         </div>
       </div>
 
-      <div class="controls">
-        <div class="ctl">
-          <h4>1 · Silhouette</h4>
-          <div class="opts" id="shapeOpts">
-            <div class="opt active" data-shape="oval"><span class="ic">⬭</span>Freestanding Oval</div>
-            <div class="opt" data-shape="rect"><span class="ic">▭</span>Modern Rectangle</div>
-            <div class="opt" data-shape="slipper"><span class="ic">◗</span>Slipper</div>
-            <div class="opt" data-shape="round"><span class="ic">◯</span>Round Drum</div>
-            <div class="opt" data-shape="japanese"><span class="ic">⬛</span>Japanese Soaking</div>
-          </div>
-        </div>
-
-        <div class="ctl">
-          <h4>2 · Finish &amp; Colour</h4>
-          <div class="swatches" id="finishSwatches">
-            <div class="sw active" data-finish="Gloss White"  data-base="#f4f6f8" style="background:linear-gradient(145deg,#ffffff,#d7dde3)"><small>Gloss White</small></div>
-            <div class="sw" data-finish="Matte Black" data-base="#22252b" style="background:linear-gradient(145deg,#3a3e46,#15171b)"><small>Matte Black</small></div>
-            <div class="sw" data-finish="Gold Leaf"   data-base="#cBa45a" style="background:linear-gradient(145deg,#f0d68f,#a8843f)"><small>Gold Leaf</small></div>
-            <div class="sw" data-finish="Stone / Marble" data-base="#e7e3da" style="background:linear-gradient(145deg,#f3f1ec,#bdb6a6)"><small>Marble</small></div>
-            <div class="sw-custom">
-              <input type="color" id="customColor" value="#7aa6c2" title="Custom colour">
-              <span>Custom</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="ctl">
-          <h4>3 · Dimensions</h4>
-          <div class="slider"><label>Length <b><span id="v-len">1700</span> mm</b></label><input type="range" id="len" min="1300" max="2200" step="10" value="1700"></div>
-          <div class="slider"><label>Width <b><span id="v-wid">800</span> mm</b></label><input type="range" id="wid" min="650" max="1100" step="10" value="800"></div>
-          <div class="slider"><label>Depth <b><span id="v-dep">580</span> mm</b></label><input type="range" id="dep" min="400" max="750" step="10" value="580"></div>
-        </div>
-
-        <div class="ctl">
-          <h4>4 · Add-ons</h4>
-          <div class="chips" id="addons">
-            <div class="chip" data-addon="Slotted overflow">Slotted overflow</div>
-            <div class="chip" data-addon="Freestanding filler tap">Freestanding tap</div>
-            <div class="chip" data-addon="Chromotherapy LED">Chromotherapy LED</div>
-            <div class="chip" data-addon="Air massage jets">Air massage</div>
-            <div class="chip" data-addon="Integrated headrest">Headrest</div>
-          </div>
-        </div>
-
-        <a class="btn btn-gold" id="toContact" href="contact.html" style="justify-content:center">Send this design to our atelier →</a>
-        <p class="note">Your selections travel with you to the next page. Acrylic's light density means our 3D and AR previews are faster than stone resin.</p>
+      <!-- footer nav -->
+      <div style="display:flex;justify-content:space-between;gap:12px;margin-top:28px;padding-top:20px;border-top:1px solid #e6e1d5">
+        <button id="backBtn" style="cursor:pointer;background:transparent;border:1px solid #cdc7b9;color:#1b1a16;padding:13px 24px;border-radius:999px;font-family:inherit;font-size:14.5px;font-weight:600;visibility:hidden">← Back</button>
+        <button id="nextBtn" style="cursor:pointer;background:#1b1a16;color:#f4f1ea;border:none;padding:13px 28px;border-radius:999px;font-family:inherit;font-size:14.5px;font-weight:600">Next →</button>
       </div>
     </div>
   </div>
-</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  async componentDidMount() {
+    this.state2 = { shape:'oval', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0 };
+    try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
+    this.viewers = [];
+    this.STEP_NAMES = ['Silhouette','Finish','Size','Add-ons','Review'];
+    try {
+      const mod = await import('./tub3d.js');
+      this.TubViewer = mod.TubViewer;
+      const big = document.getElementById('studioTub');
+      this.big = new this.TubViewer(big, { autoSpin:true, interactive:true, yaw:0.6, spinSpeed:0.004 });
+      this.big.set(this.state2);
+      this.viewers.push(this.big);
+      // shape thumbnails
+      [['sc_oval','oval'],['sc_rect','rect'],['sc_slipper','slipper'],['sc_round','round'],['sc_japanese','japanese']].forEach(([id,sh]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const v = new this.TubViewer(el, { autoSpin:false, interactive:false, yaw:0.6 });
+        v.set({ shape:sh, len:1700, wid:820, dep:600, base:'#e9e5db', finish:'Gloss White' });
+        this.viewers.push(v);
+      });
+    } catch(e) { console.error(e); }
+    this._wire();
+    this._render();
+    this._initLang();
+  }
 
-<footer class="site">
-  <div class="wrap">
-    <div class="cols">
-      <div>
-        <div class="brand">KREINER <b>Atelier</b></div>
-        <p style="color:var(--muted2);margin-top:10px;max-width:34ch">Bespoke acrylic bathtubs, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
-        <p style="margin-top:10px">concierge@kreinergroups.com</p>
-      </div>
-      <div>
-        <h5>Explore</h5>
-        <a href="index.html">Home</a><a href="customize.html">Customize</a><a href="why-acrylic.html">Why Acrylic</a><a href="how-it-works.html">How It Works</a>
-      </div>
-      <div>
-        <h5>More</h5>
-        <a href="designers.html">For Designers</a><a href="portfolio.html">Portfolio</a><a href="acrylic-vs-stone-resin.html">Acrylic vs Stone Resin</a><a href="contact.html">Contact</a>
-      </div>
-    </div>
-    <div class="legal"><span>© 2026 Kreiner Atelier — Kreiner Group</span><span>Factory-direct OEM · Made in Australia</span></div>
-  </div>
-</footer>
+  _wire() {
+    const S = this.state2;
+    // shapes
+    document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.addEventListener('click', () => {
+      S.shape = b.getAttribute('data-shape'); this._render();
+    }));
+    // finish
+    document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.addEventListener('click', () => {
+      S.finish = b.getAttribute('data-finish'); S.base = b.getAttribute('data-base'); S.custom = false; this._render();
+    }));
+    const cc = document.getElementById('customColor');
+    if (cc) cc.addEventListener('input', () => { S.finish = 'Custom — ' + cc.value.toUpperCase(); S.base = cc.value; S.custom = true; this._render(); });
+    // dims
+    ['len','wid','dep'].forEach(k => { const el = document.getElementById(k); if (el) el.addEventListener('input', () => { S[k] = parseInt(el.value,10); this._render(); }); });
+    // addons
+    document.querySelectorAll('#addonCards [data-addon]').forEach(b => b.addEventListener('click', () => {
+      const a = b.getAttribute('data-addon'); const i = S.addons.indexOf(a);
+      if (i>-1) S.addons.splice(i,1); else S.addons.push(a); this._render();
+    }));
+    // nav
+    document.getElementById('backBtn').addEventListener('click', () => { if (S.step>0){S.step--; this._render();} });
+    document.getElementById('nextBtn').addEventListener('click', () => { if (S.step<4){S.step++; this._render();} });
+    // dropzone
+    const dz = document.getElementById('dropzone'), fi = document.getElementById('fileInput'), dl = document.getElementById('dropLabel');
+    if (dz) {
+      dz.addEventListener('click', () => fi.click());
+      fi.addEventListener('change', () => { if (fi.files.length) dl.textContent = '✓ ' + fi.files[0].name; });
+      ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.style.borderColor='#9a7b43'; dz.style.background='#f7f3ea'; }));
+      ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.style.borderColor='#cdc7b9'; dz.style.background='#fff'; }));
+      dz.addEventListener('drop', e => { const f = e.dataTransfer.files; if (f.length) dl.textContent = '✓ ' + f[0].name; });
+    }
+    // send
+    document.getElementById('sendBtn').addEventListener('click', () => this._send());
+  }
 
+  _cap(s) { let l=s.len/1000,w=s.wid/1000,d=(s.dep-150)/1000; if(d<0.05)d=0.05; const fill={oval:0.42,rect:0.5,slipper:0.36,round:0.4,japanese:0.55}[s.shape]||0.42; return Math.round(l*w*d*fill*1000/5)*5; }
+  _shapeName(sh){ return {oval:'Freestanding Oval',rect:'Modern Rectangle',slipper:'Slipper',round:'Round Drum',japanese:'Japanese Soaking'}[sh]; }
 
-<script src="app.js"></script>
-<script>(function(){try{var l=localStorage.getItem("ka_lang");if(l<script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script><script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script>l!=="en")window.tidioChatLang=l;}catch(e){}})()</script>
+  _render() {
+    const S = this.state2;
+    const lang = this._lang || 'en';
+    if (this.big) this.big.set({ shape:S.shape, finish:S.finish, base:S.base, len:S.len, wid:S.wid, dep:S.dep, addons:S.addons });
+    // translate all static nodes first (dynamic fields are re-set below and win)
+    if (lang !== 'en') this._applyLang(lang);
+    const set = (id,v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    const addonLabel = { 'Freestanding filler tap':'Freestanding tap', 'Air massage jets':'Air massage', 'Integrated headrest':'Headrest' };
+    const trAddon = a => this._tr(addonLabel[a] || a);
+    // spec bar
+    set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
+    set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
+    set('v-len',S.len); set('v-wid',S.wid); set('v-dep',S.dep); set('capBig','≈ '+this._cap(S)+' L');
+    // selection highlight
+    document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.style.borderColor = b.getAttribute('data-shape')===S.shape ? '#1b1a16' : 'transparent');
+    document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.style.borderColor = (!S.custom && b.getAttribute('data-finish')===S.finish) ? '#1b1a16' : 'transparent');
+    const ccard = document.getElementById('customCard'); if (ccard) ccard.style.borderColor = S.custom ? '#1b1a16' : 'transparent';
+    document.querySelectorAll('#addonCards [data-addon]').forEach(b => { const on = S.addons.indexOf(b.getAttribute('data-addon'))>-1; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
+    // review
+    set('r-shape', this._tr(this._shapeName(S.shape))); set('r-finish', S.custom ? S.finish : this._tr(S.finish)); set('r-size', S.len+'×'+S.wid+'×'+S.dep+' mm'); set('r-cap','≈ '+this._cap(S)+' L');
+    set('r-addons', S.addons.length ? S.addons.map(trAddon).join(', ') : this._tr('None'));
+    // steps
+    document.querySelectorAll('[data-panel]').forEach(p => { const on = Number(p.getAttribute('data-panel'))===S.step; p.style.display = on ? 'block':'none'; if (on) p.style.animation='fadeUp .4s both'; });
+    document.querySelectorAll('#stepper [data-dot]').forEach(d => d.style.background = Number(d.getAttribute('data-dot'))<=S.step ? '#1b1a16' : '#ddd8cc');
+    const n = S.step+1;
+    set('stepLabel', lang==='zh' ? ('第 '+n+' 步 / 共 5') : lang==='th' ? ('ขั้นที่ '+n+' จาก 5') : ('Step '+n+' of 5'));
+    set('stepName', this._tr(this.STEP_NAMES[S.step]));
+    document.getElementById('backBtn').style.visibility = S.step===0 ? 'hidden':'visible';
+    document.getElementById('nextBtn').style.display = S.step===4 ? 'none':'inline-flex';
+  }
+
+  _send() {
+    const S = this.state2, name = (document.getElementById('f-name').value||'there').replace(/[<>]/g,'');
+    const banner = document.getElementById('okBanner');
+    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
+    const msg = this._lang==='zh' ? ('✅ 谢谢你，'+name+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。') : this._lang==='th' ? ('✅ ขอบคุณ '+name+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง') : ('✅ Thank you, '+name+'! Your design is in — a designer will follow up with a 3D render within 48 hours.');
+    banner.style.display = 'block';
+    banner.innerHTML = msg + '<br><br><a style="color:#2f5d3a;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">Open as an email instead →</a>';
+  }
+
+  async _initLang() {
+    const sel = document.getElementById('langSel'); if (!sel) return;
+    this._cache = [];
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let n; while (n = w.nextNode()) { const t = n.nodeValue.trim(); if (t) this._cache.push({ node:n, en:t, l:n.nodeValue.match(/^\s*/)[0], r:n.nodeValue.match(/\s*$/)[0] }); }
+    this._phCache = Array.from(document.querySelectorAll('[placeholder]')).map(el => ({ el, en: el.getAttribute('placeholder') }));
+    try { const m = await import('./i18n.js'); this._dict = m.DICT || {}; } catch(e){ this._dict = {}; }
+    let saved='en'; try{ saved = localStorage.getItem('ka_lang')||'en'; }catch(e){}
+    sel.value = saved; this._lang = saved; this._render();
+    sel.addEventListener('change', () => { this._lang = sel.value; try{ localStorage.setItem('ka_lang', sel.value);}catch(e){} this._render(); });
+  }
+  _tr(en){ const d=(this._dict&&this._dict[this._lang])||null; return (d&&d[en])?d[en]:en; }
+  _applyLang(lang){
+    this._lang = lang;
+    const d = (this._dict && this._dict[lang]) || null;
+    (this._cache||[]).forEach(c => { const v=(d&&d[c.en])?d[c.en]:c.en; c.node.nodeValue = c.l+v+c.r; });
+    (this._phCache||[]).forEach(p => p.el.setAttribute('placeholder', (d&&d[p.en])?d[p.en]:p.en));
+    document.documentElement.lang = lang==='zh'?'zh-CN':(lang==='th'?'th':'en');
+  }
+  componentWillUnmount(){ (this.viewers||[]).forEach(v=>v.destroy&&v.destroy()); }
+  renderVals(){ return {}; }
+}
+</script>
+<script>(function(){try{var l=localStorage.getItem("ka_lang");if(l&&l!=="en")window.tidioChatLang=l;}catch(e){}})()</script>
 <script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script>
 </body>
 </html>

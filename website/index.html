@@ -1,129 +1,303 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kreiner Atelier — Custom Acrylic Bathtubs, Made in Australia</title>
-<meta name="description" content="The only brand combining premium acrylic, genuine shape customisation, and B2C online ordering. Sketch it, shape it — we build your one-of-a-kind bathtub and ship across Australia.">
-<link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
 </head>
 <body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Archivo:wght@400;500;600;700&family=Noto+Serif+TC:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:#f4f1ea;color:#1b1a16;font-family:"Archivo","Noto Sans TC","Noto Sans Thai",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:#1b1a16;color:#f4f1ea}
+  @keyframes rise{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+  @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes hintPulse{0%,100%{opacity:.45}50%{opacity:.95}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+</style>
+</helmet>
 
-<nav class="site">
-  <div class="wrap">
-    <a class="brand" href="index.html">KREINER <b>Atelier</b></a>
-    <button class="menu-toggle" aria-label="Menu">☰</button>
-    <div class="navlinks">
-      <a href="index.html" class="active">Home</a>
-      <a href="customize.html">Customize</a>
-      <a href="why-acrylic.html">Why Acrylic</a>
-      <a href="how-it-works.html">How It Works</a>
-      <a href="designers.html">For Designers</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a class="navbtn" href="contact.html">Start Your Design</a>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:60;height:70px;display:flex;align-items:center;background:rgba(244,241,234,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #ddd8cc">
+  <div style="width:100%;max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,56px);display:flex;align-items:center;justify-content:space-between;gap:20px">
+    <a href="index.html" style="text-decoration:none;color:#1b1a16;display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Bodoni Moda',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></a>
+    <div style="display:flex;align-items:center;gap:26px" data-nav-links>
+      <a href="why-acrylic.html" style="text-decoration:none;color:#4a463d;font-size:14px;letter-spacing:.01em">Why acrylic</a>
+      <a href="how-it-works.html" style="text-decoration:none;color:#4a463d;font-size:14px">How it works</a>
+      <a href="designers.html" style="text-decoration:none;color:#4a463d;font-size:14px">For designers</a>
+      <a href="portfolio.html" style="text-decoration:none;color:#4a463d;font-size:14px">Portfolio</a>
+      <a href="customize.html" style="text-decoration:none;color:#4a463d;font-size:14px">Design studio</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <select id="langSel" aria-label="Language" style="appearance:none;-webkit-appearance:none;background:transparent;border:1px solid #ddd8cc;border-radius:999px;padding:7px 14px;font-size:12.5px;font-family:inherit;color:#4a463d;cursor:pointer">
+        <option value="en">EN</option>
+        <option value="zh">简中</option>
+        <option value="th">ไทย</option>
+      </select>
+      <a href="contact.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.01em">Start your design</a>
     </div>
   </div>
 </nav>
 
-<header class="hero">
-  <div class="wrap">
+<!-- ===================== HERO ===================== -->
+<header style="min-height:100vh;padding:112px clamp(20px,5vw,56px) 40px;display:flex;align-items:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:radial-gradient(900px 620px at 78% 32%,rgba(154,123,67,.10),transparent 60%),radial-gradient(700px 700px at 6% 90%,rgba(120,140,160,.08),transparent 55%);pointer-events:none"></div>
+  <div style="width:100%;max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(24px,4vw,64px);align-items:center;position:relative" data-hero-grid>
     <div>
-      <span class="eyebrow">Custom Acrylic Bathtubs · Made in Australia · Factory-Direct</span>
-      <h1>Your client imagined it.<br>We make it <i>the only one</i> in the world.</h1>
-      <p class="lede">Premium acrylic is the most shapeable bathtub material there is — lighter to install and <b style="color:var(--gold-soft)">30–50% less than stone resin</b>. Sketch it, shape it, and our AI atelier turns your concept into a manufacturing-ready 3D model. We build it in our own factory and ship across Australia. No catalogue limits. No MOQ — every tub is a one-off.</p>
-      <div class="hero-cta">
-        <a class="btn btn-gold" href="customize.html">Customize Your Own Bathtub →</a>
-        <a class="btn btn-ghost" href="how-it-works.html">See how it works</a>
-      </div>
-      <div class="trust">
-        <div><b>48h</b>concept → 3D render</div>
-        <div><b>No MOQ</b>single-piece production</div>
-        <div><b>Any curve</b>built from your CAD</div>
-        <div><b>AU-made</b>local service</div>
+      <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600;animation:fadeIn 1s both;animation-delay:.05s">Custom acrylic · Made in Australia · Factory-direct</div>
+      <h1 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:.98;letter-spacing:-.01em;font-size:clamp(46px,7.4vw,104px);margin:22px 0 26px">
+        <span style="display:block;animation:rise 1s both;animation-delay:.12s">The only</span>
+        <span style="display:block;animation:rise 1s both;animation-delay:.24s">bathtub in the</span>
+        <span style="display:block;font-style:italic;color:#9a7b43;animation:rise 1s both;animation-delay:.36s">world that's yours.</span>
+      </h1>
+      <p style="max-width:34em;font-size:clamp(16px,1.3vw,19px);color:#5b564b;animation:rise 1s both;animation-delay:.5s">Sketch a shape. We turn it into a manufacturing-ready 3D model, build it in our own factory, and ship it across Australia. No catalogue. No minimum order. One bath, made once.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:34px;animation:rise 1s both;animation-delay:.62s">
+        <a href="customize.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:16px 30px;border-radius:999px;font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:9px">Design yours <span style="font-family:serif">→</span></a>
+        <a href="#process" style="text-decoration:none;color:#1b1a16;padding:16px 26px;border-radius:999px;font-size:15px;font-weight:600;border:1px solid #cdc7b9">How it works</a>
       </div>
     </div>
-    <div class="hero-art" id="heroArt"></div>
+    <div style="position:relative;animation:scaleIn 1.2s both;animation-delay:.3s">
+      <div style="position:relative;aspect-ratio:1/.92;width:100%;border-radius:20px;background:radial-gradient(120% 110% at 50% 8%,#fbfaf6,#e7e2d6);border:1px solid #e0dacd;overflow:hidden">
+        <canvas id="heroTub" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+        <div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8a8478;animation:hintPulse 2.6s ease-in-out infinite" data-drag-hint>↔ Drag to rotate</div>
+      </div>
+    </div>
   </div>
 </header>
 
-<section class="alt">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Why Kreiner Atelier</span>
-      <h2>The only brand combining acrylic, true shape customisation, and B2C online ordering.</h2>
-      <p>No competitor occupies this space. Premium players push stone resin and call acrylic "cheap" — but on the things that matter to a real project, acrylic wins.</p>
+<!-- ===================== TICKER ===================== -->
+<div style="border-top:1px solid #ddd8cc;border-bottom:1px solid #ddd8cc;overflow:hidden;background:#efebe1;padding:16px 0">
+  <div style="display:flex;width:max-content;animation:ticker 32s linear infinite" data-ticker>
+    <div style="display:flex;gap:56px;padding-right:56px;font-family:'Bodoni Moda',serif;font-size:20px;letter-spacing:.02em;color:#3a362e;white-space:nowrap" data-ticker-inner>
+      <span>48H concept → 3D</span><span style="color:#9a7b43">✦</span><span>No MOQ · single-piece</span><span style="color:#9a7b43">✦</span><span>Any curve from your CAD</span><span style="color:#9a7b43">✦</span><span>30–50% less than stone resin</span><span style="color:#9a7b43">✦</span><span>Made in Australia</span><span style="color:#9a7b43">✦</span>
     </div>
-    <div class="grid3">
-      <div class="card"><div class="ic">🌍</div><h3>One in the world</h3><p>Your sketch, photo or CAD becomes a real, one-of-a-kind bathtub. No MOQ — single-piece production, nothing off-the-shelf.</p></div>
-      <div class="card"><div class="ic">✏️</div><h3>Built from your CAD</h3><p>Any curve, any dimension — we manufacture directly from your design files. Competitors won't even accept external CAD; we start there.</p></div>
-      <div class="card"><div class="ic">🪶</div><h3>Lighter, simpler install</h3><p>Acrylic is the lightest tub material. No 200–350 lb stone slab, no 3–4-person curbside crew — it just goes in.</p></div>
+  </div>
+</div>
+
+<!-- ===================== WHY ===================== -->
+<section id="why" style="padding:clamp(72px,10vw,140px) clamp(20px,5vw,56px)">
+  <div style="max-width:1280px;margin:0 auto">
+    <div style="max-width:680px;margin-bottom:clamp(40px,6vw,72px)" data-reveal>
+      <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600">Why Kreiner</div>
+      <h2 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:1.04;letter-spacing:-.01em;font-size:clamp(32px,4.6vw,58px);margin:16px 0 18px">Acrylic, shaped without limits.</h2>
+      <p style="font-size:18px;color:#5b564b;max-width:36em">The premium brands push heavy stone resin and call acrylic "cheap." On everything a real project lives with, acrylic wins — and we are the only maker pairing it with genuine shape customisation.</p>
     </div>
-    <p style="margin-top:24px"><a class="gold" href="why-acrylic.html">See the full acrylic vs stone-resin comparison →</a></p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,26px)" data-why-grid>
+      <div style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:18px;padding:22px 24px 28px" data-reveal>
+        <div style="aspect-ratio:4/3;border-radius:12px;background:radial-gradient(120% 110% at 50% 6%,#fbfaf6,#eae4d7);overflow:hidden;position:relative;margin-bottom:20px"><canvas id="why1" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:26px;margin-bottom:8px">One in the world</h3>
+        <p style="color:#66614f;font-size:15px">Your sketch, photo or CAD becomes a single, real bathtub. No catalogue. No minimum order — nothing off the shelf.</p>
+      </div>
+      <div style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:18px;padding:22px 24px 28px" data-reveal>
+        <div style="aspect-ratio:4/3;border-radius:12px;background:radial-gradient(120% 110% at 50% 6%,#fbfaf6,#eae4d7);overflow:hidden;position:relative;margin-bottom:20px"><canvas id="why2" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:26px;margin-bottom:8px">Built from your CAD</h3>
+        <p style="color:#66614f;font-size:15px">Any curve, any dimension — manufactured straight from your files. Competitors won't accept external CAD; we start there.</p>
+      </div>
+      <div style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:18px;padding:22px 24px 28px" data-reveal>
+        <div style="aspect-ratio:4/3;border-radius:12px;background:radial-gradient(120% 110% at 50% 6%,#fbfaf6,#eae4d7);overflow:hidden;position:relative;margin-bottom:20px"><canvas id="why3" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:26px;margin-bottom:8px">Lighter by half</h3>
+        <p style="color:#66614f;font-size:15px">Two hands, not a four-person crew. No 350 lb slab, no reinforced floor — a freestanding acrylic tub simply goes in.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<section>
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">From Concept to Delivery</span>
-      <h2>You give us a starting point. We carry it to the finish.</h2>
+<!-- ===================== PROCESS ===================== -->
+<section id="process" style="padding:clamp(72px,10vw,140px) clamp(20px,5vw,56px);background:#ebe7dd;border-top:1px solid #ddd8cc;border-bottom:1px solid #ddd8cc">
+  <div style="max-width:1280px;margin:0 auto">
+    <div style="max-width:680px;margin-bottom:clamp(40px,6vw,72px)" data-reveal>
+      <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600">From concept to delivery</div>
+      <h2 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:1.04;letter-spacing:-.01em;font-size:clamp(32px,4.6vw,58px);margin:16px 0 0">You start it. We finish it.</h2>
     </div>
-    <div class="steps">
-      <div class="step"><div class="n">01</div><h3>Sketch your idea</h3><p>Use the design studio, or upload a sketch, photo, floor plan or CAD file.</p><div class="t">You · 5 min</div></div>
-      <div class="step"><div class="n">02</div><h3>3D in 48 hours</h3><p>A photoreal 3D render plus a signed design spec sheet. The $399 fee is credited to your order.</p><div class="t">Us · 48h</div></div>
-      <div class="step"><div class="n">03</div><h3>Refine together</h3><p>Tweak curves, edges and dimensions over 2–3 quick rounds until it's exactly right.</p><div class="t">Together</div></div>
-      <div class="step"><div class="n">04</div><h3>Built &amp; shipped</h3><p>We open the mould, build it with progress photos throughout, and deliver across Australia.</p><div class="t">Us · production</div></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2vw,24px)" data-steps>
+      <div data-reveal style="padding-top:22px;border-top:2px solid #1b1a16">
+        <div style="font-family:'Bodoni Moda',serif;font-size:62px;line-height:1;color:#c7bfa9">01</div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:23px;margin:14px 0 8px">Sketch your idea</h3>
+        <p style="color:#66614f;font-size:14.5px">Use the design studio, or upload a sketch, photo, floor plan or CAD file.</p>
+        <div style="margin-top:12px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43">You · 5 min</div>
+      </div>
+      <div data-reveal style="padding-top:22px;border-top:2px solid #1b1a16">
+        <div style="font-family:'Bodoni Moda',serif;font-size:62px;line-height:1;color:#c7bfa9">02</div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:23px;margin:14px 0 8px">3D in 48 hours</h3>
+        <p style="color:#66614f;font-size:14.5px">A photoreal render plus a signed design spec sheet. The $399 fee is credited to your order.</p>
+        <div style="margin-top:12px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43">Us · 48h</div>
+      </div>
+      <div data-reveal style="padding-top:22px;border-top:2px solid #1b1a16">
+        <div style="font-family:'Bodoni Moda',serif;font-size:62px;line-height:1;color:#c7bfa9">03</div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:23px;margin:14px 0 8px">Refine together</h3>
+        <p style="color:#66614f;font-size:14.5px">Tweak curves, edges and dimensions over 2–3 quick rounds until it's exactly right.</p>
+        <div style="margin-top:12px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43">Together</div>
+      </div>
+      <div data-reveal style="padding-top:22px;border-top:2px solid #1b1a16">
+        <div style="font-family:'Bodoni Moda',serif;font-size:62px;line-height:1;color:#c7bfa9">04</div>
+        <h3 style="font-family:'Bodoni Moda',serif;font-weight:500;font-size:23px;margin:14px 0 8px">Built &amp; shipped</h3>
+        <p style="color:#66614f;font-size:14.5px">We open the mould, build it with progress photos throughout, and deliver across Australia.</p>
+        <div style="margin-top:12px;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43">Us · production</div>
+      </div>
     </div>
-    <p style="margin-top:24px"><a class="gold" href="how-it-works.html">See the full process &amp; pricing →</a></p>
   </div>
 </section>
 
-<section class="alt">
-  <div class="wrap">
-    <div class="cta-strip">
-      <h2>Ready to design the only one in the world?</h2>
-      <p>Build it in the studio, or send us a sketch — get a 3D render back in 48 hours.</p>
+<!-- ===================== WORK ===================== -->
+<section id="work" style="padding:clamp(72px,10vw,140px) clamp(20px,5vw,56px)">
+  <div style="max-width:1280px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;margin-bottom:clamp(36px,5vw,60px)" data-reveal>
+      <div style="max-width:640px">
+        <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#9a7b43;font-weight:600">Selected work</div>
+        <h2 style="font-family:'Bodoni Moda','Noto Serif TC',serif;font-weight:500;line-height:1.04;letter-spacing:-.01em;font-size:clamp(32px,4.6vw,58px);margin:16px 0 0">Every piece, made once.</h2>
+      </div>
+      <a href="customize.html" style="text-decoration:none;color:#1b1a16;font-size:14px;font-weight:600;border-bottom:1px solid #9a7b43;padding-bottom:3px">Start yours →</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,24px)" data-gallery></div>
+    <p style="margin-top:26px;font-size:13px;color:#8a8478;max-width:52em" data-reveal>Renders are configuration concepts from our design studio — real project photography drops in as installs complete.</p>
+  </div>
+</section>
+
+<!-- ===================== CTA ===================== -->
+<section style="padding:clamp(20px,5vw,56px)">
+  <div style="max-width:1280px;margin:0 auto;background:#1b1a16;color:#f4f1ea;border-radius:26px;padding:clamp(48px,8vw,110px) clamp(28px,6vw,80px);text-align:center;position:relative;overflow:hidden" data-reveal>
+    <div style="position:absolute;inset:0;background:radial-gradient(700px 400px at 50% -10%,rgba(154,123,67,.28),transparent 60%);pointer-events:none"></div>
+    <div style="position:relative">
+      <div style="font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#c9a34e;font-weight:600">Ready when you are</div>
+      <h2 style="font-family:'Bodoni Moda',serif;font-weight:500;line-height:1.02;font-size:clamp(34px,5.4vw,72px);margin:18px auto 24px;max-width:16em">Design the only one in the world.</h2>
       <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-        <a class="btn btn-gold" href="customize.html">Open the Design Studio →</a>
-        <a class="btn btn-ghost" href="contact.html">Talk to the atelier</a>
+        <a href="customize.html" style="text-decoration:none;background:#f4f1ea;color:#1b1a16;padding:16px 32px;border-radius:999px;font-size:15px;font-weight:600">Open the design studio →</a>
+        <a href="customize.html" style="text-decoration:none;color:#f4f1ea;padding:16px 28px;border-radius:999px;font-size:15px;font-weight:600;border:1px solid rgba(244,241,234,.35)">Talk to the atelier</a>
       </div>
     </div>
   </div>
 </section>
 
-<footer class="site">
-  <div class="wrap">
-    <div class="cols">
+<!-- ===================== FOOTER ===================== -->
+<footer style="padding:clamp(48px,7vw,90px) clamp(20px,5vw,56px) 40px">
+  <div style="max-width:1280px;margin:0 auto">
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;border-bottom:1px solid #ddd8cc;padding-bottom:34px">
       <div>
-        <div class="brand">KREINER <b>Atelier</b></div>
-        <p style="color:var(--muted2);margin-top:10px;max-width:34ch">Bespoke acrylic bathtubs, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
-        <p style="margin-top:10px">concierge@kreinergroups.com</p>
+        <div style="display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Bodoni Moda',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></div>
+        <p style="color:#6d685d;margin-top:12px;max-width:32ch;font-size:14.5px">Bespoke acrylic bathtubs, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
+        <p style="margin-top:12px;font-size:14.5px">concierge@kreinergroups.com</p>
       </div>
       <div>
-        <h5>Explore</h5>
-        <a href="index.html">Home</a>
-        <a href="customize.html">Customize</a>
-        <a href="why-acrylic.html">Why Acrylic</a>
-        <a href="how-it-works.html">How It Works</a>
+        <h5 style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43;margin-bottom:14px;font-weight:600">Explore</h5>
+        <a href="why-acrylic.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Why acrylic</a>
+        <a href="how-it-works.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">How it works</a>
+        <a href="designers.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">For designers</a>
+        <a href="portfolio.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Portfolio</a>
       </div>
       <div>
-        <h5>More</h5>
-        <a href="designers.html">For Designers</a>
-        <a href="portfolio.html">Portfolio</a>
-        <a href="acrylic-vs-stone-resin.html">Acrylic vs Stone Resin</a>
-        <a href="contact.html">Contact</a>
+        <h5 style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#9a7b43;margin-bottom:14px;font-weight:600">More</h5>
+        <a href="customize.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Design studio</a>
+        <a href="materials-guide.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Materials guide</a>
+        <a href="acrylic-vs-stone-resin.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Acrylic vs stone resin</a>
+        <a href="contact.html" style="display:block;color:#4a463d;text-decoration:none;padding:5px 0;font-size:14.5px">Contact</a>
       </div>
     </div>
-    <div class="legal">
+    <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:22px;font-size:12.5px;color:#8a8478">
       <span>© 2026 Kreiner Atelier — Kreiner Group</span>
       <span>Factory-direct OEM · Made in Australia</span>
     </div>
   </div>
 </footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  async componentDidMount() {
+    this.viewers = [];
+    // ---- 3D tubs ----
+    try {
+      const { TubViewer } = await import('./tub3d.js');
+      const hero = document.getElementById('heroTub');
+      if (hero) this.viewers.push(new TubViewer(hero, { autoSpin:true, interactive:true, yaw:0.6 }));
+      const statics = [
+        ['why1', { shape:'oval', len:1700, wid:800, dep:580, base:'#eef1f4', finish:'Gloss White' }, 0.5],
+        ['why2', { shape:'rect', len:1900, wid:900, dep:600, base:'#23262c', finish:'Matte Black' }, -0.6],
+        ['why3', { shape:'slipper', len:1700, wid:820, dep:640, base:'#e7e3da', finish:'Marble' }, 0.8],
+      ];
+      statics.forEach(([id, p, yaw]) => {
+        const el = document.getElementById(id);
+        if (el) this.viewers.push(new TubViewer(el, { autoSpin:false, interactive:false, yaw }));
+        if (el) this.viewers[this.viewers.length-1].set(p);
+      });
+      if (hero) this.viewers[0].set({ shape:'oval', len:1750, wid:840, dep:600, base:'#eef1f4', finish:'Gloss White', addons:['Freestanding filler tap'] });
+      // gallery
+      this._buildGallery(TubViewer);
+    } catch (e) { console.error('tub3d load', e); }
 
+    // ---- scroll reveal ----
+    this._initReveal();
+    // ---- language ----
+    this._initLang();
+  }
 
-<script src="app.js"></script>
-<script>(function(){try{var l=localStorage.getItem("ka_lang");if(l<script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script><script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script>l!=="en")window.tidioChatLang=l;}catch(e){}})()</script>
+  _buildGallery(TubViewer) {
+    const gal = document.querySelector('[data-gallery]');
+    if (!gal) return;
+    this.pieces = [
+      { t:'The Monolith', d:'Matte-black rectangle, Melbourne penthouse ensuite.', s:{shape:'rect',finish:'Matte Black',base:'#23262c',len:1900,wid:900,dep:600,addons:['Integrated headrest']}, y:-0.5 },
+      { t:'Aurelia', d:'Gold-leaf oval centrepiece, heritage Sydney bathroom.', s:{shape:'oval',finish:'Gold Leaf',base:'#c9a34e',len:1750,wid:850,dep:600,addons:['Freestanding filler tap']}, y:0.6 },
+      { t:'Ofuro No.7', d:'Deep Japanese soaking tub, cedar-tone interior.', s:{shape:'japanese',finish:'Custom',base:'#7a5c43',len:1400,wid:1000,dep:720,addons:['Integrated headrest']}, y:0.3 },
+      { t:'Pearl Drum', d:'Round gloss-white drum for a wellness studio.', s:{shape:'round',finish:'Gloss White',base:'#f4f6f8',len:1500,wid:1100,dep:680,addons:['Chromotherapy LED']}, y:0.9 },
+      { t:'Carrara Slip', d:'Stone-look slipper tub with chromotherapy light.', s:{shape:'slipper',finish:'Marble',base:'#e7e3da',len:1700,wid:800,dep:620}, y:-0.7 },
+      { t:'Coastline', d:'Soft-blue colour-match oval, Gold Coast villa.', s:{shape:'oval',finish:'Custom',base:'#7aa6c2',len:1800,wid:820,dep:560,addons:['Freestanding filler tap']}, y:0.4 },
+    ];
+    gal.innerHTML = this.pieces.map((p, i) =>
+      '<div data-reveal style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:18px;overflow:hidden">'+
+        '<div style="aspect-ratio:4/3;background:radial-gradient(120% 110% at 50% 6%,#fbfaf6,#e9e3d6);position:relative"><canvas id="pf'+i+'" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div>'+
+        '<div style="padding:18px 20px 22px"><h3 style="font-family:\'Bodoni Moda\',serif;font-weight:500;font-size:22px;margin-bottom:4px">'+p.t+'</h3><p style="color:#66614f;font-size:14px">'+p.d+'</p></div>'+
+      '</div>'
+    ).join('');
+    this.pieces.forEach((p, i) => {
+      const el = document.getElementById('pf'+i);
+      if (!el) return;
+      const v = new TubViewer(el, { autoSpin:false, interactive:false, yaw:p.y });
+      v.set(p.s); this.viewers.push(v);
+    });
+  }
+
+  _initReveal() {
+    const els = Array.from(document.querySelectorAll('[data-reveal]'));
+    els.forEach(el => { el.style.opacity = '0'; el.style.transform = 'translateY(32px)'; el.style.transition = 'opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1)'; });
+    const show = el => { el.style.opacity = '1'; el.style.transform = 'none'; };
+    if (!('IntersectionObserver' in window)) { els.forEach(show); return; }
+    const io = new IntersectionObserver((ents) => {
+      ents.forEach(e => { if (e.isIntersecting) { const el = e.target; const d = (Number(el.getAttribute('data-i'))||0); setTimeout(() => show(el), d*70); io.unobserve(el); } });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    // stagger within grids
+    document.querySelectorAll('[data-why-grid] [data-reveal], [data-steps] [data-reveal], [data-gallery] [data-reveal]').forEach((el,i)=>el.setAttribute('data-i', i%4));
+    els.forEach(el => io.observe(el));
+    setTimeout(() => els.forEach(el => { if (el.style.opacity === '0') show(el); }), 2600);
+  }
+
+  async _initLang() {
+    const sel = document.getElementById('langSel');
+    if (!sel) return;
+    // cache text nodes
+    this._cache = [];
+    const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let n; while (n = w.nextNode()) { const t = n.nodeValue.trim(); if (t) this._cache.push({ node:n, en:t, l:n.nodeValue.match(/^\s*/)[0], r:n.nodeValue.match(/\s*$/)[0] }); }
+    try { const mod = await import('./i18n.js'); this._dict = mod.DICT || {}; } catch(e) { this._dict = {}; }
+    let saved = 'en'; try { saved = localStorage.getItem('ka_lang') || 'en'; } catch(e){}
+    sel.value = saved;
+    if (saved !== 'en') this._applyLang(saved);
+    sel.addEventListener('change', () => { const l = sel.value; try{ localStorage.setItem('ka_lang', l);}catch(e){} this._applyLang(l); var tl=l==="zh"?"zh":(l==="th"?"th":"en"); if(window.tidioChatApi&&typeof window.tidioChatApi.setLanguage==="function"){window.tidioChatApi.setLanguage(tl);}else{window.tidioChatLang=tl;} });
+  }
+  _applyLang(lang) {
+    const d = (this._dict && this._dict[lang]) || null;
+    this._cache.forEach(c => { const v = (d && d[c.en]) ? d[c.en] : c.en; c.node.nodeValue = c.l + v + c.r; });
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : (lang === 'th' ? 'th' : 'en');
+  }
+  componentWillUnmount() { (this.viewers||[]).forEach(v => v.destroy && v.destroy()); }
+  renderVals() { return {}; }
+}
+</script>
+<script>(function(){try{var l=localStorage.getItem("ka_lang");if(l&&l!=="en")window.tidioChatLang=l;}catch(e){}})()</script>
 <script src="//code.tidio.co/9irqolkqqb5vaevxsd506amforei96qb.js" async></script>
 </body>
 </html>
