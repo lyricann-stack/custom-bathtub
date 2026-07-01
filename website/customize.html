@@ -28,7 +28,7 @@
   <div style="width:100%;max-width:1400px;margin:0 auto;padding:0 clamp(20px,4vw,48px);display:flex;align-items:center;justify-content:space-between;gap:18px">
     <a href="index.html" style="text-decoration:none;color:#1b1a16;display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></a>
     <div style="display:flex;align-items:center;gap:26px">
-      <a href="why-acrylic.html" style="text-decoration:none;color:#4a463d;font-size:14px">Why acrylic</a>
+      <a href="materials.html" style="text-decoration:none;color:#4a463d;font-size:14px">Materials</a>
       <a href="how-it-works.html" style="text-decoration:none;color:#4a463d;font-size:14px">How it works</a>
       <a href="designers.html" style="text-decoration:none;color:#4a463d;font-size:14px">For designers</a>
       <a href="portfolio.html" style="text-decoration:none;color:#4a463d;font-size:14px">Portfolio</a>
@@ -57,8 +57,9 @@
         <canvas id="studioTub" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
         <div style="position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#8a8478;animation:hintPulse 2.6s ease-in-out infinite">↔ Drag to rotate</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:16px">
         <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Silhouette</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-shape">Freestanding Oval</div></div>
+        <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Material</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-material">Premium Acrylic</div></div>
         <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Finish</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-finish">Gloss White</div></div>
         <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Size</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-size">1700×800×580</div></div>
         <div style="border-top:1px solid #ddd8cc;padding-top:10px"><div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a7b43">Capacity</div><div style="font-size:14.5px;font-weight:600;margin-top:3px" id="sp-cap">≈ 245 L</div></div>
@@ -108,8 +109,13 @@
 
         <!-- Panel 1: Finish -->
         <div data-panel="1" style="display:none">
-          <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Finish &amp; colour</h2>
-          <p style="color:#66614f;font-size:15px;margin-bottom:22px">Pick a surface — or match any colour you like.</p>
+          <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Material &amp; finish</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:16px">Choose your material — we craft both in-house.</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:22px" id="materialCards">
+            <button data-material="Premium Acrylic" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Premium Acrylic</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Light &amp; warm — any curve, any floor</div></button>
+            <button data-material="Solid Surface" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Solid Surface</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Dense &amp; seamless — stone-like, spa soaks</div></button>
+          </div>
+          <p style="color:#66614f;font-size:15px;margin-bottom:16px">Then pick a surface — or match any colour you like.</p>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="finishCards">
             <button data-finish="Gloss White" data-base="#eef1f4" style="cursor:pointer;text-align:left;background:#fff;border:2px solid #1b1a16;border-radius:14px;padding:12px;font-family:inherit;display:flex;align-items:center;gap:14px">
               <span style="width:52px;height:52px;border-radius:11px;background:linear-gradient(145deg,#ffffff,#d7dde3);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)"></span><span style="font-size:15px;font-weight:600">Gloss White</span>
@@ -164,6 +170,7 @@
           <p style="color:#66614f;font-size:15px;margin-bottom:20px">We reply with a photoreal 3D render in 48 hours. The $399 fee is credited to your order.</p>
           <div style="background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:18px 20px;margin-bottom:18px">
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Silhouette</span><b id="r-shape">Freestanding Oval</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Material</span><b id="r-mat">Premium Acrylic</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Finish</span><b id="r-finish">Gloss White</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Size</span><b id="r-size">1700×800×580 mm</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Capacity</span><b id="r-cap">≈ 245 L</b></div>
@@ -194,10 +201,10 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   async componentDidMount() {
-    this.state2 = { shape:'oval', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0 };
+    this.state2 = { shape:'oval', material:'Premium Acrylic', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0 };
     try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
     this.viewers = [];
-    this.STEP_NAMES = ['Silhouette','Finish','Size','Add-ons','Review'];
+    this.STEP_NAMES = ['Silhouette','Material & finish','Size','Add-ons','Review'];
     try {
       const mod = await import('./tub3d.js');
       this.TubViewer = mod.TubViewer;
@@ -224,6 +231,10 @@ class Component extends DCLogic {
     // shapes
     document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.addEventListener('click', () => {
       S.shape = b.getAttribute('data-shape'); this._render();
+    }));
+    // material
+    document.querySelectorAll('#materialCards [data-material]').forEach(b => b.addEventListener('click', () => {
+      S.material = b.getAttribute('data-material'); this._render();
     }));
     // finish
     document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.addEventListener('click', () => {
@@ -267,19 +278,20 @@ class Component extends DCLogic {
     const addonLabel = { 'Freestanding filler tap':'Freestanding tap', 'Air massage jets':'Air massage', 'Integrated headrest':'Headrest' };
     const trAddon = a => this._tr(addonLabel[a] || a);
     // spec bar
-    set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
+    set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-material', this._tr(S.material)); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
     set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
     set('v-len',S.len); set('v-wid',S.wid); set('v-dep',S.dep); set('capBig','≈ '+this._cap(S)+' L');
     // selection highlight
     document.querySelectorAll('#shapeCards [data-shape]').forEach(b => b.style.borderColor = b.getAttribute('data-shape')===S.shape ? '#1b1a16' : 'transparent');
+    document.querySelectorAll('#materialCards [data-material]').forEach(b => { const on = b.getAttribute('data-material')===S.material; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
     document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.style.borderColor = (!S.custom && b.getAttribute('data-finish')===S.finish) ? '#1b1a16' : 'transparent');
     const ccard = document.getElementById('customCard'); if (ccard) ccard.style.borderColor = S.custom ? '#1b1a16' : 'transparent';
     document.querySelectorAll('#addonCards [data-addon]').forEach(b => { const on = S.addons.indexOf(b.getAttribute('data-addon'))>-1; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
     // review
-    set('r-shape', this._tr(this._shapeName(S.shape))); set('r-finish', S.custom ? S.finish : this._tr(S.finish)); set('r-size', S.len+'×'+S.wid+'×'+S.dep+' mm'); set('r-cap','≈ '+this._cap(S)+' L');
+    set('r-shape', this._tr(this._shapeName(S.shape))); set('r-mat', this._tr(S.material)); set('r-finish', S.custom ? S.finish : this._tr(S.finish)); set('r-size', S.len+'×'+S.wid+'×'+S.dep+' mm'); set('r-cap','≈ '+this._cap(S)+' L');
     set('r-addons', S.addons.length ? S.addons.map(trAddon).join(', ') : this._tr('None'));
     // steps
-    document.querySelectorAll('[data-panel]').forEach(p => { const on = Number(p.getAttribute('data-panel'))===S.step; p.style.display = on ? 'block':'none'; if (on) p.style.animation='fadeUp .4s both'; });
+    document.querySelectorAll('[data-panel]').forEach(p => { const on = Number(p.getAttribute('data-panel'))===S.step; const wasHidden = p.style.display==='none'; p.style.display = on ? 'block':'none'; if (on && wasHidden) { p.style.animation='none'; void p.offsetWidth; p.style.animation='fadeUp .4s both'; } });
     document.querySelectorAll('#stepper [data-dot]').forEach(d => d.style.background = Number(d.getAttribute('data-dot'))<=S.step ? '#1b1a16' : '#ddd8cc');
     const n = S.step+1;
     set('stepLabel', lang==='zh' ? ('第 '+n+' 步 / 共 5') : lang==='th' ? ('ขั้นที่ '+n+' จาก 5') : ('Step '+n+' of 5'));
@@ -291,7 +303,7 @@ class Component extends DCLogic {
   _send() {
     const S = this.state2, name = (document.getElementById('f-name').value||'there').replace(/[<>]/g,'');
     const banner = document.getElementById('okBanner');
-    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
+    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.join(', '):'None');
     const msg = this._lang==='zh' ? ('✅ 谢谢你，'+name+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。') : this._lang==='th' ? ('✅ ขอบคุณ '+name+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง') : ('✅ Thank you, '+name+'! Your design is in — a designer will follow up with a 3D render within 48 hours.');
     banner.style.display = 'block';
     banner.innerHTML = msg + '<br><br><a style="color:#2f5d3a;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">Open as an email instead →</a>';
