@@ -690,9 +690,6 @@
     });
   }
 
-  /* ===================== concierge ===================== */
-  var conc=document.getElementById("concierge");
-  if(conc)conc.addEventListener("click",function(){alert(MSG[I18N.lang].concierge);});
 
   /* apply saved language (default English on first visit) */
   var savedLang=readLang();
