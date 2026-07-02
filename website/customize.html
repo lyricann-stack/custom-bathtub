@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Design Studio — Sculpt Your Custom Bathtub in 3D | Kreiner Atelier</title>
+<meta name="description" content="Shape your bathtub live in 3D: silhouette, curves, edge angle, material, colour, size and add-ons. Send your design and get a photoreal render back in 48 hours.">
+<link rel="canonical" href="https://lyricann-stack.github.io/custom-bathtub/customize.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Kreiner Atelier">
+<meta property="og:title" content="Design Studio — Sculpt Your Custom Bathtub in 3D | Kreiner Atelier">
+<meta property="og:description" content="Shape your bathtub live in 3D: silhouette, curves, edge angle, material, colour, size and add-ons. Send your design and get a photoreal render back in 48 hours.">
+<meta property="og:url" content="https://lyricann-stack.github.io/custom-bathtub/customize.html">
+<meta name="twitter:card" content="summary">
 </head>
 <body>
 <x-dc>
@@ -342,7 +351,7 @@ class Component extends DCLogic {
       fi.addEventListener('change', () => { if (fi.files.length) dl.textContent = '✓ ' + fi.files[0].name; });
       ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.style.borderColor='#9a7b43'; dz.style.background='#f7f3ea'; }));
       ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.style.borderColor='#cdc7b9'; dz.style.background='#fff'; }));
-      dz.addEventListener('drop', e => { const f = e.dataTransfer.files; if (f.length) dl.textContent = '✓ ' + f[0].name; });
+      dz.addEventListener('drop', e => { const f = e.dataTransfer.files; if (f.length) { dl.textContent = '✓ ' + f[0].name; this._file = f[0]; } });
     }
     // send
     document.getElementById('sendBtn').addEventListener('click', () => this._send());
@@ -407,17 +416,43 @@ class Component extends DCLogic {
     document.getElementById('nextBtn').style.display = S.step===5 ? 'none':'inline-flex';
   }
 
-  _send() {
-    const S = this.state2, name = (document.getElementById('f-name').value||'there').replace(/[<>]/g,'');
+  async _send() {
+    const S = this.state2;
+    const name = (document.getElementById('f-name').value||'').replace(/[<>]/g,'').trim();
+    const email = (document.getElementById('f-email').value||'').trim();
     const banner = document.getElementById('okBanner');
+    const btn = document.getElementById('sendBtn');
+    const lang = this._lang || 'en';
+    const t = (en,zh,th) => lang==='zh'?zh:(lang==='th'?th:en);
+    const warn = h => { banner.style.display='block'; banner.style.background='#fdf3ee'; banner.style.borderColor='#e0b39a'; banner.style.color='#8a4a2b'; banner.innerHTML=h; };
     const sdeg = Math.round(S.flare*0.25 - 5), smm = Math.round(15 + S.wall*0.85);
     const sculpt = 'body curve '+S.curve+'%, base taper '+S.taper+'%, edge angle '+(sdeg>0?'+':'')+sdeg+' deg, edge roundness '+S.edgeSoft+'%, rim ~'+smm+' mm'
       +(S.shape==='rect' ? (', corner sharpness '+S.corner+'%') : '')
       +(S.shape==='freeform' ? (', end asymmetry '+S.asym+'%, waist pinch '+S.waist+'%, organic lobes '+S.lobe+'%') : '');
-    const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+sculpt+'%0A- Material: '+S.material+'%0A- Finish: '+S.finish+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+(S.addons.length?S.addons.map(a=>a==='Chromotherapy LED'?('Chromotherapy LED ['+(S.ledColor==='rainbow'?'rainbow cycle':S.ledColor)+']'):a).join(', '):'None');
-    const msg = this._lang==='zh' ? ('✅ 谢谢你，'+name+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。') : this._lang==='th' ? ('✅ ขอบคุณ '+name+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง') : ('✅ Thank you, '+name+'! Your design is in — a designer will follow up with a 3D render within 48 hours.');
-    banner.style.display = 'block';
-    banner.innerHTML = msg + '<br><br><a style="color:#2f5d3a;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">Open as an email instead →</a>';
+    const addons = S.addons.length ? S.addons.map(a=>a==='Chromotherapy LED'?('Chromotherapy LED ['+(S.ledColor==='rainbow'?'rainbow cycle':S.ledColor)+']'):a).join(', ') : 'None';
+    if (!email || email.indexOf('@') < 1) { warn(t('Please enter your email so our designer can reply with your 3D render.','请填写你的电子邮件，设计师才能把 3D 渲染图回给你。','กรุณากรอกอีเมลเพื่อให้นักออกแบบส่งภาพ 3D กลับให้คุณ')); return; }
+    const old = btn.textContent; btn.disabled = true; btn.textContent = t('Sending…','发送中…','กำลังส่ง…');
+    try {
+      const fd = new FormData();
+      fd.append('name', name || '(not given)'); fd.append('email', email);
+      fd.append('silhouette', this._shapeName(S.shape)); fd.append('sculpting', sculpt);
+      fd.append('material', S.material); fd.append('finish', S.finish);
+      fd.append('size', S.len+'x'+S.wid+'x'+S.dep+' mm'); fd.append('capacity', '~'+this._cap(S)+' L');
+      fd.append('addons', addons); fd.append('language', lang); fd.append('page', 'design-studio');
+      fd.append('_subject', 'Kreiner Atelier — new design from the Design Studio');
+      fd.append('_template', 'table'); fd.append('_captcha', 'false');
+      const fi = document.getElementById('fileInput');
+      const file = (fi && fi.files.length) ? fi.files[0] : this._file;
+      if (file) fd.append('attachment', file);
+      const r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      banner.style.display='block'; banner.style.background='#eef4ee'; banner.style.borderColor='#9cc7a6'; banner.style.color='#2f5d3a';
+      banner.textContent = t('✅ Thank you, '+(name||'there')+'! Your design is in — a designer will follow up with a 3D render within 48 hours.','✅ 谢谢你，'+(name||'朋友')+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。','✅ ขอบคุณ '+(name||'คุณ')+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง');
+    } catch (e) {
+      console.error(e);
+      const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+encodeURIComponent(sculpt)+'%0A- Material: '+S.material+'%0A- Finish: '+encodeURIComponent(S.finish)+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+encodeURIComponent(addons);
+      warn(t('Something went wrong. ','发送失败。','ส่งไม่สำเร็จ ')+'<a style="color:inherit;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">'+t('Open as an email instead →','改用电子邮件送出 →','ส่งเป็นอีเมลแทน →')+'</a>');
+    } finally { btn.disabled = false; btn.textContent = old; }
   }
 
   async _initLang() {

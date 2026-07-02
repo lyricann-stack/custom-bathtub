@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lyricann-stack.github.io/custom-bathtub/sitemap.xml
