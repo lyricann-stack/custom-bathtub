@@ -4,7 +4,7 @@
 export const DICT = {
   zh: {
     /* nav + common */
-    "Materials":"材质","How it works":"流程介绍","Portfolio":"作品集",
+    "Materials":"材质","How it works":"流程介绍","Portfolio":"作品集","Guides":"知识专栏",
     "Design studio":"设计工作室","Start your design":"开始你的设计","← Back to home":"← 返回首页",
     "For designers":"设计师专区","Materials guide":"材质指南","Choosing your material":"如何选材质","Contact":"联系我们","More":"更多",
     "EN":"EN",
@@ -247,7 +247,7 @@ export const DICT = {
   },
 
   th: {
-    "Materials":"วัสดุ","How it works":"ขั้นตอนการทำงาน","Portfolio":"ผลงาน",
+    "Materials":"วัสดุ","How it works":"ขั้นตอนการทำงาน","Portfolio":"ผลงาน","Guides":"คู่มือความรู้",
     "Design studio":"สตูดิโอออกแบบ","Start your design":"เริ่มออกแบบของคุณ","← Back to home":"← กลับหน้าแรก",
     "For designers":"สำหรับนักออกแบบ","Materials guide":"คู่มือวัสดุ","Choosing your material":"เลือกวัสดุของคุณ","Contact":"ติดต่อเรา","More":"เพิ่มเติม",
     "EN":"EN",
