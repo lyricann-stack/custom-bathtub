@@ -78,6 +78,7 @@
         <div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8a8478;font-weight:600">You are a…</label><select id="c-role" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#1b1a16"><option>Interior Designer</option><option>Architect</option><option>Homeowner</option><option>Marketer / Brand</option><option>Other</option></select></div>
         <div style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8a8478;font-weight:600">Country / City</label><input id="c-city" type="text" placeholder="Sydney, AU" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#1b1a16"></div>
       </div>
+      <div id="addrRow" style="display:none;flex-direction:column;gap:6px;margin-bottom:12px"><label style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8a8478;font-weight:600">Delivery address (for your sample kit)</label><textarea id="c-address" rows="2" placeholder="Street, suburb, state, postcode" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#1b1a16;resize:vertical"></textarea></div>
       <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"><label style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8a8478;font-weight:600">Tell us about the project (optional)</label><textarea id="c-brief" rows="3" placeholder="Room, style, dimensions, timeline…" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-size:14.5px;color:#1b1a16;resize:vertical"></textarea></div>
       <div id="dropzone" style="border:1.5px dashed #cdc7b9;border-radius:12px;padding:20px;text-align:center;color:#8a8478;font-size:14px;cursor:pointer;background:#fff;transition:.2s"><span id="dropLabel">Drag a sketch, photo or floor plan here — or click to attach</span><input type="file" id="fileInput" accept="image/*,.pdf" style="display:none"></div>
       <button id="sendBtn" style="cursor:pointer;width:100%;margin-top:16px;background:#1b1a16;color:#f4f1ea;border:none;padding:16px;border-radius:999px;font-size:15px;font-weight:600">Send my request →</button>
@@ -91,7 +92,7 @@
     <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;border-bottom:1px solid #ddd8cc;padding-bottom:34px">
       <div>
         <div style="display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></div>
-        <p style="color:#6d685d;margin-top:12px;max-width:32ch;font-size:14.5px">Bespoke bathtubs in acrylic &amp; solid surface, made one at a time. Factory-direct. Made &amp; serviced in Australia.</p>
+        <p style="color:#6d685d;margin-top:12px;max-width:32ch;font-size:14.5px">Bespoke bathtubs in acrylic &amp; solid surface, made one at a time in our own factories in China &amp; Thailand. Australian owned &amp; serviced.</p>
         <p style="margin-top:12px;font-size:14.5px">concierge@kreinergroups.com</p>
       </div>
       <div>
@@ -104,7 +105,7 @@
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:22px;font-size:12.5px;color:#8a8478">
-      <span>© 2026 Kreiner Atelier — Kreiner Group</span><span>Factory-direct OEM · Made in Australia</span>
+      <span>© 2026 Kreiner Atelier — Kreiner Group</span><span>Factory-direct OEM · Own factories in China &amp; Thailand</span>
     </div>
   </div>
 </footer>
@@ -115,8 +116,12 @@ class Component extends DCLogic {
     this.viewers=[]; this.want='consult';
     try{ const {TubViewer}=await import('./tub3d.js'); const el=document.getElementById('contactTub'); if(el){const v=new TubViewer(el,{autoSpin:false,interactive:true,yaw:0.6,spinSpeed:0.004}); v.set({shape:'oval',len:1750,wid:840,dep:600,base:'#eef1f4',finish:'Gloss White',addons:['Freestanding filler tap']}); this.viewers.push(v);} }catch(e){console.error(e);}
     const cards=document.querySelectorAll('#wantCards [data-want]');
-    const hi=()=>cards.forEach(b=>{const on=b.getAttribute('data-want')===this.want; b.style.borderColor=on?'#1b1a16':'transparent'; b.style.background=on?'#f4efe4':'#fff';});
-    cards.forEach(b=>b.addEventListener('click',()=>{this.want=b.getAttribute('data-want'); hi();})); hi();
+    const hi=()=>{ cards.forEach(b=>{const on=b.getAttribute('data-want')===this.want; b.style.borderColor=on?'#1b1a16':'transparent'; b.style.background=on?'#f4efe4':'#fff';});
+      const ar=document.getElementById('addrRow'); if(ar) ar.style.display = this.want==='sample' ? 'flex' : 'none'; };
+    cards.forEach(b=>b.addEventListener('click',()=>{this.want=b.getAttribute('data-want'); hi();}));
+    // preselect from URL (e.g. contact.html?want=sample from the sample-kit CTAs)
+    try{ const w=new URLSearchParams(location.search).get('want'); if(w && document.querySelector('#wantCards [data-want="'+w+'"]')) this.want=w; }catch(e){}
+    hi();
     const dz=document.getElementById('dropzone'),fi=document.getElementById('fileInput'),dl=document.getElementById('dropLabel');
     if(dz){ dz.addEventListener('click',()=>fi.click()); fi.addEventListener('change',()=>{if(fi.files.length)dl.textContent='✓ '+fi.files[0].name;});
       ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.style.borderColor='#9a7b43';dz.style.background='#f7f3ea';}));
@@ -131,12 +136,13 @@ class Component extends DCLogic {
       const b=document.getElementById('okBanner');
       const warn=(html)=>{b.style.display='block';b.style.background='#fdf3ee';b.style.borderColor='#e0b39a';b.style.color='#8a4a2b';b.innerHTML=html;};
       if(!email||email.indexOf('@')<1){ warn(t('Please enter your email so we can reply.','请填写你的电子邮件，我们才能回覆你。','กรุณากรอกอีเมลเพื่อให้เราตอบกลับได้')); return; }
+      if(this.want==='sample' && !val('c-address')){ warn(t('Please enter a delivery address for your sample kit.','请填写样品包的寄送地址。','กรุณากรอกที่อยู่จัดส่งสำหรับชุดตัวอย่างของคุณ')); return; }
       const old=send.textContent; send.disabled=true; send.textContent=t('Sending…','发送中…','กำลังส่ง…');
       try{
         const fd=new FormData();
         fd.append('name',name||'(not given)'); fd.append('email',email);
         fd.append('request',this.want); fd.append('role',val('c-role')); fd.append('city',val('c-city'));
-        fd.append('project',val('c-brief')); fd.append('language',lang); fd.append('page','contact');
+        fd.append('project',val('c-brief')); fd.append('delivery_address',val('c-address')); fd.append('language',lang); fd.append('page','contact');
         fd.append('_subject','Kreiner Atelier — new enquiry ('+this.want+')');
         fd.append('_template','table'); fd.append('_captcha','false');
         const file=(fi&&fi.files.length)?fi.files[0]:this._file;
