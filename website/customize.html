@@ -188,7 +188,15 @@
         <!-- Panel 4: Add-ons -->
         <div data-panel="4" style="display:none">
           <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Add-ons</h2>
-          <p style="color:#66614f;font-size:15px;margin-bottom:22px">Optional touches — tap to include.</p>
+          <p style="color:#66614f;font-size:15px;margin-bottom:16px">Optional touches — tap to include.</p>
+          <div id="bundleCard" style="margin-bottom:14px;background:linear-gradient(135deg,#1b1a16,#3a362e);color:#f4f1ea;border-radius:14px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+            <div style="min-width:0">
+              <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#c9a34e;font-weight:600">Most chosen</div>
+              <div style="font-family:'Playfair Display',serif;font-size:19px;font-weight:600;margin-top:4px">The Atelier Set</div>
+              <div style="font-size:13px;color:rgba(244,241,234,.78);margin-top:3px">Freestanding tap + headrest + slotted overflow — the complete finishing set</div>
+            </div>
+            <button id="bundleBtn" style="flex:none;cursor:pointer;background:#f4f1ea;color:#1b1a16;border:none;padding:11px 18px;border-radius:999px;font-family:inherit;font-size:13.5px;font-weight:600">Add the set</button>
+          </div>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px" id="addonCards">
             <button data-addon="Slotted overflow" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Slotted overflow</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Clean hidden waterline</div></button>
             <button data-addon="Freestanding filler tap" style="cursor:pointer;text-align:left;background:#fff;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-family:inherit"><div style="font-size:15px;font-weight:600">Freestanding tap</div><div style="font-size:13px;color:#8a8478;margin-top:3px">Floor-mounted filler</div></button>
@@ -335,6 +343,15 @@ class Component extends DCLogic {
       const a = b.getAttribute('data-addon'); const i = S.addons.indexOf(a);
       if (i>-1) S.addons.splice(i,1); else S.addons.push(a); this._render();
     }));
+    // bundle upsell: one tap adds (or removes) the full finishing set
+    this.BUNDLE = ['Freestanding filler tap','Integrated headrest','Slotted overflow'];
+    const bb = document.getElementById('bundleBtn');
+    if (bb) bb.addEventListener('click', () => {
+      const all = this.BUNDLE.every(a => S.addons.indexOf(a) > -1);
+      if (all) { this.BUNDLE.forEach(a => { const i = S.addons.indexOf(a); if (i>-1) S.addons.splice(i,1); }); }
+      else { this.BUNDLE.forEach(a => { if (S.addons.indexOf(a) < 0) S.addons.push(a); }); }
+      this._render();
+    });
     // LED colour swatches + custom picker
     document.querySelectorAll('#ledSwatches [data-led]').forEach(b => b.addEventListener('click', () => {
       S.ledColor = b.getAttribute('data-led'); this._render();
@@ -395,6 +412,13 @@ class Component extends DCLogic {
     document.querySelectorAll('#finishCards [data-finish]').forEach(b => b.style.borderColor = (!S.custom && b.getAttribute('data-finish')===S.finish) ? '#1b1a16' : 'transparent');
     const ccard = document.getElementById('customCard'); if (ccard) ccard.style.borderColor = S.custom ? '#1b1a16' : 'transparent';
     document.querySelectorAll('#addonCards [data-addon]').forEach(b => { const on = S.addons.indexOf(b.getAttribute('data-addon'))>-1; b.style.borderColor = on ? '#1b1a16':'transparent'; b.style.background = on ? '#f4efe4':'#fff'; });
+    // bundle button state
+    const bb2 = document.getElementById('bundleBtn');
+    if (bb2) {
+      const all = (this.BUNDLE||[]).every(a => S.addons.indexOf(a) > -1);
+      bb2.textContent = all ? this._tr('Set added ✓') : this._tr('Add the set');
+      bb2.style.background = all ? '#c9a34e' : '#f4f1ea';
+    }
     // LED colour row: visible only when the LED add-on is selected; highlight active swatch
     const lr = document.getElementById('ledRow');
     if (lr) lr.style.display = S.addons.indexOf('Chromotherapy LED')>-1 ? 'block' : 'none';
