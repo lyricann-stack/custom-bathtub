@@ -492,7 +492,16 @@ export const DICT = {
     "Crated, insured freight worldwide from our China & Thailand factories, quoted up front. Acrylic is a comfortable two-person lift on standard floors — any licensed plumber can complete the install.":"从中国与泰国工厂以木箱包装、投保方式全球运送，费用在报价时先说清楚。亚克力在标准楼板上两人即可搬抬——任何持牌水电工都能完成安装。",
     "Get a photoreal 3D render back in 48 hours. USD $990 per bathtub plus worldwide shipping. The $399 design fee is fully credited to your order — or start with a free sample kit.":"48 小时内拿回拟真 3D 渲染图。每座浴缸 USD $990，另加全球运费。$399 设计费可全额折抵订单——或从免费样品包开始。",
     "Shipping is quoted by destination with your 3D design — and the $399 fee is credited to your order.":"运费会随 3D 设计依目的地报价——而 $399 费用可折抵订单。",
-    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"在 3D 里设计，边设计边看到价格。我们以高级亚克力或人造石手工打造，配送全世界——轻到两个人就能安装。"
+    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"在 3D 里设计，边设计边看到价格。我们以高级亚克力或人造石手工打造，配送全世界——轻到两个人就能安装。",
+
+    /* 2026-07: no Australian entity claims */
+    "Bespoke bathtubs in acrylic & solid surface, made one at a time in our own factories in China & Thailand. Delivered worldwide.":"定制亚克力与人造石浴缸，在我们自有的中国与泰国工厂一次只做一件。配送全世界。",
+    "Factory-direct · No minimum order":"工厂直供 · 无最低订量",
+    "Our own factories in China & Thailand. Production photos with every order, and a team on email whenever you need us.":"自有中国与泰国工厂。每张订单都附生产照片，需要时随时能用邮件找到我们团队。",
+    "A 10-year structural warranty on acrylic and 15-year on solid surface, backed by our factory-direct after-sales team.":"亚克力 10 年结构保修，人造石 15 年，由工厂直属售后团队支持。",
+    "The $399 design fee is fully credited to your order, and payment milestones are confirmed on your quote before production begins.":"$399 设计费可全额折抵订单；付款节点在生产开始前于报价单上确认。",
+    "💳 USD $990 per bathtub + shipping — your exact total is quoted by destination before you commit.":"💳 每座浴缸 USD $990＋运费——下单前先依目的地报出确切总价。",
+    "Payment milestones are confirmed on your quote before production begins.":"付款节点在生产开始前于报价单上确认。"
   },
 
   th: {
@@ -974,6 +983,15 @@ export const DICT = {
     "Crated, insured freight worldwide from our China & Thailand factories, quoted up front. Acrylic is a comfortable two-person lift on standard floors — any licensed plumber can complete the install.":"ขนส่งลังไม้พร้อมประกันทั่วโลกจากโรงงานในจีนและไทย แจ้งราคาล่วงหน้า อะคริลิกสองคนยกได้บนพื้นมาตรฐาน — ช่างประปามีใบอนุญาตติดตั้งได้",
     "Get a photoreal 3D render back in 48 hours. USD $990 per bathtub plus worldwide shipping. The $399 design fee is fully credited to your order — or start with a free sample kit.":"รับภาพเรนเดอร์ 3D เสมือนจริงใน 48 ชั่วโมง อ่างละ USD $990 บวกค่าจัดส่งทั่วโลก ค่าออกแบบ $399 หักคืนเข้าออร์เดอร์เต็มจำนวน — หรือเริ่มจากชุดตัวอย่างฟรี",
     "Shipping is quoted by destination with your 3D design — and the $399 fee is credited to your order.":"ค่าจัดส่งจะเสนอราคาตามปลายทางพร้อมงานออกแบบ 3D — และค่า $399 หักคืนเข้าออร์เดอร์",
-    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"ออกแบบใน 3D และเห็นราคาไปพร้อมกัน เราผลิตด้วยมือจากอะคริลิกพรีเมียมหรือโซลิดเซอร์เฟซ จัดส่งทั่วโลก — เบาพอให้สองคนติดตั้งได้"
+    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"ออกแบบใน 3D และเห็นราคาไปพร้อมกัน เราผลิตด้วยมือจากอะคริลิกพรีเมียมหรือโซลิดเซอร์เฟซ จัดส่งทั่วโลก — เบาพอให้สองคนติดตั้งได้",
+
+    /* 2026-07: no Australian entity claims */
+    "Bespoke bathtubs in acrylic & solid surface, made one at a time in our own factories in China & Thailand. Delivered worldwide.":"อ่างอาบน้ำอะคริลิกและโซลิดเซอร์เฟซสั่งทำ ผลิตทีละใบในโรงงานของเราเองในจีนและไทย จัดส่งทั่วโลก",
+    "Factory-direct · No minimum order":"ส่งตรงจากโรงงาน · ไม่มีขั้นต่ำ",
+    "Our own factories in China & Thailand. Production photos with every order, and a team on email whenever you need us.":"โรงงานของเราเองในจีนและไทย ทุกออร์เดอร์มีรูปการผลิต และทีมงานพร้อมตอบอีเมลเมื่อคุณต้องการ",
+    "A 10-year structural warranty on acrylic and 15-year on solid surface, backed by our factory-direct after-sales team.":"รับประกันโครงสร้าง 10 ปีสำหรับอะคริลิก และ 15 ปีสำหรับโซลิดเซอร์เฟซ ดูแลโดยทีมหลังการขายตรงจากโรงงาน",
+    "The $399 design fee is fully credited to your order, and payment milestones are confirmed on your quote before production begins.":"ค่าออกแบบ $399 หักคืนเข้าออร์เดอร์เต็มจำนวน และกำหนดการชำระเงินยืนยันในใบเสนอราคาก่อนเริ่มผลิต",
+    "💳 USD $990 per bathtub + shipping — your exact total is quoted by destination before you commit.":"💳 อ่างละ USD $990 + ค่าจัดส่ง — ยอดรวมที่แน่นอนเสนอราคาตามปลายทางก่อนคุณตัดสินใจ",
+    "Payment milestones are confirmed on your quote before production begins.":"กำหนดการชำระเงินยืนยันในใบเสนอราคาก่อนเริ่มผลิต"
   }
 };
