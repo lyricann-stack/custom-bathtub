@@ -48,7 +48,7 @@
       <select id="langSel" aria-label="Language" style="appearance:none;-webkit-appearance:none;background:transparent;border:1px solid #ddd8cc;border-radius:999px;padding:7px 14px;font-size:12.5px;font-family:inherit;color:#4a463d;cursor:pointer">
         <option value="en">EN</option><option value="zh">简中</option><option value="th">ไทย</option>
       </select>
-      <a href="contact.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600">Start your design</a>
+      <a href="customize.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600">Design my bathtub</a>
     </div>
   </div>
 </nav>
@@ -88,6 +88,11 @@
         <div data-dot="5" style="flex:1;height:4px;border-radius:4px;background:#ddd8cc"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a8f7c;margin-bottom:26px"><span id="stepLabel">Step 1 of 6</span><span id="stepName">Silhouette</span></div>
+      <div id="saveBar" style="display:none;margin:-10px 0 22px;background:#fff;border:1px solid #e6e1d5;border-radius:12px;padding:10px 12px;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;color:#66614f;flex:1;min-width:130px">Like it so far? Save your design</span>
+        <input id="saveEmail" type="email" placeholder="Email" style="flex:2;min-width:150px;background:#fff;border:1px solid #ddd8cc;border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13.5px;color:#1b1a16">
+        <button id="saveBtn" style="flex:none;cursor:pointer;background:#1b1a16;color:#f4f1ea;border:none;padding:9px 18px;border-radius:999px;font-family:inherit;font-size:13px;font-weight:600">Save it</button>
+      </div>
 
       <div style="flex:1">
         <!-- Panel 0: Silhouette -->
@@ -184,6 +189,11 @@
             <span style="color:#66614f;font-size:14px">Approx. capacity</span>
             <span style="font-family:'Playfair Display',serif;font-size:34px;color:#9a7b43" id="capBig">≈ 245 L</span>
           </div>
+          <div style="margin-top:14px;padding:20px 22px;background:#fff;border:1px solid #e6e1d5;border-radius:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="color:#66614f;font-size:14px">Estimated price range</span>
+            <span style="font-family:'Playfair Display',serif;font-size:28px;color:#9a7b43" id="estBig">—</span>
+          </div>
+          <p style="font-size:12.5px;color:#9a8f7c;margin-top:10px">Indicative only — your exact quote comes with the 3D design, and the $399 fee is credited to it.</p>
         </div>
 
         <!-- Panel 4: Add-ons -->
@@ -225,8 +235,8 @@
 
         <!-- Panel 5: Review & send -->
         <div data-panel="5" style="display:none">
-          <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Review &amp; send</h2>
-          <p style="color:#66614f;font-size:15px;margin-bottom:20px">We reply with a photoreal 3D render in 48 hours. The $399 fee is credited to your order.</p>
+          <h2 style="font-family:'Playfair Display',serif;font-weight:700;font-size:30px;margin-bottom:6px">Review &amp; choose your next step</h2>
+          <p style="color:#66614f;font-size:15px;margin-bottom:20px">Your design travels with whichever you pick — an estimate, a 3D design, or samples in your hand.</p>
           <div style="background:#fff;border:1px solid #e6e1d5;border-radius:14px;padding:18px 20px;margin-bottom:18px">
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Silhouette</span><b id="r-shape">Freestanding Oval</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Sculpting</span><b id="r-sculpt" style="text-align:right;max-width:62%;font-weight:600">—</b></div>
@@ -234,7 +244,8 @@
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Finish</span><b id="r-finish">Gloss White</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Size</span><b id="r-size">1700×800×580 mm</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Capacity</span><b id="r-cap">≈ 245 L</b></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px"><span style="color:#8a8478">Add-ons</span><b id="r-addons" style="text-align:right;max-width:60%">None</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Add-ons</span><b id="r-addons" style="text-align:right;max-width:60%">None</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px"><span style="color:#8a8478">Est. price range</span><b id="r-est" style="color:#9a7b43">—</b></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <input id="f-name" placeholder="Your name" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:#1b1a16">
@@ -244,7 +255,11 @@
             <span id="dropLabel">Drag a sketch, photo or floor plan here — or click to attach</span>
             <input type="file" id="fileInput" accept="image/*,.pdf" style="display:none">
           </div>
-          <button id="sendBtn" style="cursor:pointer;width:100%;margin-top:16px;background:#1b1a16;color:#f4f1ea;border:none;padding:16px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:600">Send this design to our atelier →</button>
+          <button data-kind="estimate" style="cursor:pointer;width:100%;margin-top:16px;background:#1b1a16;color:#f4f1ea;border:none;padding:16px;border-radius:999px;font-family:inherit;font-size:15px;font-weight:600">Get a price estimate →</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+            <button data-kind="consult" style="cursor:pointer;background:#fff;border:1.5px solid #1b1a16;color:#1b1a16;padding:13px 10px;border-radius:999px;font-family:inherit;font-size:14px;font-weight:600">Book $399 3D design</button>
+            <button data-kind="sample" style="cursor:pointer;background:#fff;border:1.5px solid #cdc7b9;color:#1b1a16;padding:13px 10px;border-radius:999px;font-family:inherit;font-size:14px;font-weight:600">Send me a sample kit</button>
+          </div>
           <div id="okBanner" style="display:none;margin-top:16px;background:#eef4ee;border:1px solid #9cc7a6;border-radius:12px;padding:16px;font-size:14px;color:#2f5d3a"></div>
         </div>
       </div>
@@ -263,6 +278,9 @@ class Component extends DCLogic {
   async componentDidMount() {
     this.state2 = { shape:'oval', material:'Premium Acrylic', finish:'Gloss White', base:'#eef1f4', len:1700, wid:800, dep:580, addons:[], step:0,
       curve:55, taper:40, flare:52, edgeSoft:35, wall:45, corner:55, asym:35, waist:20, lobe:15, ledColor:'rainbow' };
+    // restore a previous session's design so visitors can pick up where they left off
+    try { const saved = JSON.parse(localStorage.getItem('ka_design') || 'null'); if (saved && saved.shape) Object.assign(this.state2, saved); } catch(e) {}
+    try { this._designSaved = localStorage.getItem('ka_design_saved') === '1'; } catch(e) { this._designSaved = false; }
     try { this._lang = localStorage.getItem('ka_lang') || 'en'; } catch(e) { this._lang = 'en'; }
     this.viewers = [];
     this.STEP_NAMES = ['Silhouette','Sculpt','Material & finish','Size','Add-ons','Review'];
@@ -371,12 +389,28 @@ class Component extends DCLogic {
       ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.style.borderColor='#cdc7b9'; dz.style.background='#fff'; }));
       dz.addEventListener('drop', e => { const f = e.dataTransfer.files; if (f.length) { dl.textContent = '✓ ' + f[0].name; this._file = f[0]; } });
     }
-    // send
-    document.getElementById('sendBtn').addEventListener('click', () => this._send());
+    // three exits: estimate / consult / sample — all carry the design
+    document.querySelectorAll('[data-panel="5"] [data-kind]').forEach(b => b.addEventListener('click', () => this._send(b.getAttribute('data-kind'), b)));
+    // save-my-design email bar (early lead capture)
+    const sv = document.getElementById('saveBtn');
+    if (sv) sv.addEventListener('click', () => this._saveDesign());
   }
 
   _cap(s) { let l=s.len/1000,w=s.wid/1000,d=(s.dep-150)/1000; if(d<0.05)d=0.05; const fill={oval:0.42,rect:0.5,slipper:0.36,round:0.4,japanese:0.55}[s.shape]||0.42; return Math.round(l*w*d*fill*1000/5)*5; }
   _shapeName(sh){ return {oval:'Freestanding Oval',rect:'Modern Rectangle',slipper:'Slipper',round:'Round Drum',japanese:'Japanese Soaking',freeform:'Freeform Organic'}[sh]; }
+  /* indicative price range — placeholder model agreed 2026-07 (see 網站優化執行計畫):
+     acrylic from $2,990, solid surface from $4,490; scales with volume, shape complexity and add-ons */
+  _est(S){
+    const base = S.material === 'Solid Surface' ? 4490 : 2990;
+    const v = (S.len*S.wid*S.dep) / (1700*800*580);
+    const shapeF = { slipper:1.1, japanese:1.1, freeform:1.15, round:1.05 }[S.shape] || 1;
+    let add = 0;
+    S.addons.forEach(a => { add += a === 'Air massage jets' ? 900 : (a === 'Chromotherapy LED' ? 400 : 250); });
+    const lo = Math.max(base, Math.round((base*(0.75 + 0.35*v)*shapeF + add)/50)*50);
+    const hi = Math.round(lo*1.4/50)*50;
+    return [lo, hi];
+  }
+  _estStr(S){ const e = this._est(S); const f = n => n.toLocaleString('en-AU'); return 'AUD $'+f(e[0])+'–$'+f(e[1]); }
 
   _render() {
     const S = this.state2;
@@ -397,6 +431,12 @@ class Component extends DCLogic {
     set('sp-shape', this._tr(this._shapeName(S.shape))); set('sp-material', this._tr(S.material)); set('sp-finish', S.custom ? this._tr('Custom') : this._tr(S.finish));
     set('sp-size', S.len+'×'+S.wid+'×'+S.dep); set('sp-cap', '≈ '+this._cap(S)+' L');
     set('capBig','≈ '+this._cap(S)+' L');
+    set('estBig', this._estStr(S)); set('r-est', this._estStr(S));
+    // save-design bar: visible from step 2 until the visitor saves
+    const sb = document.getElementById('saveBar');
+    if (sb) sb.style.display = (S.step >= 1 && !this._designSaved) ? 'flex' : 'none';
+    // persist the design across visits
+    try { localStorage.setItem('ka_design', JSON.stringify(S)); } catch(e) {}
     // sync sliders + number inputs from state (skip a number box while the user is typing in it)
     (this.CTRLS||[]).forEach(c => {
       const sl = document.getElementById(c.slider), nu = document.getElementById(c.num);
@@ -441,12 +481,12 @@ class Component extends DCLogic {
     document.getElementById('nextBtn').style.display = S.step===5 ? 'none':'inline-flex';
   }
 
-  async _send() {
+  async _send(kind, btn) {
+    kind = kind || 'estimate';
     const S = this.state2;
     const name = (document.getElementById('f-name').value||'').replace(/[<>]/g,'').trim();
     const email = (document.getElementById('f-email').value||'').trim();
     const banner = document.getElementById('okBanner');
-    const btn = document.getElementById('sendBtn');
     const lang = this._lang || 'en';
     const t = (en,zh,th) => lang==='zh'?zh:(lang==='th'?th:en);
     const warn = h => { banner.style.display='block'; banner.style.background='#fdf3ee'; banner.style.borderColor='#e0b39a'; banner.style.color='#8a4a2b'; banner.innerHTML=h; };
@@ -464,7 +504,8 @@ class Component extends DCLogic {
       fd.append('material', S.material); fd.append('finish', S.finish);
       fd.append('size', S.len+'x'+S.wid+'x'+S.dep+' mm'); fd.append('capacity', '~'+this._cap(S)+' L');
       fd.append('addons', addons); fd.append('language', lang); fd.append('page', 'design-studio');
-      fd.append('_subject', 'Kreiner Atelier — new design from the Design Studio');
+      fd.append('request', kind); fd.append('estimate_range', this._estStr(S));
+      fd.append('_subject', 'Kreiner Atelier — Design Studio ('+kind+')');
       fd.append('_template', 'table'); fd.append('_captcha', 'false');
       const fi = document.getElementById('fileInput');
       const file = (fi && fi.files.length) ? fi.files[0] : this._file;
@@ -472,12 +513,49 @@ class Component extends DCLogic {
       const r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
       if (!r.ok) throw new Error('HTTP '+r.status);
       banner.style.display='block'; banner.style.background='#eef4ee'; banner.style.borderColor='#9cc7a6'; banner.style.color='#2f5d3a';
-      banner.textContent = t('✅ Thank you, '+(name||'there')+'! Your design is in — a designer will follow up with a 3D render within 48 hours.','✅ 谢谢你，'+(name||'朋友')+'！你的设计已送出，设计师会在 48 小时内带着 3D 渲染图跟进。','✅ ขอบคุณ '+(name||'คุณ')+'! ส่งแบบของคุณแล้ว นักออกแบบจะติดตามพร้อมภาพ 3D ภายใน 48 ชั่วโมง');
+      const who = name || t('there','朋友','คุณ');
+      const MSG = {
+        estimate: t('✅ Thank you, '+who+'! Your design is in — we\'ll reply with a firm price estimate within one business day.','✅ 谢谢你，'+who+'！你的设计已送出——我们会在 1 个工作日内回覆正式估价。','✅ ขอบคุณ '+who+'! ส่งแบบแล้ว — เราจะตอบกลับพร้อมราคาโดยประมาณภายใน 1 วันทำการ'),
+        consult: t('✅ Thank you, '+who+'! Your design is in — we\'ll email a secure payment link for the $399 consultation, then your 3D render lands within 48 hours.','✅ 谢谢你，'+who+'！你的设计已送出——我们会寄出 $399 咨询的安全付款连结，之后 48 小时内交付 3D 渲染图。','✅ ขอบคุณ '+who+'! ส่งแบบแล้ว — เราจะอีเมลลิงก์ชำระเงินสำหรับค่าที่ปรึกษา $399 แล้วส่งภาพ 3D ภายใน 48 ชั่วโมง'),
+        sample: t('✅ Thank you, '+who+'! Your design is in — we\'ll email you to confirm a delivery address for your free sample kit.','✅ 谢谢你，'+who+'！你的设计已送出——我们会寄信跟你确认免费样品包的收件地址。','✅ ขอบคุณ '+who+'! ส่งแบบแล้ว — เราจะอีเมลยืนยันที่อยู่จัดส่งชุดตัวอย่างฟรีของคุณ')
+      };
+      banner.textContent = MSG[kind] || MSG.estimate;
     } catch (e) {
       console.error(e);
       const body = 'Hi Kreiner Atelier,%0A%0AMy custom bathtub:%0A- Silhouette: '+this._shapeName(S.shape)+'%0A- Sculpting: '+encodeURIComponent(sculpt)+'%0A- Material: '+S.material+'%0A- Finish: '+encodeURIComponent(S.finish)+'%0A- Size: '+S.len+'x'+S.wid+'x'+S.dep+' mm%0A- Capacity: ~'+this._cap(S)+' L%0A- Add-ons: '+encodeURIComponent(addons);
       warn(t('Something went wrong. ','发送失败。','ส่งไม่สำเร็จ ')+'<a style="color:inherit;text-decoration:underline" href="mailto:concierge@kreinergroups.com?subject=Custom%20Bathtub%20Design&body='+body+'">'+t('Open as an email instead →','改用电子邮件送出 →','ส่งเป็นอีเมลแทน →')+'</a>');
     } finally { btn.disabled = false; btn.textContent = old; }
+  }
+
+  async _saveDesign() {
+    const S = this.state2;
+    const lang = this._lang || 'en';
+    const t = (en,zh,th) => lang==='zh'?zh:(lang==='th'?th:en);
+    const bar = document.getElementById('saveBar');
+    const input = document.getElementById('saveEmail');
+    const btn = document.getElementById('saveBtn');
+    const email = ((input||{}).value||'').trim();
+    if (!email || email.indexOf('@') < 1) { if (input) { input.style.borderColor = '#c0653a'; input.focus(); } return; }
+    const old = btn.textContent; btn.disabled = true; btn.textContent = t('Saving…','保存中…','กำลังบันทึก…');
+    try {
+      const fd = new FormData();
+      fd.append('email', email); fd.append('request', 'save-design');
+      fd.append('silhouette', this._shapeName(S.shape)); fd.append('material', S.material); fd.append('finish', S.finish);
+      fd.append('size', S.len+'x'+S.wid+'x'+S.dep+' mm'); fd.append('estimate_range', this._estStr(S));
+      fd.append('language', lang); fd.append('page', 'design-studio');
+      fd.append('_subject', 'Kreiner Atelier — design saved (early lead)');
+      fd.append('_template', 'table'); fd.append('_captcha', 'false');
+      const r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
+      if (!r.ok) throw new Error('HTTP '+r.status);
+      this._designSaved = true;
+      try { localStorage.setItem('ka_design_saved','1'); } catch(e) {}
+      if (bar) { bar.innerHTML = '<span style="font-size:13px;color:#2f5d3a">'+t('✓ Saved — your design is kept on this device, and we\'ve noted your email.','✓ 已保存——设计会留在这台设备上，我们也记下了你的邮箱。','✓ บันทึกแล้ว — แบบของคุณถูกเก็บบนอุปกรณ์นี้ และเราจดอีเมลของคุณไว้แล้ว')+'</span>'; setTimeout(()=>{ this._render(); }, 4000); }
+    } catch (e) {
+      console.error(e);
+      btn.disabled = false; btn.textContent = old;
+      if (input) input.style.borderColor = '#c0653a';
+      return;
+    }
   }
 
   async _initLang() {
