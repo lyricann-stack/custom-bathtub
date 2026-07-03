@@ -190,10 +190,10 @@
             <span style="font-family:'Playfair Display',serif;font-size:34px;color:#9a7b43" id="capBig">≈ 245 L</span>
           </div>
           <div style="margin-top:14px;padding:20px 22px;background:#fff;border:1px solid #e6e1d5;border-radius:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-            <span style="color:#66614f;font-size:14px">Estimated price range</span>
+            <span style="color:#66614f;font-size:14px">Price</span>
             <span style="font-family:'Playfair Display',serif;font-size:28px;color:#9a7b43" id="estBig">—</span>
           </div>
-          <p style="font-size:12.5px;color:#9a8f7c;margin-top:10px">Indicative only — your exact quote comes with the 3D design, and the $399 fee is credited to it.</p>
+          <p style="font-size:12.5px;color:#9a8f7c;margin-top:10px">Shipping is quoted by destination with your 3D design — and the $399 fee is credited to your order.</p>
         </div>
 
         <!-- Panel 4: Add-ons -->
@@ -245,7 +245,7 @@
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Size</span><b id="r-size">1700×800×580 mm</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Capacity</span><b id="r-cap">≈ 245 L</b></div>
             <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #eee7db;font-size:14px"><span style="color:#8a8478">Add-ons</span><b id="r-addons" style="text-align:right;max-width:60%">None</b></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px"><span style="color:#8a8478">Est. price range</span><b id="r-est" style="color:#9a7b43">—</b></div>
+            <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:14px"><span style="color:#8a8478">Price</span><b id="r-est" style="color:#9a7b43">—</b></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <input id="f-name" placeholder="Your name" style="background:#fff;border:1px solid #ddd8cc;border-radius:10px;padding:12px 14px;font-family:inherit;font-size:14.5px;color:#1b1a16">
@@ -398,19 +398,9 @@ class Component extends DCLogic {
 
   _cap(s) { let l=s.len/1000,w=s.wid/1000,d=(s.dep-150)/1000; if(d<0.05)d=0.05; const fill={oval:0.42,rect:0.5,slipper:0.36,round:0.4,japanese:0.55}[s.shape]||0.42; return Math.round(l*w*d*fill*1000/5)*5; }
   _shapeName(sh){ return {oval:'Freestanding Oval',rect:'Modern Rectangle',slipper:'Slipper',round:'Round Drum',japanese:'Japanese Soaking',freeform:'Freeform Organic'}[sh]; }
-  /* indicative price range — placeholder model agreed 2026-07 (see 網站優化執行計畫):
-     acrylic from $2,990, solid surface from $4,490; scales with volume, shape complexity and add-ons */
-  _est(S){
-    const base = S.material === 'Solid Surface' ? 4490 : 2990;
-    const v = (S.len*S.wid*S.dep) / (1700*800*580);
-    const shapeF = { slipper:1.1, japanese:1.1, freeform:1.15, round:1.05 }[S.shape] || 1;
-    let add = 0;
-    S.addons.forEach(a => { add += a === 'Air massage jets' ? 900 : (a === 'Chromotherapy LED' ? 400 : 250); });
-    const lo = Math.max(base, Math.round((base*(0.75 + 0.35*v)*shapeF + add)/50)*50);
-    const hi = Math.round(lo*1.4/50)*50;
-    return [lo, hi];
-  }
-  _estStr(S){ const e = this._est(S); const f = n => n.toLocaleString('en-AU'); return 'AUD $'+f(e[0])+'–$'+f(e[1]); }
+  /* pricing per Masa 2026-07: USD $990 per bathtub + shipping (quoted by destination);
+     add-ons priced with the 3D design */
+  _estStr(S){ return 'USD $990 + shipping'; }
 
   _render() {
     const S = this.state2;

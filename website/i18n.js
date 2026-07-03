@@ -466,7 +466,33 @@ export const DICT = {
     "Design around your height →":"依你的身高设计 →",
     "Check which tub fits your bathroom →":"看看哪种浴缸适合你的浴室 →",
     "Request material samples":"索取材质样品",
-    "Draw us the bathtub you want.":"把你想要的浴缸画给我们。"
+    "Draw us the bathtub you want.":"把你想要的浴缸画给我们。",
+
+    /* 2026-07 pricing update: USD $990 + shipping, worldwide delivery */
+    "USD $990 / bathtub":"USD $990 / 一座浴缸",
+    "Plus shipping, quoted by destination":"另加运费，依目的地报价",
+    "Production in 4–6 weeks":"生产 4–6 周",
+    "Ships worldwide":"全球配送",
+    "USD $990 per bathtub + shipping":"每座浴缸 USD $990＋运费",
+    "Ships worldwide from China & Thailand":"从中国与泰国出货，配送全球",
+    "We open the mould, build it with progress photos throughout, and deliver worldwide.":"我们开模制造，全程提供进度照片，并配送到全世界。",
+    "USD $990 per bathtub":"每座浴缸 USD $990",
+    "Every custom bathtub is USD $990, plus shipping to your door — quoted by destination before you commit. Add-ons are priced with your 3D design.":"每座定制浴缸 USD $990，另加送到府的运费——下单前先依目的地报价。加值选项随 3D 设计一并报价。",
+    "4–6 weeks in production":"生产期 4–6 周",
+    "Photoreal 3D render in 48 hours, 4–6 weeks in production, then insured worldwide freight — with progress photos throughout.":"48 小时出拟真 3D 渲染图，生产 4–6 周，再以投保方式全球运送——全程附进度照片。",
+    "The $399 design fee is fully credited to your order, and Afterpay or Zip financing is available for Australian customers. Payment milestones are confirmed on your quote.":"$399 设计费可全额折抵订单；澳洲客户可使用 Afterpay 或 Zip 分期。付款节点会在报价单上确认。",
+    "Delivered worldwide":"配送全世界",
+    "Crated, insured freight from our factories in China & Thailand to your door, anywhere in the world. Acrylic is a comfortable two-person lift, and any licensed plumber can complete the install.":"从我们的中国与泰国工厂，以木箱包装、投保运输送到你家门口——全世界都送。亚克力两人即可轻松搬抬，任何持牌水电工都能完成安装。",
+    "Every custom bathtub is USD $990, plus shipping quoted by your destination. You see the price as you build in the design studio — before you talk to anyone.":"每座定制浴缸 USD $990，另加依目的地报价的运费。在设计工作室里边做边看到价格——完全不必先跟任何人谈。",
+    "48 hours to your photoreal 3D render, 4–6 weeks in production, then insured freight — typically 2–6 weeks depending on your destination, with progress photos along the way.":"48 小时出拟真 3D 渲染图，生产 4–6 周，再投保运输——依目的地通常 2–6 周，途中持续附进度照片。",
+    "We ship crated and insured worldwide from our factories in China & Thailand. Acrylic tubs are a comfortable two-person lift and sit on standard floors without reinforcement — any licensed plumber can complete the install.":"我们从中国与泰国工厂以木箱包装、投保方式全球出货。亚克力浴缸两人即可轻松搬抬、放在标准楼板上不需补强——任何持牌水电工都能完成安装。",
+    "💳 USD $990 per bathtub + shipping — Afterpay or Zip financing available for Australian customers.":"💳 每座浴缸 USD $990＋运费——澳洲客户可使用 Afterpay 或 Zip 分期。",
+    "Every custom bathtub is USD $990, plus shipping to your door quoted by destination. Add-ons are priced with your 3D design — you confirm everything before committing.":"每座定制浴缸 USD $990，另加依目的地报价、送到府的运费。加值选项随 3D 设计一并报价——一切确认后你才需要承诺。",
+    "Payment milestones are confirmed on your quote before production begins. Afterpay and Zip financing is available for Australian customers.":"付款节点在生产前于报价单上确认。澳洲客户可使用 Afterpay 与 Zip 分期。",
+    "Crated, insured freight worldwide from our China & Thailand factories, quoted up front. Acrylic is a comfortable two-person lift on standard floors — any licensed plumber can complete the install.":"从中国与泰国工厂以木箱包装、投保方式全球运送，费用在报价时先说清楚。亚克力在标准楼板上两人即可搬抬——任何持牌水电工都能完成安装。",
+    "Get a photoreal 3D render back in 48 hours. USD $990 per bathtub plus worldwide shipping. The $399 design fee is fully credited to your order — or start with a free sample kit.":"48 小时内拿回拟真 3D 渲染图。每座浴缸 USD $990，另加全球运费。$399 设计费可全额折抵订单——或从免费样品包开始。",
+    "Shipping is quoted by destination with your 3D design — and the $399 fee is credited to your order.":"运费会随 3D 设计依目的地报价——而 $399 费用可折抵订单。",
+    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"在 3D 里设计，边设计边看到价格。我们以高级亚克力或人造石手工打造，配送全世界——轻到两个人就能安装。"
   },
 
   th: {
@@ -922,6 +948,32 @@ export const DICT = {
     "Design around your height →":"ออกแบบตามส่วนสูงของคุณ →",
     "Check which tub fits your bathroom →":"เช็กว่าอ่างแบบไหนพอดีห้องน้ำคุณ →",
     "Request material samples":"ขอตัวอย่างวัสดุ",
-    "Draw us the bathtub you want.":"วาดอ่างที่คุณต้องการมาให้เรา"
+    "Draw us the bathtub you want.":"วาดอ่างที่คุณต้องการมาให้เรา",
+
+    /* 2026-07 pricing update: USD $990 + shipping, worldwide delivery */
+    "USD $990 / bathtub":"USD $990 / อ่าง",
+    "Plus shipping, quoted by destination":"บวกค่าจัดส่ง เสนอราคาตามปลายทาง",
+    "Production in 4–6 weeks":"ผลิตใน 4–6 สัปดาห์",
+    "Ships worldwide":"จัดส่งทั่วโลก",
+    "USD $990 per bathtub + shipping":"อ่างละ USD $990 + ค่าจัดส่ง",
+    "Ships worldwide from China & Thailand":"ส่งทั่วโลกจากจีนและไทย",
+    "We open the mould, build it with progress photos throughout, and deliver worldwide.":"เราเปิดแม่พิมพ์ ผลิตพร้อมส่งรูปความคืบหน้าตลอดทาง และจัดส่งทั่วโลก",
+    "USD $990 per bathtub":"อ่างละ USD $990",
+    "Every custom bathtub is USD $990, plus shipping to your door — quoted by destination before you commit. Add-ons are priced with your 3D design.":"อ่างสั่งทำทุกใบราคา USD $990 บวกค่าส่งถึงบ้าน — เสนอราคาตามปลายทางก่อนคุณตัดสินใจ ออปชันเสริมตีราคาพร้อมงานออกแบบ 3D",
+    "4–6 weeks in production":"ผลิต 4–6 สัปดาห์",
+    "Photoreal 3D render in 48 hours, 4–6 weeks in production, then insured worldwide freight — with progress photos throughout.":"ภาพ 3D เสมือนจริงใน 48 ชั่วโมง ผลิต 4–6 สัปดาห์ แล้วขนส่งทั่วโลกพร้อมประกัน — พร้อมรูปความคืบหน้าตลอดทาง",
+    "The $399 design fee is fully credited to your order, and Afterpay or Zip financing is available for Australian customers. Payment milestones are confirmed on your quote.":"ค่าออกแบบ $399 หักคืนเข้าออร์เดอร์เต็มจำนวน ลูกค้าออสเตรเลียผ่อนกับ Afterpay หรือ Zip ได้ กำหนดการชำระเงินยืนยันในใบเสนอราคา",
+    "Delivered worldwide":"จัดส่งทั่วโลก",
+    "Crated, insured freight from our factories in China & Thailand to your door, anywhere in the world. Acrylic is a comfortable two-person lift, and any licensed plumber can complete the install.":"ขนส่งในลังไม้พร้อมประกันจากโรงงานของเราในจีนและไทยถึงหน้าบ้านคุณ ทุกที่ทั่วโลก อะคริลิกยกได้สบายด้วยสองคน ช่างประปาที่มีใบอนุญาตติดตั้งได้ทุกคน",
+    "Every custom bathtub is USD $990, plus shipping quoted by your destination. You see the price as you build in the design studio — before you talk to anyone.":"อ่างสั่งทำทุกใบราคา USD $990 บวกค่าส่งตามปลายทาง คุณเห็นราคาขณะออกแบบในสตูดิโอ — ก่อนคุยกับใคร",
+    "48 hours to your photoreal 3D render, 4–6 weeks in production, then insured freight — typically 2–6 weeks depending on your destination, with progress photos along the way.":"48 ชั่วโมงได้ภาพ 3D ผลิต 4–6 สัปดาห์ แล้วขนส่งพร้อมประกัน — ปกติ 2–6 สัปดาห์แล้วแต่ปลายทาง พร้อมรูปความคืบหน้าตลอด",
+    "We ship crated and insured worldwide from our factories in China & Thailand. Acrylic tubs are a comfortable two-person lift and sit on standard floors without reinforcement — any licensed plumber can complete the install.":"เราส่งทั่วโลกในลังไม้พร้อมประกันจากโรงงานในจีนและไทย อ่างอะคริลิกสองคนยกได้สบาย วางบนพื้นมาตรฐานไม่ต้องเสริม — ช่างประปามีใบอนุญาตติดตั้งได้",
+    "💳 USD $990 per bathtub + shipping — Afterpay or Zip financing available for Australian customers.":"💳 อ่างละ USD $990 + ค่าจัดส่ง — ลูกค้าออสเตรเลียผ่อนกับ Afterpay หรือ Zip ได้",
+    "Every custom bathtub is USD $990, plus shipping to your door quoted by destination. Add-ons are priced with your 3D design — you confirm everything before committing.":"อ่างสั่งทำทุกใบราคา USD $990 บวกค่าส่งถึงบ้านตามปลายทาง ออปชันเสริมตีราคาพร้อมงานออกแบบ 3D — คุณยืนยันทุกอย่างก่อนตัดสินใจ",
+    "Payment milestones are confirmed on your quote before production begins. Afterpay and Zip financing is available for Australian customers.":"กำหนดการชำระเงินยืนยันในใบเสนอราคาก่อนเริ่มผลิต ลูกค้าออสเตรเลียผ่อนกับ Afterpay และ Zip ได้",
+    "Crated, insured freight worldwide from our China & Thailand factories, quoted up front. Acrylic is a comfortable two-person lift on standard floors — any licensed plumber can complete the install.":"ขนส่งลังไม้พร้อมประกันทั่วโลกจากโรงงานในจีนและไทย แจ้งราคาล่วงหน้า อะคริลิกสองคนยกได้บนพื้นมาตรฐาน — ช่างประปามีใบอนุญาตติดตั้งได้",
+    "Get a photoreal 3D render back in 48 hours. USD $990 per bathtub plus worldwide shipping. The $399 design fee is fully credited to your order — or start with a free sample kit.":"รับภาพเรนเดอร์ 3D เสมือนจริงใน 48 ชั่วโมง อ่างละ USD $990 บวกค่าจัดส่งทั่วโลก ค่าออกแบบ $399 หักคืนเข้าออร์เดอร์เต็มจำนวน — หรือเริ่มจากชุดตัวอย่างฟรี",
+    "Shipping is quoted by destination with your 3D design — and the $399 fee is credited to your order.":"ค่าจัดส่งจะเสนอราคาตามปลายทางพร้อมงานออกแบบ 3D — และค่า $399 หักคืนเข้าออร์เดอร์",
+    "Design it in 3D and see your price range as you go. We hand-craft it in premium acrylic or solid surface and deliver worldwide — light enough for a two-person install.":"ออกแบบใน 3D และเห็นราคาไปพร้อมกัน เราผลิตด้วยมือจากอะคริลิกพรีเมียมหรือโซลิดเซอร์เฟซ จัดส่งทั่วโลก — เบาพอให้สองคนติดตั้งได้"
   }
 };
