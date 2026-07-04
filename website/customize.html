@@ -315,117 +315,122 @@ const P = {
   customProfile:null                // 手繪側牆剖面 k(v)，25 個取樣值，k[24]=1
 };
 
-// ===================== 多語系 i18n（繁中 zhT ＝原文；[0]=简中 zhS, [1]=英文 en） =====================
-let LANG = 'zhT';
+// ===================== 多語系 i18n（繁中 zhT ＝原文；[0]=简中 zhS, [1]=英文 en, [2]=泰文 th） =====================
+let LANG = 'en';
 const I18N = {
-  '🛁 客製化浴缸互動設計系統': ['塑形它，看它转动。', 'Shape it. Watch it turn.'],
-  '客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造': ['画出任何形状 · 3D 实时雕塑 · 一键导出设计师可修改的 CAD — 之后交给我们制造', 'Sketch any shape · sculpt it live in 3D · export designer-ready CAD — we build it from there'],
-  '⬆ 上傳 CAD 檔案': ['⬆ 上传 CAD 文件', '⬆ Upload CAD File'],
-  '外部 CAD 模型檢視中 — 調整任何參數即可返回參數化模型': ['外部 CAD 模型查看中 — 调整任何参数即可返回参数化模型', 'Viewing external CAD model — adjust any parameter to return to the parametric model'],
-  '⚠ 無法解析此 CAD 檔案（支援：本系統 DXF、2D 輪廓 DXF、STL、本系統 JSON 規格表）': ['⚠ 无法解析此 CAD 文件（支持：本系统 DXF、2D 轮廓 DXF、STL、本系统 JSON 规格表）', '⚠ Could not parse this CAD file (supported: DXF from this tool, 2D outline DXF, STL, spec JSON from this tool)'],
-  '⬇ 下載 CAD 圖檔 (DXF)': ['⬇ 下载 CAD 图档 (DXF)', '⬇ Download CAD (DXF)'],
-  '⬇ 下載規格表 (JSON)': ['⬇ 下载规格表 (JSON)', '⬇ Download Spec (JSON)'],
-  '① 浴缸造型（獨立式）': ['① 浴缸造型（独立式）', '① Tub Shape (Freestanding)'],
-  '圓角矩形': ['圆角矩形', 'Rounded Rect'],
-  '圓端形': ['圆端形', 'Rounded Ends'],
-  '橢圓形': ['椭圆形', 'Oval'],
-  '✏️ 手繪': ['✏️ 手绘', '✏️ Sketch'],
-  '缸緣造型': ['缸缘造型', 'Rim profile'],
-  '平面': ['平面', 'Flat'],
-  '圓弧': ['圆弧', 'Rounded'],
-  '斜角': ['斜角', 'Beveled'],
-  '★ 套用照片款：不對稱蛋形缸': ['★ 套用照片款：不对称蛋形缸', '★ Photo preset: asymmetric egg tub'],
-  '② 尺寸參數（mm）': ['② 尺寸参数（mm）', '② Dimensions (mm)'],
-  '外部長度': ['外部长度', 'Overall length'],
-  '外部寬度': ['外部宽度', 'Overall width'],
-  '缸緣高度(前端)': ['缸缘高度(前端)', 'Rim height (front)'],
-  '缸壁厚度': ['缸壁厚度', 'Wall thickness'],
-  '缸底厚度': ['缸底厚度', 'Base thickness'],
-  '圓角半徑': ['圆角半径', 'Corner radius'],
-  '⚠ 參數不合理：內部空間不足，請調整尺寸': ['⚠ 参数不合理：内部空间不足，请调整尺寸', '⚠ Invalid parameters: interior space too small, please adjust'],
-  '③ 不對稱造型參數': ['③ 不对称造型参数', '③ Asymmetry Parameters'],
-  '靠背增高(後端)': ['靠背增高(后端)', 'Backrest rise (rear)'],
-  '增高弧度': ['增高弧度', 'Rise curvature'],
-  '蛋形係數': ['蛋形系数', 'Egg factor'],
-  '底部收縮': ['底部收缩', 'Base taper'],
-  '靠背增高＝後端缸緣比前端高多少（缸緣呈斜面）｜蛋形係數＝前端變窄、後端變寬｜底部收縮＝缸底佔缸口的比例，數值越小側壁越內收': ['靠背增高＝后端缸缘比前端高多少（缸缘呈斜面）｜蛋形系数＝前端变窄、后端变宽｜底部收缩＝缸底占缸口的比例，数值越小侧壁越内收', 'Backrest rise = how much higher the rear rim is (sloped rim) | Egg factor = narrower front, wider rear | Base taper = footprint vs rim opening; smaller = more inward-curving walls'],
-  '④ 排水孔位置': ['④ 排水孔位置', '④ Drain Position'],
-  '中央': ['中央', 'Center'],
-  '靠背端': ['靠背端', 'Rear end'],
-  '前端': ['前端', 'Front end'],
-  '⑤ 外觀顏色': ['⑤ 外观颜色', '⑤ Colour'],
-  '顯示水位模擬（藍色半透明＝水）': ['显示水位模拟（蓝色半透明＝水）', 'Show water level (translucent blue = water)'],
-  '⑥ 訂單資訊（輸出至 CAD / 規格表）': ['⑥ 订单信息（输出至 CAD / 规格表）', '⑥ Order Info (exported to CAD / spec)'],
-  '⑦ 即時規格計算': ['⑦ 实时规格计算', '⑦ Live Specifications'],
-  '製程流程': ['制程流程', 'Production Flow'],
-  '拖曳＝360° 自由旋轉（含仰視）｜滾輪＝縮放': ['拖拽＝360° 自由旋转（含仰视）｜滚轮＝缩放', 'Drag = 360° free orbit (incl. bottom view) | Scroll = zoom'],
-  '✏️ 手繪你的浴缸形狀': ['✏️ 手绘你的浴缸形状', '✏️ Sketch Your Bathtub Shape'],
-  '畫出獨一無二的浴缸 — 系統會自動把手繪線條轉成流暢曲線並建成 3D 模型，之後仍可調整所有尺寸參數。': ['画出独一无二的浴缸 — 系统会自动把手绘线条转成流畅曲线并建成 3D 模型，之后仍可调整所有尺寸参数。', 'Draw a one-of-a-kind bathtub — sketch lines are auto-smoothed into clean curves and built into a 3D model. All dimension parameters remain adjustable afterwards.'],
-  '① 俯視缸口形狀（必畫）': ['① 俯视缸口形状（必画）', '① Top-View Rim Shape (required)'],
-  '② 側面牆壁剖面（選畫）': ['② 侧面墙壁剖面（选画）', '② Side Wall Profile (optional)'],
-  '清除重畫': ['清除重画', 'Clear'],
-  '📷 上傳手稿照片': ['📷 上传手稿照片', '📷 Upload sketch photo'],
-  '使用預設剖面': ['使用预设剖面', 'Use default profile'],
-  '取消': ['取消', 'Cancel'],
-  '✔ 產生 3D 模型': ['✔ 生成 3D 模型', '✔ Generate 3D Model'],
+  '🛁 客製化浴缸互動設計系統': ['塑形它，看它转动。', 'Shape it. Watch it turn.', 'ปั้นรูปทรง แล้วชมมันหมุน'],
+  '客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造': ['画出任何形状 · 3D 实时雕塑 · 一键导出设计师可修改的 CAD — 之后交给我们制造', 'Sketch any shape · sculpt it live in 3D · export designer-ready CAD — we build it from there', 'วาดรูปทรงใดก็ได้ · ปั้นแบบ 3D เรียลไทม์ · ส่งออก CAD ที่นักออกแบบแก้ไขได้ — จากนั้นเราผลิตให้'],
+  '⬆ 上傳 CAD 檔案': ['⬆ 上传 CAD 文件', '⬆ Upload CAD File', '⬆ อัปโหลดไฟล์ CAD'],
+  '外部 CAD 模型檢視中 — 調整任何參數即可返回參數化模型': ['外部 CAD 模型查看中 — 调整任何参数即可返回参数化模型', 'Viewing external CAD model — adjust any parameter to return to the parametric model', 'กำลังแสดงโมเดล CAD ภายนอก — ปรับพารามิเตอร์ใดก็ได้เพื่อกลับสู่โมเดลพาราเมตริก'],
+  '⚠ 無法解析此 CAD 檔案（支援：本系統 DXF、2D 輪廓 DXF、STL、本系統 JSON 規格表）': ['⚠ 无法解析此 CAD 文件（支持：本系统 DXF、2D 轮廓 DXF、STL、本系统 JSON 规格表）', '⚠ Could not parse this CAD file (supported: DXF from this tool, 2D outline DXF, STL, spec JSON from this tool)', '⚠ ไม่สามารถอ่านไฟล์ CAD นี้ได้ (รองรับ: DXF จากระบบนี้, DXF โครงร่าง 2D, STL, JSON สเปกจากระบบนี้)'],
+  '⬇ 下載 CAD 圖檔 (DXF)': ['⬇ 下载 CAD 图档 (DXF)', '⬇ Download CAD (DXF)', '⬇ ดาวน์โหลด CAD (DXF)'],
+  '⬇ 下載規格表 (JSON)': ['⬇ 下载规格表 (JSON)', '⬇ Download Spec (JSON)', '⬇ ดาวน์โหลดสเปก (JSON)'],
+  '① 浴缸造型（獨立式）': ['① 浴缸造型（独立式）', '① Tub Shape (Freestanding)', '① รูปทรงอ่าง (แบบตั้งพื้น)'],
+  '圓角矩形': ['圆角矩形', 'Rounded Rect', 'สี่เหลี่ยมมุมโค้ง'],
+  '圓端形': ['圆端形', 'Rounded Ends', 'ปลายโค้งมน'],
+  '橢圓形': ['椭圆形', 'Oval', 'วงรี'],
+  '✏️ 手繪': ['✏️ 手绘', '✏️ Sketch', '✏️ วาดเอง'],
+  '缸緣造型': ['缸缘造型', 'Rim profile', 'รูปทรงขอบอ่าง'],
+  '平面': ['平面', 'Flat', 'เรียบ'],
+  '圓弧': ['圆弧', 'Rounded', 'โค้งมน'],
+  '斜角': ['斜角', 'Beveled', 'เหลี่ยมเฉียง'],
+  '★ 套用照片款：不對稱蛋形缸': ['★ 套用照片款：不对称蛋形缸', '★ Photo preset: asymmetric egg tub', '★ พรีเซ็ตจากรูปถ่าย: อ่างทรงไข่อสมมาตร'],
+  '② 尺寸參數（mm）': ['② 尺寸参数（mm）', '② Dimensions (mm)', '② ขนาด (มม.)'],
+  '外部長度': ['外部长度', 'Overall length', 'ความยาวรวม'],
+  '外部寬度': ['外部宽度', 'Overall width', 'ความกว้างรวม'],
+  '缸緣高度(前端)': ['缸缘高度(前端)', 'Rim height (front)', 'ความสูงขอบ (ด้านหน้า)'],
+  '缸壁厚度': ['缸壁厚度', 'Wall thickness', 'ความหนาผนัง'],
+  '缸底厚度': ['缸底厚度', 'Base thickness', 'ความหนาก้นอ่าง'],
+  '圓角半徑': ['圆角半径', 'Corner radius', 'รัศมีมุมโค้ง'],
+  '⚠ 參數不合理：內部空間不足，請調整尺寸': ['⚠ 参数不合理：内部空间不足，请调整尺寸', '⚠ Invalid parameters: interior space too small, please adjust', '⚠ พารามิเตอร์ไม่ถูกต้อง: พื้นที่ภายในไม่พอ กรุณาปรับขนาด'],
+  '③ 不對稱造型參數': ['③ 不对称造型参数', '③ Asymmetry Parameters', '③ พารามิเตอร์ความอสมมาตร'],
+  '靠背增高(後端)': ['靠背增高(后端)', 'Backrest rise (rear)', 'พนักพิงยกสูง (ด้านหลัง)'],
+  '增高弧度': ['增高弧度', 'Rise curvature', 'ความโค้งของการยก'],
+  '蛋形係數': ['蛋形系数', 'Egg factor', 'สัดส่วนทรงไข่'],
+  '底部收縮': ['底部收缩', 'Base taper', 'การสอบเข้าของฐาน'],
+  '靠背增高＝後端缸緣比前端高多少（缸緣呈斜面）｜蛋形係數＝前端變窄、後端變寬｜底部收縮＝缸底佔缸口的比例，數值越小側壁越內收': ['靠背增高＝后端缸缘比前端高多少（缸缘呈斜面）｜蛋形系数＝前端变窄、后端变宽｜底部收缩＝缸底占缸口的比例，数值越小侧壁越内收', 'Backrest rise = how much higher the rear rim is (sloped rim) | Egg factor = narrower front, wider rear | Base taper = footprint vs rim opening; smaller = more inward-curving walls', 'พนักพิงยกสูง = ขอบด้านหลังสูงกว่าด้านหน้าเท่าใด (ขอบลาดเอียง) | ทรงไข่ = ด้านหน้าแคบ ด้านหลังกว้าง | การสอบฐาน = สัดส่วนก้นอ่างต่อปากอ่าง ยิ่งน้อยผนังยิ่งสอบเข้า'],
+  '④ 排水孔位置': ['④ 排水孔位置', '④ Drain Position', '④ ตำแหน่งท่อระบายน้ำ'],
+  '中央': ['中央', 'Center', 'กึ่งกลาง'],
+  '靠背端': ['靠背端', 'Rear end', 'ฝั่งพนักพิง'],
+  '前端': ['前端', 'Front end', 'ฝั่งหน้า'],
+  '⑤ 外觀顏色': ['⑤ 外观颜色', '⑤ Colour', '⑤ สีภายนอก'],
+  '顯示水位模擬（藍色半透明＝水）': ['显示水位模拟（蓝色半透明＝水）', 'Show water level (translucent blue = water)', 'แสดงระดับน้ำจำลอง (สีฟ้าโปร่งแสง = น้ำ)'],
+  '⑥ 訂單資訊（輸出至 CAD / 規格表）': ['⑥ 订单信息（输出至 CAD / 规格表）', '⑥ Order Info (exported to CAD / spec)', '⑥ ข้อมูลคำสั่งซื้อ (ส่งออกไป CAD / สเปก)'],
+  '⑦ 即時規格計算': ['⑦ 实时规格计算', '⑦ Live Specifications', '⑦ สเปกแบบเรียลไทม์'],
+  '製程流程': ['制程流程', 'Production Flow', 'ขั้นตอนการผลิต'],
+  '拖曳＝360° 自由旋轉（含仰視）｜滾輪＝縮放': ['拖拽＝360° 自由旋转（含仰视）｜滚轮＝缩放', 'Drag = 360° free orbit (incl. bottom view) | Scroll = zoom', 'ลาก = หมุนอิสระ 360° (รวมมุมมองด้านล่าง) | สกรอลล์ = ซูม'],
+  '✏️ 手繪你的浴缸形狀': ['✏️ 手绘你的浴缸形状', '✏️ Sketch Your Bathtub Shape', '✏️ วาดรูปทรงอ่างของคุณ'],
+  '畫出獨一無二的浴缸 — 系統會自動把手繪線條轉成流暢曲線並建成 3D 模型，之後仍可調整所有尺寸參數。': ['画出独一无二的浴缸 — 系统会自动把手绘线条转成流畅曲线并建成 3D 模型，之后仍可调整所有尺寸参数。', 'Draw a one-of-a-kind bathtub — sketch lines are auto-smoothed into clean curves and built into a 3D model. All dimension parameters remain adjustable afterwards.', 'วาดอ่างที่มีเพียงหนึ่งเดียว — เส้นที่วาดจะถูกปรับให้เรียบและสร้างเป็นโมเดล 3D อัตโนมัติ และยังปรับขนาดทุกค่าได้ภายหลัง'],
+  '① 俯視缸口形狀（必畫）': ['① 俯视缸口形状（必画）', '① Top-View Rim Shape (required)', '① โครงปากอ่างมุมมองบน (จำเป็น)'],
+  '② 側面牆壁剖面（選畫）': ['② 侧面墙壁剖面（选画）', '② Side Wall Profile (optional)', '② โปรไฟล์ผนังด้านข้าง (ไม่บังคับ)'],
+  '清除重畫': ['清除重画', 'Clear', 'ล้างและวาดใหม่'],
+  '📷 上傳手稿照片': ['📷 上传手稿照片', '📷 Upload sketch photo', '📷 อัปโหลดรูปสเก็ตช์'],
+  '使用預設剖面': ['使用预设剖面', 'Use default profile', 'ใช้โปรไฟล์มาตรฐาน'],
+  '取消': ['取消', 'Cancel', 'ยกเลิก'],
+  '✔ 產生 3D 模型': ['✔ 生成 3D 模型', '✔ Generate 3D Model', '✔ สร้างโมเดล 3D'],
   // 畫布導引文字
-  '畫一個封閉的缸口形狀': ['画一个封闭的缸口形状', 'Draw a closed rim outline'],
-  '中心線': ['中心线', 'Centerline'],
-  '缸緣（上）': ['缸缘（上）', 'Rim (top)'],
-  '缸底（下）': ['缸底（下）', 'Base (bottom)'],
+  '畫一個封閉的缸口形狀': ['画一个封闭的缸口形状', 'Draw a closed rim outline', 'วาดโครงปากอ่างแบบปิด'],
+  '中心線': ['中心线', 'Centerline', 'เส้นกึ่งกลาง'],
+  '缸緣（上）': ['缸缘（上）', 'Rim (top)', 'ขอบอ่าง (บน)'],
+  '缸底（下）': ['缸底（下）', 'Base (bottom)', 'ก้นอ่าง (ล่าง)'],
   // 規格表
-  '缸口造型': ['缸口造型', 'Rim shape'],
-  '外部尺寸 (長×寬)': ['外部尺寸 (长×宽)', 'Overall size (L×W)'],
-  '缸緣高度 前端 / 後端': ['缸缘高度 前端 / 后端', 'Rim height front / rear'],
-  '內部尺寸 (長×寬)': ['内部尺寸 (长×宽)', 'Interior size (L×W)'],
-  '內部深度 (前端)': ['内部深度 (前端)', 'Interior depth (front)'],
-  '底部尺寸 (收縮後)': ['底部尺寸 (收缩后)', 'Base footprint (tapered)'],
-  '滿水容量 (估)': ['满水容量 (估)', 'Full capacity (est.)'],
-  '建議使用水量 (八成滿)': ['建议使用水量 (八成满)', 'Recommended fill (80%)'],
-  '估計缸體重量 (壓克力)': ['估计缸体重量 (亚克力)', 'Est. shell weight (acrylic)'],
-  '排水孔位置': ['排水孔位置', 'Drain position'],
-  '✏️ 手繪自訂': ['✏️ 手绘自定义', '✏️ Custom sketch'],
-  '（手繪剖面）': ['（手绘剖面）', ' (sketched profile)'],
+  '缸口造型': ['缸口造型', 'Rim shape', 'รูปทรงปากอ่าง'],
+  '外部尺寸 (長×寬)': ['外部尺寸 (长×宽)', 'Overall size (L×W)', 'ขนาดรวม (ยาว×กว้าง)'],
+  '缸緣高度 前端 / 後端': ['缸缘高度 前端 / 后端', 'Rim height front / rear', 'ความสูงขอบ หน้า / หลัง'],
+  '內部尺寸 (長×寬)': ['内部尺寸 (长×宽)', 'Interior size (L×W)', 'ขนาดภายใน (ยาว×กว้าง)'],
+  '內部深度 (前端)': ['内部深度 (前端)', 'Interior depth (front)', 'ความลึกภายใน (หน้า)'],
+  '底部尺寸 (收縮後)': ['底部尺寸 (收缩后)', 'Base footprint (tapered)', 'ขนาดฐาน (หลังสอบเข้า)'],
+  '滿水容量 (估)': ['满水容量 (估)', 'Full capacity (est.)', 'ความจุน้ำเต็ม (ประมาณ)'],
+  '建議使用水量 (八成滿)': ['建议使用水量 (八成满)', 'Recommended fill (80%)', 'ปริมาณน้ำแนะนำ (80%)'],
+  '估計缸體重量 (壓克力)': ['估计缸体重量 (亚克力)', 'Est. shell weight (acrylic)', 'น้ำหนักอ่างโดยประมาณ (อะคริลิก)'],
+  '排水孔位置': ['排水孔位置', 'Drain position', 'ตำแหน่งท่อระบายน้ำ'],
+  '✏️ 手繪自訂': ['✏️ 手绘自定义', '✏️ Custom sketch', '✏️ วาดเอง'],
+  '（手繪剖面）': ['（手绘剖面）', ' (sketched profile)', ' (โปรไฟล์วาดเอง)'],
   // 錯誤訊息
-  '⚠ 請先畫出（或上傳）一個封閉的缸口形狀，線條要夠長。': ['⚠ 请先画出（或上传）一个封闭的缸口形状，线条要够长。', '⚠ Please draw (or upload) a closed rim outline first — the line needs to be long enough.'],
-  '⚠ 偵測不到封閉形狀。請用深色筆在白紙上畫封閉輪廓，光線均勻、對比清楚。': ['⚠ 检测不到封闭形状。请用深色笔在白纸上画封闭轮廓，光线均匀、对比清楚。', '⚠ No closed shape detected. Use a dark pen on white paper, with even lighting and clear contrast.'],
-  '⚠ 圖片處理失敗：': ['⚠ 图片处理失败：', '⚠ Image processing failed: '],
+  '⚠ 請先畫出（或上傳）一個封閉的缸口形狀，線條要夠長。': ['⚠ 请先画出（或上传）一个封闭的缸口形状，线条要够长。', '⚠ Please draw (or upload) a closed rim outline first — the line needs to be long enough.', '⚠ กรุณาวาด (หรืออัปโหลด) โครงปากอ่างแบบปิดก่อน และเส้นต้องยาวพอ'],
+  '⚠ 偵測不到封閉形狀。請用深色筆在白紙上畫封閉輪廓，光線均勻、對比清楚。': ['⚠ 检测不到封闭形状。请用深色笔在白纸上画封闭轮廓，光线均匀、对比清楚。', '⚠ No closed shape detected. Use a dark pen on white paper, with even lighting and clear contrast.', '⚠ ตรวจไม่พบรูปทรงแบบปิด กรุณาใช้ปากกาสีเข้มบนกระดาษขาว แสงสม่ำเสมอ คอนทราสต์ชัดเจน'],
+  '⚠ 圖片處理失敗：': ['⚠ 图片处理失败：', '⚠ Image processing failed: ', '⚠ ประมวลผลรูปไม่สำเร็จ: '],
   // placeholder
-  '客戶姓名 / Customer Name': ['客户姓名 / Customer Name', 'Customer name'],
-  '備註 / Notes（例：需加裝溢水口）': ['备注 / Notes（例：需加装溢水口）', 'Notes (e.g. overflow drain required)'],
+  '客戶姓名 / Customer Name': ['客户姓名 / Customer Name', 'Customer name', 'ชื่อลูกค้า'],
+  '備註 / Notes（例：需加裝溢水口）': ['备注 / Notes（例：需加装溢水口）', 'Notes (e.g. overflow drain required)', 'หมายเหตุ (เช่น ต้องการช่องน้ำล้น)'],
   // 價格與詢價
-  '⑧ 價格與詢價': ['⑧ 价格与询价', '⑧ Price & Quote'],
-  '價格': ['价格', 'Price'],
-  '固定價格，全球配送，運費依目的地報價；設計與規格會隨詢價單一併送出。': ['固定价格，全球配送，运费按目的地报价；设计与规格会随询价单一并送出。', 'Fixed price, delivered worldwide — shipping quoted by destination. Your design and full spec travel with the enquiry.'],
-  '送出設計並索取正式報價 →': ['送出设计并索取正式报价 →', 'Submit design & get a firm quote →'],
-  '請在「訂單資訊」填寫 Email，設計師才能回覆你的報價與 3D 渲染圖。': ['请在「订单信息」填写 Email，设计师才能回覆你的报价与 3D 渲染图。', 'Please enter your email under "Order Info" so our designer can reply with your quote and 3D render.'],
-  '傳送中…': ['发送中…', 'Sending…'],
-  '✅ 設計已送出！我們會在 1 個工作日內回覆正式報價與下一步。': ['✅ 设计已送出！我们会在 1 个工作日内回覆正式报价与下一步。', '✅ Your design is in! We\'ll reply with a firm quote and next steps within one business day.'],
-  '❌ 送出失敗，請稍後再試，或直接來信 concierge@kreinergroups.com': ['❌ 送出失败，请稍后再试，或直接来信 concierge@kreinergroups.com', '❌ Something went wrong — please try again, or email concierge@kreinergroups.com directly.'],
-  'Email *': ['Email *', 'Email *']
+  '⑧ 價格與詢價': ['⑧ 价格与询价', '⑧ Price & Quote', '⑧ ราคาและใบเสนอราคา'],
+  '價格': ['价格', 'Price', 'ราคา'],
+  '固定價格，全球配送，運費依目的地報價；設計與規格會隨詢價單一併送出。': ['固定价格，全球配送，运费按目的地报价；设计与规格会随询价单一并送出。', 'Fixed price, delivered worldwide — shipping quoted by destination. Your design and full spec travel with the enquiry.', 'ราคาคงที่ จัดส่งทั่วโลก — ค่าขนส่งคิดตามปลายทาง แบบและสเปกทั้งหมดจะถูกส่งไปพร้อมคำขอ'],
+  '送出設計並索取正式報價 →': ['送出设计并索取正式报价 →', 'Submit design & get a firm quote →', 'ส่งแบบและขอใบเสนอราคา →'],
+  '請在「訂單資訊」填寫 Email，設計師才能回覆你的報價與 3D 渲染圖。': ['请在「订单信息」填写 Email，设计师才能回覆你的报价与 3D 渲染图。', 'Please enter your email under "Order Info" so our designer can reply with your quote and 3D render.', 'กรุณากรอกอีเมลใน "ข้อมูลคำสั่งซื้อ" เพื่อให้นักออกแบบตอบกลับพร้อมราคาและภาพ 3D'],
+  '傳送中…': ['发送中…', 'Sending…', 'กำลังส่ง…'],
+  '✅ 設計已送出！我們會在 1 個工作日內回覆正式報價與下一步。': ['✅ 设计已送出！我们会在 1 个工作日内回覆正式报价与下一步。', '✅ Your design is in! We\'ll reply with a firm quote and next steps within one business day.', '✅ ส่งแบบเรียบร้อย! เราจะตอบกลับพร้อมใบเสนอราคาและขั้นตอนถัดไปภายใน 1 วันทำการ'],
+  '❌ 送出失敗，請稍後再試，或直接來信 concierge@kreinergroups.com': ['❌ 送出失败，请稍后再试，或直接来信 concierge@kreinergroups.com', '❌ Something went wrong — please try again, or email concierge@kreinergroups.com directly.', '❌ ส่งไม่สำเร็จ กรุณาลองใหม่ หรืออีเมลมาที่ concierge@kreinergroups.com'],
+  'Email *': ['Email *', 'Email *', 'อีเมล *']
 };
 // 含 HTML 標記的區塊：id → [繁中, 简中, 英文]
 const I18N_HTML = {
   flowBox: [
     '<b>客戶端</b>：於本頁面依想像調整造型與參數，3D 即時預覽<br><b>↓ 一鍵輸出</b><br><b>設計端</b>：DXF 三視圖（AutoCAD 可直接開啟修改）＋ JSON 規格表<br><b>↓ 設計師確認 / 微調</b><br><b>製造端</b>：依 CAD 圖進行模具開發與生產',
     '<b>客户端</b>：于本页面按想象调整造型与参数，3D 实时预览<br><b>↓ 一键输出</b><br><b>设计端</b>：DXF 三视图（AutoCAD 可直接打开修改）＋ JSON 规格表<br><b>↓ 设计师确认 / 微调</b><br><b>制造端</b>：按 CAD 图进行模具开发与生产',
-    '<b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: mould development &amp; production from CAD'
+    '<b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: mould development &amp; production from CAD',
+    '<b>ลูกค้า</b>: ปรับรูปทรงและพารามิเตอร์ที่นี่พร้อมพรีวิว 3D สด<br><b>↓ ส่งออกคลิกเดียว</b><br><b>นักออกแบบ</b>: แบบ DXF สามมุมมอง (แก้ไขใน AutoCAD ได้) + สเปก JSON<br><b>↓ นักออกแบบตรวจ / ปรับละเอียด</b><br><b>โรงงาน</b>: พัฒนาแม่พิมพ์และผลิตจาก CAD'
   ],
   skDescTop: [
     '從正上方看的缸口輪廓。畫一個<b>封閉</b>的形狀（頭尾會自動接起來）。也可以把紙上手稿拍照上傳（深色筆、白紙、光線均勻）。',
     '从正上方看的缸口轮廓。画一个<b>封闭</b>的形状（头尾会自动接起来）。也可以把纸上手稿拍照上传（深色笔、白纸、光线均匀）。',
-    'The rim outline seen from directly above. Draw a <b>closed</b> shape (ends auto-connect). You can also photograph a paper sketch and upload it (dark pen, white paper, even lighting).'
+    'The rim outline seen from directly above. Draw a <b>closed</b> shape (ends auto-connect). You can also photograph a paper sketch and upload it (dark pen, white paper, even lighting).',
+    'โครงปากอ่างเมื่อมองจากด้านบน วาดรูปทรง<b>แบบปิด</b> (ปลายเส้นเชื่อมกันอัตโนมัติ) หรือถ่ายรูปสเก็ตช์บนกระดาษแล้วอัปโหลด (ปากกาเข้ม กระดาษขาว แสงสม่ำเสมอ)'
   ],
   skDescSide: [
     '左邊虛線＝浴缸中心線。<b>由下往上</b>畫出單邊外牆曲線（例：底部內收、中段外鼓）。不畫則由「底部收縮」參數控制。',
     '左边虚线＝浴缸中心线。<b>由下往上</b>画出单边外墙曲线（例：底部内收、中段外鼓）。不画则由「底部收缩」参数控制。',
-    'Dashed line on the left = tub centerline. Draw one side wall curve <b>from bottom to top</b> (e.g. tapered base, bulging middle). If skipped, the "Base taper" slider is used instead.'
+    'Dashed line on the left = tub centerline. Draw one side wall curve <b>from bottom to top</b> (e.g. tapered base, bulging middle). If skipped, the "Base taper" slider is used instead.',
+    'เส้นประด้านซ้าย = แกนกลางอ่าง วาดเส้นผนังด้านนอกหนึ่งข้าง<b>จากล่างขึ้นบน</b> (เช่น ฐานสอบเข้า กลางป่องออก) ถ้าไม่วาดจะใช้สไลเดอร์ "การสอบเข้าของฐาน" แทน'
   ]
 };
 function t(key){
   if(LANG === 'zhT') return key;
   const e = I18N[key];
-  return e ? e[LANG === 'zhS' ? 0 : 1] : key;
+  if(!e) return key;
+  const idx = LANG === 'zhS' ? 0 : (LANG === 'th' ? 2 : 1);
+  return e[idx] != null ? e[idx] : e[1];   // 泰文缺漏時退回英文
 }
 const i18nNodes = [];
 function collectI18nNodes(){
@@ -438,22 +443,18 @@ function collectI18nNodes(){
 }
 function applyLang(){
   i18nNodes.forEach(([n, key])=>{ n.textContent = t(key); });
-  const li = LANG === 'zhT' ? 0 : (LANG === 'zhS' ? 1 : 2);
+  const li = LANG === 'zhT' ? 0 : (LANG === 'zhS' ? 1 : (LANG === 'th' ? 3 : 2));
   Object.keys(I18N_HTML).forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.innerHTML = I18N_HTML[id][li];
   });
   document.getElementById('custName').placeholder = t('客戶姓名 / Customer Name');
   document.getElementById('custNote').placeholder = t('備註 / Notes（例：需加裝溢水口）');
-  document.documentElement.lang = LANG === 'en' ? 'en' : (LANG === 'zhS' ? 'zh-Hans' : 'zh-Hant');
+  document.documentElement.lang = LANG === 'en' ? 'en' : (LANG === 'th' ? 'th' : (LANG === 'zhS' ? 'zh-Hans' : 'zh-Hant'));
   if(typeof padTop !== 'undefined'){ padTop.redraw(); padSide.redraw(); }
   if(typeof updateSpec === 'function' && tubGroup) updateSpec();
 }
-function setLang(l, btn){
-  LANG = l;
-  document.querySelectorAll('.lang-sw button').forEach(b=>b.classList.toggle('active', b.dataset.lang === l));
-  applyLang();
-}
+// 語言完全交由站上導覽列的 langSel 控制（見檔尾接線），設計器不再有自己的語言選項
 
 // ===================== Three.js 場景 =====================
 const canvas = document.getElementById('canvas3d');
@@ -1579,7 +1580,7 @@ if(q.get('shot')){
 }
 collectI18nNodes();
 // 語言與站上同步：讀取全站的 ka_lang（en/zh/th），th 目前以英文顯示設計器內容
-const SITE2LAB = { en:'en', zh:'zhS', th:'en' };
+const SITE2LAB = { en:'en', zh:'zhS', th:'th' };
 let siteLang = 'en';
 try { siteLang = localStorage.getItem('ka_lang') || 'en'; } catch(e){}
 if(!['en','zh','th'].includes(siteLang)) siteLang = 'en';
