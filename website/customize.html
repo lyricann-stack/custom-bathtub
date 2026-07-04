@@ -130,22 +130,45 @@
   .sk-actions .ok { background:#1b1a16; border-radius:999px; }
   .sk-actions .cancel { background:#eee7db; border-radius:999px; color:#4a463d; }
   #warn, #skErr { color:#a04b2e; }
+  /* 標題帶（與站上頁面開頭一致的語氣） */
+  .studio-strip { flex:none; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px 20px; padding:16px clamp(20px,5vw,56px) 14px; background:#f4f1ea; border-bottom:1px solid #e6e1d5; }
+  .studio-strip .eyebrow { font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#9a7b43; font-weight:600; margin-bottom:5px; }
+  .studio-strip h1 { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(22px,2.4vw,30px); color:#1b1a16; line-height:1.15; }
+  .studio-strip .sub { color:#66614f; font-size:12.5px; margin-top:4px; }
+  .studio-strip .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  @media (max-width:900px){ [data-nav-links]{ display:none; } }
 </style>
 </head>
 <body>
-<header>
-  <div style="display:flex;align-items:center">
-    <a class="brand" href="index.html">KREINER<span>Atelier</span></a>
-    <a class="backlink" href="index.html">← Home</a>
-    <div class="lang-sw">
-      <button data-lang="en" class="active" onclick="setLang('en',this)">EN</button>
-      <button data-lang="zhS" onclick="setLang('zhS',this)">简中</button>
-      <button data-lang="zhT" onclick="setLang('zhT',this)">繁中</button>
+<!-- 站上同一條導覽列（與其他頁完全一致，維持視覺連續性） -->
+<nav style="flex:none;height:70px;display:flex;align-items:center;background:rgba(244,241,234,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid #ddd8cc">
+  <div style="width:100%;max-width:1280px;margin:0 auto;padding:0 clamp(20px,5vw,56px);display:flex;align-items:center;justify-content:space-between;gap:20px">
+    <a href="index.html" style="text-decoration:none;color:#1b1a16;display:flex;align-items:baseline;gap:9px;letter-spacing:.28em;font-size:15px;font-weight:600">KREINER<span style="font-family:'Playfair Display',serif;font-style:italic;letter-spacing:.02em;font-weight:500;color:#9a7b43;font-size:16px">Atelier</span></a>
+    <div style="display:flex;align-items:center;gap:26px" data-nav-links>
+      <a href="materials.html" style="text-decoration:none;color:#4a463d;font-size:14px;letter-spacing:.01em">Materials</a>
+      <a href="how-it-works.html" style="text-decoration:none;color:#4a463d;font-size:14px">How it works</a>
+      <a href="designers.html" style="text-decoration:none;color:#4a463d;font-size:14px">For designers</a>
+      <a href="portfolio.html" style="text-decoration:none;color:#4a463d;font-size:14px">Portfolio</a>
+      <a href="guides.html" style="text-decoration:none;color:#4a463d;font-size:14px;font-weight:400">Guides</a>
+      <a href="customize.html" style="text-decoration:none;color:#9a7b43;font-size:14px;font-weight:600">Design studio</a>
     </div>
-    <div style="margin-left:16px">
-      <h1>🛁 客製化浴缸互動設計系統</h1>
-      <div class="sub">客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <select id="langSel" aria-label="Language" style="appearance:none;-webkit-appearance:none;background:transparent;border:1px solid #ddd8cc;border-radius:999px;padding:7px 14px;font-size:12.5px;font-family:inherit;color:#4a463d;cursor:pointer">
+        <option value="en">EN</option>
+        <option value="zh">简中</option>
+        <option value="th">ไทย</option>
+      </select>
+      <a href="contact.html" style="text-decoration:none;background:#1b1a16;color:#f4f1ea;padding:11px 20px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.01em">Get free sample kit</a>
     </div>
+  </div>
+</nav>
+
+<!-- 標題帶：沿用原 Design Studio 的頁面語氣 -->
+<div class="studio-strip">
+  <div>
+    <div class="eyebrow">The Design Studio</div>
+    <h1>🛁 客製化浴缸互動設計系統</h1>
+    <div class="sub">客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造</div>
   </div>
   <div class="btns">
     <button class="btn btn-upl" onclick="document.getElementById('cadFile').click()">⬆ 上傳 CAD 檔案</button>
@@ -153,7 +176,7 @@
     <button class="btn btn-json" onclick="exportJSON()">⬇ 下載規格表 (JSON)</button>
     <input type="file" id="cadFile" accept=".dxf,.stl,.json" style="display:none">
   </div>
-</header>
+</div>
 <main>
   <div id="panel">
     <div class="group">
@@ -295,8 +318,8 @@ const P = {
 // ===================== 多語系 i18n（繁中 zhT ＝原文；[0]=简中 zhS, [1]=英文 en） =====================
 let LANG = 'zhT';
 const I18N = {
-  '🛁 客製化浴缸互動設計系統': ['🛁 客制化浴缸互动设计系统', 'Design Studio'],
-  '客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造': ['客户自主设计 → 参数化 3D 预览 → 一键输出设计师可修改的 CAD (DXF) 图档 → 模具制造', 'Sketch it · sculpt it in 3D · export designer-ready CAD (DXF) — we build it from there'],
+  '🛁 客製化浴缸互動設計系統': ['塑形它，看它转动。', 'Shape it. Watch it turn.'],
+  '客戶自主設計 → 參數化 3D 預覽 → 一鍵輸出設計師可修改之 CAD (DXF) 圖檔 → 模具製造': ['画出任何形状 · 3D 实时雕塑 · 一键导出设计师可修改的 CAD — 之后交给我们制造', 'Sketch any shape · sculpt it live in 3D · export designer-ready CAD — we build it from there'],
   '⬆ 上傳 CAD 檔案': ['⬆ 上传 CAD 文件', '⬆ Upload CAD File'],
   '外部 CAD 模型檢視中 — 調整任何參數即可返回參數化模型': ['外部 CAD 模型查看中 — 调整任何参数即可返回参数化模型', 'Viewing external CAD model — adjust any parameter to return to the parametric model'],
   '⚠ 無法解析此 CAD 檔案（支援：本系統 DXF、2D 輪廓 DXF、STL、本系統 JSON 規格表）': ['⚠ 无法解析此 CAD 文件（支持：本系统 DXF、2D 轮廓 DXF、STL、本系统 JSON 规格表）', '⚠ Could not parse this CAD file (supported: DXF from this tool, 2D outline DXF, STL, spec JSON from this tool)'],
@@ -1555,10 +1578,25 @@ if(q.get('shot')){
   }, 1200);
 }
 collectI18nNodes();
-// Design Lab 版：預設英文（可用 ?lang= 覆蓋）
-const ql = ['zhT','zhS','en'].includes(q.get('lang')) ? q.get('lang') : 'en';
-LANG = ql;
-document.querySelectorAll('.lang-sw button').forEach(b=>b.classList.toggle('active', b.dataset.lang === ql));
+// 語言與站上同步：讀取全站的 ka_lang（en/zh/th），th 目前以英文顯示設計器內容
+const SITE2LAB = { en:'en', zh:'zhS', th:'en' };
+let siteLang = 'en';
+try { siteLang = localStorage.getItem('ka_lang') || 'en'; } catch(e){}
+if(!['en','zh','th'].includes(siteLang)) siteLang = 'en';
+const ql = q.get('lang');
+LANG = ['zhT','zhS','en'].includes(ql) ? ql : (SITE2LAB[siteLang] || 'en');
+const langSel = document.getElementById('langSel');
+if(langSel){
+  langSel.value = siteLang;
+  langSel.addEventListener('change', ()=>{
+    try {
+      localStorage.setItem('ka_lang', langSel.value);
+      document.cookie = 'ka_lang=' + langSel.value + ';path=/;max-age=31536000';
+    } catch(e){}
+    LANG = SITE2LAB[langSel.value] || 'en';
+    applyLang();
+  });
+}
 applyLang();
 buildTub();
 animate();
