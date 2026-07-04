@@ -1,166 +1,197 @@
-/* tub3d.js — lightweight canvas 3D bathtub renderer for Kreiner Atelier
-   Renders a shaded, rotatable freestanding-tub form. No dependencies.
-   Usage:
+/* tub3d.js — WebGL (Three.js) bathtub viewer for Kreiner Atelier
+   API-compatible upgrade of the original 2D-canvas renderer:
      import { TubViewer } from './tub3d.js'
-     const v = new TubViewer(canvasEl);
-     v.set({ shape:'oval', len:1700, wid:800, dep:580, base:'#eef1f4', finish:'Gloss White', addons:[] });
-     v.setYaw(0.6);            // radians, or let drag handle it
-   The viewer owns its own requestAnimationFrame loop for idle auto-spin + drag.
+     const v = new TubViewer(canvasEl, { autoSpin, interactive, yaw, pitch, spinSpeed });
+     v.set({ shape, len, wid, dep, base, finish, addons, ledColor, curve, taper, flare,
+             edgeSoft, wall, corner, asym, waist, lobe });
+     v.setYaw(0.6); v.destroy();
+   - One shared WebGL context renders every viewer on the page (blitted to each 2D canvas),
+     so any number of tubs per page stays within browser context limits.
+   - Transparent background: card gradients behind the canvas show through, same as before.
+   - Full 360° drag (yaw + pitch, can flip right over) — behaviour preserved.
+   - If Three.js fails to load (offline), falls back to the legacy renderer (tub3d-canvas.js).
 */
 
-/* ---------- small vec helpers ---------- */
-function sub(a, b) { return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
-function cross(a, b) { return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
-function norm(a) { const l = Math.hypot(a[0],a[1],a[2])||1; return [a[0]/l,a[1]/l,a[2]/l]; }
-function dot(a, b) { return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
-
-function hexToRgb(h) {
-  h = String(h).replace('#','');
-  if (h.length === 3) h = h.split('').map(c => c+c).join('');
-  return [parseInt(h.substr(0,2),16), parseInt(h.substr(2,2),16), parseInt(h.substr(4,2),16)];
+/* ---------- Three.js loader (single script tag, shared promise) ---------- */
+let _threeP = null;
+function loadThree() {
+  if (window.THREE) return Promise.resolve();
+  if (_threeP) return _threeP;
+  _threeP = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = () => res();
+    s.onerror = () => rej(new Error('three.js load failed'));
+    document.head.appendChild(s);
+  });
+  return _threeP;
 }
 
-/* cross-section radius multiplier for angle t in [0,2pi) given shape */
-function sectionXY(shape, t) {
-  const c = Math.cos(t), s = Math.sin(t);
-  if (shape === 'round' || shape === 'japanese') return [c, s];
-  if (shape === 'rect') {
-    // superellipse (rounded rectangle), exponent controls corner sharpness
-    const n = 4.2;
-    const cx = Math.sign(c) * Math.pow(Math.abs(c), 2/n);
-    const sz = Math.sign(s) * Math.pow(Math.abs(s), 2/n);
-    return [cx, sz];
-  }
-  // oval / slipper: ellipse (a,b applied later)
-  return [c, s];
+/* ---------- shared renderer (one WebGL context for the whole page) ---------- */
+let _shared = null;
+function sharedRenderer() {
+  if (_shared) return _shared;
+  const T = window.THREE;
+  _shared = new T.WebGLRenderer({ alpha: true, antialias: true });
+  _shared.setClearColor(0x000000, 0);
+  return _shared;
 }
 
-/* ---------- geometry build ---------- */
-function buildGeometry(p) {
+const num = (v, d) => (v == null || isNaN(Number(v)) ? d : Number(v));
+
+/* ---------- profile / cross-section math (identical to legacy renderer) ---------- */
+function buildSpec(p) {
   const shape = p.shape || 'oval';
-  // half-extents in model units (normalized ~ -1..1 footprint), height along +y
-  let a = 1.0;                       // along length (x)
-  let b = (p.wid / p.len) * 0.62;    // along width (z), relative
+  let a = 1.0;
+  let b = (p.wid / p.len) * 0.62;
   if (shape === 'round' || shape === 'japanese') { a = 0.8; b = 0.8; }
   if (shape === 'rect') b = (p.wid / p.len) * 0.66;
   let height = (p.dep / p.len) * 1.85;
   if (shape === 'japanese') height *= 1.5;
 
-  /* ---- free-form sculpt params (0..100 slider values; defaults match old look) ---- */
-  const num = (v, d) => (v == null || isNaN(Number(v)) ? d : Number(v));
-  const curve    = num(p.curve, 55) / 100;          // body curvature: 0 straight-sided → 1 full belly
-  const taper    = num(p.taper, 40) / 100;          // base narrowing
-  // edge angle: slider 0..100 → -5°..+20° (thermoform deep-draw draft ≥5-7°, so outward
-  // flare is the natural range; inward tuck limited to a subtle -5°). default 52 ≈ +8°.
+  const curve    = num(p.curve, 55) / 100;
+  const taper    = num(p.taper, 40) / 100;
   const flareDeg = num(p.flare, 52) * 0.25 - 5;
-  const flare    = flareDeg / 20;                   // normalized: -0.25 … +1
-  const edgeSoft = num(p.edgeSoft, 35) / 100;       // edge roundness: 0 crisp → 1 rolled lip
-  const wallTh   = num(p.wall, 45) / 100;           // rim width: 0 slim edge → 1 substantial
-  const cornerK  = num(p.corner, 55) / 100;         // rect corner sharpness
-  // freeform (irregular) shape harmonics — only applied when shape === 'freeform'
-  const asymK    = num(p.asym, 0) / 100;            // one end fuller than the other
-  const waistK   = num(p.waist, 0) / 100;           // hourglass pinch at the middle
-  const lobeK    = num(p.lobe, 0) / 100;            // organic three-lobe undulation
+  const flare    = flareDeg / 20;
+  const edgeSoft = num(p.edgeSoft, 35) / 100;
+  const wallTh   = num(p.wall, 45) / 100;
+  const cornerK  = num(p.corner, 55) / 100;
+  const asymK    = num(p.asym, 0) / 100;
+  const waistK   = num(p.waist, 0) / 100;
+  const lobeK    = num(p.lobe, 0) / 100;
 
-  const nExp = 2.2 + cornerK * 5.2;                 // superellipse exponent for rect corners
+  const nExp = 2.2 + cornerK * 5.2;
   function section(t) {
     const c = Math.cos(t), s = Math.sin(t);
     if (shape === 'rect') {
-      const cx = Math.sign(c) * Math.pow(Math.abs(c), 2/nExp);
-      const sz = Math.sign(s) * Math.pow(Math.abs(s), 2/nExp);
-      return [cx, sz];
+      return [Math.sign(c) * Math.pow(Math.abs(c), 2 / nExp),
+              Math.sign(s) * Math.pow(Math.abs(s), 2 / nExp)];
     }
     if (shape === 'freeform') {
-      let m = 1 + asymK*0.22*Math.cos(t) - waistK*0.30*Math.sin(t)*Math.sin(t) + lobeK*0.12*Math.cos(3*t + 0.6);
+      let m = 1 + asymK * 0.22 * Math.cos(t) - waistK * 0.30 * Math.sin(t) * Math.sin(t) + lobeK * 0.12 * Math.cos(3 * t + 0.6);
       m = Math.max(0.4, Math.min(1.5, m));
-      return [c*m, s*m];
+      return [c * m, s * m];
     }
     return [c, s];
   }
 
-  const SEG = 64;
-  // parametric outer profile: blend straight-sided ↔ bellied, with edge flare
-  const r0 = 1 - 0.55 * taper;                      // bottom radius
-  const rTop = 1 + flare * 0.14;                    // rim outer radius (edge angle)
+  const r0 = 1 - 0.55 * taper;
+  const rTop = 1 + flare * 0.14;
   function outerR(h) {
     const straight = r0 + (rTop - r0) * h;
     const belly = r0 + (rTop - r0) * Math.pow(h, 0.42) + Math.sin(Math.PI * h) * 0.09 * curve;
     return straight * (1 - curve) + belly * curve;
   }
-  const outer = [0, 0.09, 0.26, 0.55, 0.8, 0.94].map(h => [h, outerR(h)]);
-  outer.push([0.97, rTop + edgeSoft * 0.045]);      // rolled-lip ring (edge roundness)
-  outer.push([1.00, rTop]);
-  // rim thickness (thin slab ↔ thick rim) and matching inner basin
-  const rimOuterR = rTop;
   const rimInnerR = Math.max(0.35, rTop - (0.035 + wallTh * 0.19));
-  const inner = [
-    [1.00, rimInnerR], [0.74, rimInnerR * 0.93],
-    [0.40, Math.min(rimInnerR * 0.8, 0.66)], [0.17, 0.34], [0.135, 0.0]
-  ];
 
-  // slipper: raise the back of the rim (angles near t=PI) into a backrest
-  function rimBoost(t) {
+  // 連續剖面（由缸底外緣往上、越過缸緣、進到缸內、收到盆底）
+  const rings = [];
+  [0, 0.09, 0.26, 0.55, 0.8, 0.94].forEach(h => rings.push([h, outerR(h)]));
+  rings.push([0.97, rTop + edgeSoft * 0.045]);
+  rings.push([1.00, rTop]);
+  rings.push([1.00, rimInnerR]);
+  rings.push([0.74, rimInnerR * 0.93]);
+  rings.push([0.40, Math.min(rimInnerR * 0.8, 0.66)]);
+  rings.push([0.17, 0.34]);
+  rings.push([0.135, 0.02]);
+
+  // 拖鞋缸：靠背端缸緣抬升（沿高度平滑帶入，比舊版的頂環突變更順）
+  function rimBoost(t, h) {
     if (shape !== 'slipper') return 0;
-    const back = Math.max(0, -Math.cos(t));   // 1 at t=PI (back), 0 at front
-    return Math.pow(back, 1.4) * height * 0.85;
+    const back = Math.max(0, -Math.cos(t));
+    const w = Math.pow(Math.max(0, (h - 0.5) / 0.5), 1.6);
+    return Math.pow(back, 1.4) * height * 0.85 * w;
   }
 
-  const quads = [];
-  function ringPoint(radiusMult, hFrac, t, boost) {
-    const [ux, uz] = section(t);
-    return [ux * a * radiusMult, hFrac * height + (boost || 0), uz * b * radiusMult];
-  }
+  return { shape, a, b, height, rings, section, rimBoost, rimInnerR, rTop };
+}
 
-  // OUTER wall
-  for (let r = 0; r < outer.length - 1; r++) {
-    const [h0, r0] = outer[r], [h1, r1] = outer[r+1];
-    const topRing = (r === outer.length - 2);
-    for (let i = 0; i < SEG; i++) {
-      const t0 = (i / SEG) * Math.PI * 2, t1 = ((i+1) / SEG) * Math.PI * 2;
-      const bo0 = topRing ? rimBoost(t0) : 0, bo1 = topRing ? rimBoost(t1) : 0;
-      quads.push({
-        v: [ ringPoint(r0,h0,t0,0), ringPoint(r0,h0,t1,0), ringPoint(r1,h1,t1,bo1), ringPoint(r1,h1,t0,bo0) ],
-        kind: 'out'
-      });
+/* ---------- BufferGeometry 掃掠建模 ---------- */
+function buildGeometry(T, p) {
+  const S = buildSpec(p);
+  const SEG = 96;
+  const rings = [[0.0, 0.02]].concat(S.rings);       // 底部封蓋起點
+  const NR = rings.length;
+  const pos = [], uv = [], idx = [];
+  const cy = S.height * 0.5;
+
+  for (let r = 0; r < NR; r++) {
+    const [h, rad] = rings[r];
+    for (let i = 0; i <= SEG; i++) {
+      const t = (i / SEG) * Math.PI * 2;
+      const [ux, uz] = S.section(t);
+      const y = h * S.height + S.rimBoost(t, h) - cy;
+      pos.push(ux * S.a * rad, y, uz * S.b * rad);
+      uv.push(i / SEG, r / (NR - 1));
     }
   }
-  // TOP RIM annulus (outer top -> inner top)
-  for (let i = 0; i < SEG; i++) {
-    const t0 = (i / SEG) * Math.PI * 2, t1 = ((i+1) / SEG) * Math.PI * 2;
-    const b0 = rimBoost(t0), b1 = rimBoost(t1);
-    quads.push({
-      v: [ ringPoint(rimOuterR,1,t0,b0), ringPoint(rimOuterR,1,t1,b1), ringPoint(rimInnerR,1,t1,b1), ringPoint(rimInnerR,1,t0,b0) ],
-      kind: 'rim'
-    });
-  }
-  // INNER wall (down to basin)
-  for (let r = 0; r < inner.length - 1; r++) {
-    const [h0, r0] = inner[r], [h1, r1] = inner[r+1];
-    const topRing = (r === 0);
+  for (let r = 0; r < NR - 1; r++) {
     for (let i = 0; i < SEG; i++) {
-      const t0 = (i / SEG) * Math.PI * 2, t1 = ((i+1) / SEG) * Math.PI * 2;
-      const bo0 = topRing ? rimBoost(t0) : 0, bo1 = topRing ? rimBoost(t1) : 0;
-      quads.push({
-        v: [ ringPoint(r0,h0,t0,bo0), ringPoint(r0,h0,t1,bo1), ringPoint(r1,h1,t1,0), ringPoint(r1,h1,t0,0) ],
-        kind: 'in'
-      });
+      const a0 = r * (SEG + 1) + i, b0 = a0 + 1, c0 = a0 + SEG + 1, d0 = c0 + 1;
+      idx.push(a0, c0, b0, b0, c0, d0);
     }
   }
+  const g = new T.BufferGeometry();
+  g.setAttribute('position', new T.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
 
-  // LED strip path: follows the actual rim (any shape incl. freeform & slipper backrest)
+  // LED 燈條路徑（沿缸緣中線，含拖鞋缸背靠）
+  const rMid = (S.rTop + S.rimInnerR) / 2;
   const led = [];
-  const rMid = (rimOuterR + rimInnerR) / 2;
   for (let i = 0; i <= SEG; i++) {
     const t = (i / SEG) * Math.PI * 2;
-    const [ux, uz] = section(t);
-    led.push([ux * a * rMid, height + rimBoost(t), uz * b * rMid]);
+    const [ux, uz] = S.section(t);
+    led.push(new T.Vector3(ux * S.a * rMid, S.height + S.rimBoost(t, 1) - cy, uz * S.b * rMid));
   }
+  return { geometry: g, spec: S, led };
+}
 
-  // centre so vertical middle ~ 0
-  const cy = height * 0.5;
-  quads.forEach(q => q.v.forEach(pt => { pt[1] -= cy; }));
-  led.forEach(pt => { pt[1] -= cy; });
-  return { quads, height, a, b, led };
+/* ---------- 材質 ---------- */
+function marbleTexture(T) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const x = c.getContext('2d');
+  x.fillStyle = '#ffffff'; x.fillRect(0, 0, 256, 256);
+  x.strokeStyle = 'rgba(120,125,135,0.28)'; x.lineWidth = 1.6;
+  for (let v = 0; v < 7; v++) {
+    x.beginPath();
+    let px = Math.random() * 256, py = 0;
+    x.moveTo(px, py);
+    while (py < 256) { px += (Math.random() - 0.5) * 34; py += 10 + Math.random() * 18; x.lineTo(px, py); }
+    x.stroke();
+  }
+  const tex = new T.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = T.RepeatWrapping;
+  return tex;
+}
+
+function makeMaterial(T, p) {
+  const finish = p.finish || 'Gloss White';
+  const gold = /Gold/i.test(finish), matte = /Matte/i.test(finish), marble = /Marble/i.test(finish);
+  const gloss = /Gloss|Custom/i.test(finish);
+  const mat = new T.MeshPhysicalMaterial({
+    color: new T.Color(p.base || '#eef1f4'),
+    side: T.DoubleSide,
+    roughness: matte ? 0.62 : (gloss || gold || marble) ? 0.16 : 0.4,
+    metalness: gold ? 0.35 : 0.04,   // 無環境貼圖時高金屬度會發黑，取折衷值
+    clearcoat: (gloss || marble) ? 0.55 : 0.0,
+    clearcoatRoughness: 0.3
+  });
+  if (marble) mat.map = marbleTexture(T);
+  return mat;
+}
+
+function shadowTexture(T) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const x = c.getContext('2d');
+  const g = x.createRadialGradient(128, 128, 8, 128, 128, 120);
+  g.addColorStop(0, 'rgba(20,22,28,0.32)');
+  g.addColorStop(1, 'rgba(20,22,28,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  return new T.CanvasTexture(c);
 }
 
 /* ---------- viewer ---------- */
@@ -169,32 +200,125 @@ export class TubViewer {
     opts = opts || {};
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.params = { shape:'oval', len:1700, wid:800, dep:580, base:'#eef1f4', finish:'Gloss White', addons:[] };
-    this.geo = buildGeometry(this.params);
+    this.params = { shape: 'oval', len: 1700, wid: 800, dep: 580, base: '#eef1f4', finish: 'Gloss White', addons: [] };
     this.yaw = opts.yaw != null ? opts.yaw : 0.7;
     this.targetYaw = this.yaw;
     this.pitch = opts.pitch != null ? opts.pitch : 0.42;
-    this.autoSpin = opts.autoSpin != null ? opts.autoSpin : false;  // manual drag only by default
+    this.autoSpin = opts.autoSpin != null ? opts.autoSpin : false;
     this.interactive = opts.interactive != null ? opts.interactive : true;
     this.spinSpeed = opts.spinSpeed != null ? opts.spinSpeed : 0.0045;
     this.dragging = false;
     this._dirty = true;
-    this._raf = null;
+    this._ready = false;
+    this._legacy = null;
     if (this.interactive) this._bindDrag();
+    loadThree().then(() => this._init()).catch(() => this._fallback());
     this._loop = this._loop.bind(this);
     this._raf = requestAnimationFrame(this._loop);
   }
 
+  /* --- 公開 API（與舊版一致） --- */
   set(params) {
     Object.assign(this.params, params);
-    this.geo = buildGeometry(this.params);
+    if (this._legacy) { this._legacy.set(params); return; }
+    if (this._ready) this._rebuild();
     this._dirty = true;
-    this._safeDraw();
   }
-  setYaw(y) { this.yaw = this.targetYaw = y; this._dirty = true; this._safeDraw(); }
-  _safeDraw() {
-    if (this.canvas.clientWidth > 0 && this.canvas.clientHeight > 0) { this._draw(); this._dirty = false; }
-    else { requestAnimationFrame(() => { if (this.canvas.clientWidth > 0) { this._draw(); this._dirty = false; } }); }
+  setYaw(y) {
+    this.yaw = this.targetYaw = y;
+    if (this._legacy) { this._legacy.setYaw(y); return; }
+    this._dirty = true;
+  }
+  destroy() {
+    if (this._raf) cancelAnimationFrame(this._raf);
+    if (this._legacy) this._legacy.destroy();
+    if (this.scene) this.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+  }
+
+  /* --- 內部 --- */
+  _fallback() {
+    import('./tub3d-canvas.js').then(m => {
+      if (this._raf) cancelAnimationFrame(this._raf);
+      this._legacy = new m.TubViewer(this.canvas, {
+        yaw: this.yaw, pitch: this.pitch, autoSpin: this.autoSpin,
+        interactive: false /* 本類已綁定拖曳，轉發角度即可 */, spinSpeed: this.spinSpeed
+      });
+      this._legacy.set(this.params);
+      this._raf = requestAnimationFrame(this._loop);
+    }).catch(() => {});
+  }
+
+  _init() {
+    const T = window.THREE;
+    this.scene = new T.Scene();
+    this.camera = new T.PerspectiveCamera(40, 1, 0.05, 60);
+    this.group = new T.Group();
+    this.scene.add(this.group);
+
+    this.scene.add(new T.HemisphereLight(0xffffff, 0xb8bcc4, 0.85));
+    const d1 = new T.DirectionalLight(0xffffff, 0.75); d1.position.set(-1.4, 2.4, 1.9); this.scene.add(d1);
+    const d2 = new T.DirectionalLight(0xfff3e2, 0.28); d2.position.set(1.8, 1.2, -1.2); this.scene.add(d2);
+
+    this.shadow = new T.Mesh(
+      new T.PlaneGeometry(3.4, 3.4),
+      new T.MeshBasicMaterial({ map: shadowTexture(T), transparent: true, depthWrite: false })
+    );
+    this.shadow.rotation.x = -Math.PI / 2;
+    this.scene.add(this.shadow);
+
+    this._ready = true;
+    this._rebuild();
+  }
+
+  _rebuild() {
+    const T = window.THREE;
+    // 清掉舊模型與配件
+    while (this.group.children.length) {
+      const o = this.group.children.pop();
+      o.traverse ? o.traverse(k => { if (k.geometry) k.geometry.dispose(); if (k.material) { if (k.material.map) k.material.map.dispose(); k.material.dispose(); } }) : null;
+      this.group.remove(o);
+    }
+    const built = buildGeometry(T, this.params);
+    this._spec = built.spec;
+    this._ledPath = built.led;
+    this.tub = new T.Mesh(built.geometry, makeMaterial(T, this.params));
+    this.group.add(this.tub);
+    this.shadow.position.y = -built.spec.height * 0.52 - 0.06;
+    this.shadow.scale.setScalar(Math.max(built.spec.a, built.spec.b));
+
+    const addons = this.params.addons || [];
+    if (addons.indexOf('Freestanding filler tap') > -1) this.group.add(this._buildTap(T, built.spec));
+    this._led = null;
+    if (addons.indexOf('Chromotherapy LED') > -1) this.group.add(this._buildLed(T, built.led));
+    this._dirty = true;
+  }
+
+  _buildTap(T, spec) {
+    const g = new T.Group();
+    const chrome = new T.MeshPhysicalMaterial({ color: 0xd9dde3, metalness: 0.3, roughness: 0.25, clearcoat: 0.5 });
+    const h = spec.height * 1.35;
+    const riser = new T.Mesh(new T.CylinderGeometry(0.022, 0.028, h, 24), chrome);
+    riser.position.set(spec.a * 1.18, -spec.height * 0.5 + h / 2, 0);
+    g.add(riser);
+    const spout = new T.Mesh(new T.TorusGeometry(0.11, 0.02, 16, 24, Math.PI / 2), chrome);
+    spout.position.set(spec.a * 1.18 - 0.11, -spec.height * 0.5 + h, 0);
+    spout.rotation.z = Math.PI / 2;
+    g.add(spout);
+    const tip = new T.Mesh(new T.CylinderGeometry(0.02, 0.02, 0.07, 16), chrome);
+    tip.position.set(spec.a * 1.18 - 0.22, -spec.height * 0.5 + h - 0.045, 0);
+    g.add(tip);
+    return g;
+  }
+
+  _buildLed(T, path) {
+    const curve = new T.CatmullRomCurve3(path, true);
+    const g = new T.Group();
+    this._ledCore = new T.MeshBasicMaterial({ color: 0x7ae0c8, transparent: true, opacity: 0.9 });
+    this._ledGlow = new T.MeshBasicMaterial({ color: 0x7ae0c8, transparent: true, opacity: 0.22, blending: T.AdditiveBlending, depthWrite: false });
+    g.add(new T.Mesh(new T.TubeGeometry(curve, 128, 0.014, 8, true), this._ledCore));
+    g.add(new T.Mesh(new T.TubeGeometry(curve, 128, 0.038, 8, true), this._ledGlow));
+    this._led = g;
+    return g;
   }
 
   _bindDrag() {
@@ -211,160 +335,79 @@ export class TubViewer {
       if (!this.dragging) return;
       const x = (e.touches ? e.touches[0].clientX : e.clientX);
       const y = (e.touches ? e.touches[0].clientY : e.clientY);
-      this.yaw -= (x - lastX) * 0.012;          // full 360° horizontal
-      this.pitch += (y - lastY) * 0.008;        // full 360° vertical — flip it right over
+      this.yaw -= (x - lastX) * 0.012;
+      this.pitch += (y - lastY) * 0.008;
       this.targetYaw = this.yaw;
+      if (this._legacy) { this._legacy.yaw = this.yaw; this._legacy.pitch = this.pitch; this._legacy._dirty = true; }
       lastX = x; lastY = y; this._dirty = true;
-      this._draw(); this._dirty = false;
       e.preventDefault();
     };
     const up = () => { this.dragging = false; c.style.cursor = 'grab'; };
     c.addEventListener('mousedown', down);
     window.addEventListener('mousemove', move);
     window.addEventListener('mouseup', up);
-    c.addEventListener('touchstart', down, { passive:false });
-    window.addEventListener('touchmove', move, { passive:false });
+    c.addEventListener('touchstart', down, { passive: false });
+    window.addEventListener('touchmove', move, { passive: false });
     window.addEventListener('touchend', up);
     c.style.cursor = 'grab';
   }
 
   _loop() {
-    // redraw if the element resized after init (late layout / fonts / panel show)
     const cw = this.canvas.clientWidth, ch = this.canvas.clientHeight;
     if (cw !== this._lastW || ch !== this._lastH) { this._lastW = cw; this._lastH = ch; this._dirty = true; }
     if (this.autoSpin && !this.dragging) { this.yaw += this.spinSpeed; this._dirty = true; }
-    if (this._dirty && cw > 0 && ch > 0) { this._draw(); this._dirty = false; }
+    // LED 彩虹循環
+    if (this._led && (this.params.ledColor || 'rainbow') === 'rainbow') {
+      const t = performance.now() / 1400;
+      const hue = ((Math.sin(t) * 0.5 + 0.5) * 260 + 180) % 360;
+      this._ledCore.color.setHSL(hue / 360, 0.85, 0.64);
+      this._ledGlow.color.copy(this._ledCore.color);
+      this._dirty = true;
+    } else if (this._led && this.params.ledColor) {
+      this._ledCore.color.set(this.params.ledColor);
+      this._ledGlow.color.copy(this._ledCore.color);
+    }
+    if (this._dirty && this._ready && !this._legacy && cw > 0 && ch > 0) { this._draw(); this._dirty = false; }
     this._raf = requestAnimationFrame(this._loop);
   }
 
-  destroy() { if (this._raf) cancelAnimationFrame(this._raf); }
-
   _draw() {
-    const canvas = this.canvas, ctx = this.ctx;
-    const dpr = window.devicePixelRatio || 1;
-    const W = canvas.clientWidth || 520, H = canvas.clientHeight || 460;
-    if (canvas.width !== Math.round(W*dpr) || canvas.height !== Math.round(H*dpr)) {
-      canvas.width = Math.round(W*dpr); canvas.height = Math.round(H*dpr);
-    }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-
-    const cy = Math.cos(this.pitch), sy = Math.sin(this.pitch);
-    const cA = Math.cos(this.yaw), sA = Math.sin(this.yaw);
-    const rotate = (pt) => {
-      let x = pt[0]*cA + pt[2]*sA;
-      let z = -pt[0]*sA + pt[2]*cA;
-      let y = pt[1];
-      let y2 = y*cy - z*sy;
-      let z2 = y*sy + z*cy;
-      return [x, y2, z2];
-    };
-
-    // fit (abs() keeps the model framed at any vertical angle, incl. upside-down)
-    const geo = this.geo;
-    const spanX = 2 * geo.a, spanY = geo.height + 2*Math.max(geo.a,geo.b)*Math.abs(sy);
-    const scale = Math.min(W / (spanX*1.15), H / (spanY*1.32 + 0.5));
-    const cx = W/2, ccy = H*0.47;
-    const project = (pt) => [cx + pt[0]*scale, ccy - pt[1]*scale];
-
-    // ground shadow — only meaningful while viewing from above-ish; fades out otherwise
-    const shY = ccy + (geo.height*0.52)*scale*cy + 6;
-    if (sy > 0.08 && cy > 0.12) {
-      const shW = geo.a*scale*1.35, shH = geo.b*scale*sy*1.6 + 8;
-      const gsh = ctx.createRadialGradient(cx, shY, 4, cx, shY, shW);
-      const shA = 0.30 * Math.min(1, cy*2);
-      gsh.addColorStop(0, 'rgba(20,22,28,'+shA.toFixed(3)+')');
-      gsh.addColorStop(1, 'rgba(20,22,28,0)');
-      ctx.save(); ctx.translate(cx, shY); ctx.scale(1, shH/shW); ctx.beginPath();
-      ctx.arc(0, 0, shW, 0, Math.PI*2); ctx.fillStyle = gsh; ctx.fill(); ctx.restore();
+    const T = window.THREE;
+    const r = sharedRenderer();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = this.canvas.clientWidth || 520, H = this.canvas.clientHeight || 460;
+    if (this.canvas.width !== Math.round(W * dpr) || this.canvas.height !== Math.round(H * dpr)) {
+      this.canvas.width = Math.round(W * dpr);
+      this.canvas.height = Math.round(H * dpr);
     }
 
-    // rotate + shade + sort
-    const base = hexToRgb(this.params.base || '#eef1f4');
-    const finish = this.params.finish || 'Gloss White';
-    const isGloss = /Gloss|Gold|Marble|Custom/i.test(finish);
-    const specStr = /Gold/i.test(finish) ? 0.9 : /Gloss/i.test(finish) ? 0.85 : /Matte|Black/i.test(finish) ? 0.12 : 0.5;
-    const light = norm([-0.45, -0.78, 0.62]);   // screen space: x right, y down, z toward viewer
-    const view = [0, 0, 1];
+    // 模型旋轉（先 yaw 後 pitch，與舊版拖曳語意一致，可整個翻轉）
+    this.group.rotation.set(this.pitch, this.yaw, 0, 'XYZ');
 
-    const faces = [];
-    for (const q of geo.quads) {
-      const w = q.v.map(rotate);
-      const n = norm(cross(sub(w[1], w[0]), sub(w[3], w[0])));
-      // ensure normal points toward viewer for lighting sign consistency (screen y down => flip y)
-      const ns = [n[0], -n[1], n[2]];
-      const facing = ns[2];
-      const depth = (w[0][2]+w[1][2]+w[2][2]+w[3][2]) / 4;
-      const pts = q.v.map((_, k) => project(w[k]));
-      // diffuse
-      let diff = Math.max(0, dot(ns, [-light[0], -light[1], -light[2]]));
-      let lit = 0.28 + 0.72 * diff;             // ambient + diffuse
-      // basin interior a touch darker
-      if (q.kind === 'in') lit *= 0.82;
-      if (q.kind === 'rim') lit *= 1.02;
-      // specular (Blinn-ish)
-      let spec = 0;
-      if (isGloss && facing > 0) {
-        const half = norm([-light[0]+view[0], -light[1]+view[1], -light[2]+view[2]]);
-        spec = Math.pow(Math.max(0, dot(ns, half)), 22) * specStr;
-      }
-      let r = Math.min(255, base[0]*lit + spec*255);
-      let g = Math.min(255, base[1]*lit + spec*255);
-      let bl = Math.min(255, base[2]*lit + spec*255);
-      // marble subtle vein noise
-      if (/Marble/i.test(finish)) {
-        const nz = (Math.sin(w[0][0]*7.3 + w[0][1]*5.1) * 0.5 + 0.5);
-        const d = (nz - 0.5) * 22;
-        r += d; g += d; bl += d;
-      }
-      faces.push({ pts, depth, facing, color: `rgb(${r|0},${g|0},${bl|0})`, kind: q.kind, ns });
-    }
-    faces.sort((f1, f2) => f1.depth - f2.depth);
+    // 地面陰影只在俯視角時可見（與舊版一致）
+    const sy = Math.sin(this.pitch), cyv = Math.cos(this.pitch);
+    this.shadow.material.opacity = (sy > 0.08 && cyv > 0.12) ? Math.min(1, cyv * 2) : 0;
 
-    for (const f of faces) {
-      if (f.facing <= -0.02 && f.kind === 'out') continue; // cull clearly back-facing outer
-      ctx.beginPath();
-      ctx.moveTo(f.pts[0][0], f.pts[0][1]);
-      for (let k = 1; k < f.pts.length; k++) ctx.lineTo(f.pts[k][0], f.pts[k][1]);
-      ctx.closePath();
-      ctx.fillStyle = f.color;
-      ctx.fill();
-      ctx.strokeStyle = f.color;
-      ctx.lineWidth = 0.6;
-      ctx.stroke();  // hides seams between quads
-    }
+    // 取景：依模型跨距與目前俯仰角自動拉遠近
+    const spec = this._spec;
+    const spanX = 2 * spec.a * 1.15;
+    const spanY = (spec.height + 2 * Math.max(spec.a, spec.b) * Math.abs(sy)) * 1.32 + 0.5;
+    const vFov = this.camera.fov * Math.PI / 180;
+    this.camera.aspect = W / H;
+    const dV = (spanY / 2) / Math.tan(vFov / 2);
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * this.camera.aspect);
+    const dH = (spanX / 2) / Math.tan(hFov / 2);
+    this.camera.position.set(0, 0, Math.max(dV, dH) + 0.6);
+    this.camera.lookAt(0, 0, 0);
+    this.camera.updateProjectionMatrix();
 
-    // addon: freestanding filler tap (simple arc) — drawn in front
-    if ((this.params.addons||[]).indexOf('Freestanding filler tap') > -1) {
-      const bx = cx + geo.a*scale*0.95, topY = ccy - geo.height*0.55*scale*cy, botY = shY-6;
-      ctx.strokeStyle = '#b9bcc4'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(bx, botY); ctx.lineTo(bx, topY);
-      ctx.quadraticCurveTo(bx, topY-14, bx-26, topY-14); ctx.stroke();
-    }
-    // addon: chromotherapy LED — glowing strip that hugs the actual rim geometry,
-    // rotates with the tub, and takes a chosen colour (or cycles when 'rainbow')
-    if ((this.params.addons||[]).indexOf('Chromotherapy LED') > -1 && geo.led) {
-      let col = this.params.ledColor || 'rainbow';
-      if (col === 'rainbow') {
-        const t = performance.now()/1400;
-        const hue = (Math.sin(t)*0.5+0.5)*260 + 180;
-        col = `hsla(${hue|0},85%,64%,0.6)`;
-        this._dirty = true; // keep the cycle animating
-      } else {
-        const rgb = hexToRgb(col);
-        col = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.65)`;
-      }
-      const pts = geo.led.map(p => project(rotate(p)));
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      ctx.strokeStyle = col; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      ctx.shadowColor = col; ctx.shadowBlur = 12;
-      ctx.lineWidth = 4.5;
-      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-      ctx.stroke();
-      ctx.lineWidth = 1.6; ctx.shadowBlur = 4;  // bright core pass
-      ctx.stroke();
-      ctx.restore();
-    }
+    r.setPixelRatio(dpr);
+    r.setSize(W, H, false);
+    r.render(this.scene, this.camera);
+
+    const ctx = this.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.drawImage(r.domElement, 0, 0, this.canvas.width, this.canvas.height);
   }
 }
