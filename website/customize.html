@@ -74,13 +74,26 @@
   .sk-actions .ok { background:#e67e22; color:#fff; border:none; padding:9px 22px; border-radius:6px; font-weight:600; cursor:pointer; }
   .sk-actions .cancel { background:#eee; border:none; padding:9px 18px; border-radius:6px; cursor:pointer; }
   #skErr { color:#c0392b; font-size:12px; margin-top:8px; display:none; }
-  /* 窄螢幕（手機/窄視窗）：面板改為上下堆疊 */
+  /* 手機版排版：3D 檢視固定在上方、控制面板在下方捲動（電商配置器慣例） */
   @media (max-width: 700px){
-    main { flex-direction: column; overflow-y:auto; }
-    #panel { width:100%; border-right:none; border-bottom:1px solid #dde3ea; max-height:55vh; }
-    #viewer { min-height:45vh; }
-    header h1 { font-size:15px; }
-    header .sub { display:none; }
+    body { height:100dvh; }
+    nav a[href="contact.html"] { display:none; }               /* 省空間：CTA 交給面板內的詢價按鈕 */
+    .studio-strip { padding:10px 16px 8px; }
+    .studio-strip .sub { display:none; }
+    .studio-strip h1 { font-size:18px; }
+    .studio-strip .eyebrow { font-size:9.5px; margin-bottom:2px; }
+    .studio-strip .btns { width:100%; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+    .btn { padding:7px 12px; font-size:12px; white-space:nowrap; flex:none; }
+    main { flex-direction:column-reverse; }                     /* 視圖在上、面板在下 */
+    #viewer { flex:none; height:38vh; min-height:240px; border-bottom:1px solid #ddd8cc; }
+    #panel { flex:1; width:100%; min-height:0; max-height:none; border-right:none; padding:12px; }
+    #hint { font-size:10px; padding:4px 10px; bottom:8px; }
+    /* 手繪面板：畫布縮放至螢幕寬（座標已按 clientWidth 換算，功能不受影響） */
+    .sk-box { padding:14px; max-height:94vh; }
+    .sk-flex { gap:12px; }
+    canvas.pad { width:100%; height:auto; max-width:360px; }
+    .sk-col { width:100%; }
+    .sk-col .desc { max-width:none; }
   }
 </style>
 <style id="atelier-skin">
@@ -136,7 +149,7 @@
   .studio-strip h1 { font-family:'Playfair Display',serif; font-weight:700; font-size:clamp(22px,2.4vw,30px); color:#1b1a16; line-height:1.15; }
   .studio-strip .sub { color:#66614f; font-size:12.5px; margin-top:4px; }
   .studio-strip .btns { display:flex; gap:8px; flex-wrap:wrap; }
-  @media (max-width:900px){ [data-nav-links]{ display:none; } }
+  @media (max-width:900px){ [data-nav-links]{ display:none !important; } }
 </style>
 </head>
 <body>
