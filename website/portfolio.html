@@ -91,12 +91,12 @@ class Component extends DCLogic {
     this.viewers=[];
     try{ const {TubViewer}=await import('./tub3d.js'); 
   const pieces=[
-    {t:'The Monolith',d:'Matte-black rectangle, Melbourne penthouse ensuite.',s:{shape:'rect',finish:'Matte Black',base:'#23262c',len:1900,wid:900,dep:600,addons:['Integrated headrest']},y:-0.5},
-    {t:'Aurelia',d:'Gold-leaf oval centrepiece, heritage Sydney bathroom.',s:{shape:'oval',finish:'Gold Leaf',base:'#c9a34e',len:1750,wid:850,dep:600,addons:['Freestanding filler tap']},y:0.6},
-    {t:'Ofuro No.7',d:'Deep Japanese soaking tub, cedar-tone interior.',s:{shape:'japanese',finish:'Custom',base:'#7a5c43',len:1400,wid:1000,dep:720,addons:['Integrated headrest']},y:0.3},
-    {t:'Pearl Drum',d:'Round gloss-white drum for a wellness studio.',s:{shape:'round',finish:'Gloss White',base:'#f4f6f8',len:1500,wid:1100,dep:680,addons:['Chromotherapy LED']},y:0.9},
-    {t:'Carrara Slip',d:'Stone-look slipper tub with chromotherapy light.',s:{shape:'slipper',finish:'Marble',base:'#e7e3da',len:1700,wid:800,dep:620},y:-0.7},
-    {t:'Coastline',d:'Soft-blue colour-match oval, Gold Coast villa.',s:{shape:'oval',finish:'Custom',base:'#7aa6c2',len:1800,wid:820,dep:560,addons:['Freestanding filler tap']},y:0.4}
+    {t:'The Monolith',d:'Matte-black rectangle, Melbourne penthouse ensuite. Solid surface.',s:{shape:'rect',finish:'Matte Black',base:'#23262c',len:1900,wid:900,dep:600,addons:['Integrated headrest']},y:-0.5},
+    {t:'Aurelia',d:'Gold-leaf oval centrepiece, heritage Sydney bathroom. Premium acrylic.',s:{shape:'oval',finish:'Gold Leaf',base:'#c9a34e',len:1750,wid:850,dep:600,addons:['Freestanding filler tap']},y:0.6},
+    {t:'Ofuro No.7',d:'Deep Japanese soaking tub, cedar-tone interior. Premium acrylic.',s:{shape:'japanese',finish:'Custom',base:'#7a5c43',len:1400,wid:1000,dep:720,addons:['Integrated headrest']},y:0.3},
+    {t:'Pearl Drum',d:'Round gloss-white drum for a wellness studio. Premium acrylic.',s:{shape:'round',finish:'Gloss White',base:'#f4f6f8',len:1500,wid:1100,dep:680,addons:['Chromotherapy LED']},y:0.9},
+    {t:'Carrara Slip',d:'Stone-look slipper tub with chromotherapy light. Solid surface.',s:{shape:'slipper',finish:'Marble',base:'#e7e3da',len:1700,wid:800,dep:620},y:-0.7},
+    {t:'Coastline',d:'Soft-blue colour-match oval, Gold Coast villa. Premium acrylic.',s:{shape:'oval',finish:'Custom',base:'#7aa6c2',len:1800,wid:820,dep:560,addons:['Freestanding filler tap']},y:0.4}
   ];
   const gal=document.getElementById('pfGrid');
   if(gal){ gal.innerHTML=pieces.map((p,i)=>'<div data-reveal style="background:#faf8f2;border:1px solid #e6e1d5;border-radius:18px;overflow:hidden"><div style="aspect-ratio:4/3;background:radial-gradient(120% 110% at 50% 6%,#fbfaf6,#e9e3d6);position:relative"><canvas id="pg'+i+'" style="position:absolute;inset:0;width:100%;height:100%"></canvas></div><div style="padding:18px 20px 22px"><h3 style="font-family:\'Playfair Display\',serif;font-weight:600;font-size:22px;margin-bottom:4px">'+p.t+'</h3><p style="color:#66614f;font-size:14px">'+p.d+'</p></div></div>').join('');

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Design Studio — Sculpt Your Custom Bathtub in 3D | Kreiner Atelier</title>
-<meta name="description" content="Sketch any bathtub shape, sculpt it in 3D and export designer-ready CAD (DXF). USD $990 per bathtub plus shipping — the Kreiner Atelier Design Studio.">
+<meta name="description" content="Sketch any bathtub shape, sculpt it in 3D and export designer-ready CAD (DXF). USD $990 per bathtub in premium acrylic or solid surface, plus shipping — the Kreiner Atelier Design Studio.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
@@ -235,7 +235,11 @@
       </div>
     </div>
     <div class="group">
-      <h3>⑤ 外觀顏色</h3>
+      <h3>⑤ 材質與顏色</h3>
+      <div class="drain-btns mat-btns" style="margin-bottom:10px">
+        <button data-mat="acrylic" class="active" onclick="setMaterial('acrylic',this)">壓克力（亮面）</button>
+        <button data-mat="solid" onclick="setMaterial('solid',this)">人造石（霧面）</button>
+      </div>
       <div class="swatches">
         <div class="sw active" style="background:#f5f5f0" data-c="#f5f5f0" title="經典白"></div>
         <div class="sw" style="background:#2b2b2b" data-c="#2b2b2b" title="霧黑"></div>
@@ -262,7 +266,7 @@
         <span style="font-size:12.5px;color:#8a8478">價格</span>
         <b style="font-family:'Playfair Display',serif;font-size:22px;color:#9a7b43">USD $990 <span style="font-size:12px;color:#8a8478;font-weight:500">+ shipping</span></b>
       </div>
-      <div class="tip" style="margin-bottom:10px">固定價格，全球配送，運費依目的地報價；設計與規格會隨詢價單一併送出。</div>
+      <div class="tip" style="margin-bottom:10px">壓克力與人造石同一固定價格，全球配送，運費依材質重量與目的地報價；設計與規格會隨詢價單一併送出。</div>
       <button id="quoteBtn" onclick="sendQuote(this)" style="width:100%;background:#1b1a16;color:#f4f1ea;border:none;padding:14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer">送出設計並索取正式報價 →</button>
       <div id="quoteBanner" style="display:none;margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.5"></div>
     </div>
@@ -273,7 +277,7 @@
         <b>↓ 一鍵輸出</b><br>
         <b>設計端</b>：DXF 三視圖（AutoCAD 可直接開啟修改）＋ JSON 規格表<br>
         <b>↓ 設計師確認 / 微調</b><br>
-        <b>製造端</b>：依 CAD 圖進行模具開發與生產
+        <b>製造端</b>：壓克力＝模具開發＋熱塑成型；人造石＝CNC 成型＋手工打磨
       </div>
     </div>
   </div>
@@ -321,6 +325,7 @@
 // ===================== 狀態 =====================
 const P = {
   shape:'ellipse', L:1700, W:850, H:550, t:15, b:40, r:150,
+  material:'acrylic',               // 'acrylic' 壓克力（亮面）/ 'solid' 人造石 solid surface（霧面）
   dH:0, egg:0, taper:100,           // 不對稱參數：靠背增高 / 蛋形% / 底部收縮%
   drain:'center', color:'#f5f5f0', water:false, rim:'round',   // 缸緣造型：flat 平面 / round 圓弧 / bevel 斜角
   arc:60,                                                       // 增高弧度 0–100%：0=直線，越高曲線越彎
@@ -366,7 +371,12 @@ const I18N = {
   '中央': ['中央', 'Center', 'กึ่งกลาง'],
   '靠背端': ['靠背端', 'Rear end', 'ฝั่งพนักพิง'],
   '前端': ['前端', 'Front end', 'ฝั่งหน้า'],
-  '⑤ 外觀顏色': ['⑤ 外观颜色', '⑤ Colour', '⑤ สีภายนอก'],
+  '⑤ 材質與顏色': ['⑤ 材质与颜色', '⑤ Material & Colour', '⑤ วัสดุและสี'],
+  '壓克力（亮面）': ['亚克力（亮面）', 'Acrylic (gloss)', 'อะคริลิก (เงา)'],
+  '人造石（霧面）': ['人造石（雾面）', 'Solid surface (matte)', 'โซลิดเซอร์เฟซ (ด้าน)'],
+  '材質': ['材质', 'Material', 'วัสดุ'],
+  '壓克力': ['亚克力', 'Premium acrylic', 'อะคริลิกพรีเมียม'],
+  '人造石 Solid Surface': ['人造石 Solid Surface', 'Solid surface', 'โซลิดเซอร์เฟซ'],
   '顯示水位模擬（藍色半透明＝水）': ['显示水位模拟（蓝色半透明＝水）', 'Show water level (translucent blue = water)', 'แสดงระดับน้ำจำลอง (สีฟ้าโปร่งแสง = น้ำ)'],
   '⑥ 訂單資訊（輸出至 CAD / 規格表）': ['⑥ 订单信息（输出至 CAD / 规格表）', '⑥ Order Info (exported to CAD / spec)', '⑥ ข้อมูลคำสั่งซื้อ (ส่งออกไป CAD / สเปก)'],
   '⑦ 即時規格計算': ['⑦ 实时规格计算', '⑦ Live Specifications', '⑦ สเปกแบบเรียลไทม์'],
@@ -396,6 +406,7 @@ const I18N = {
   '滿水容量 (估)': ['满水容量 (估)', 'Full capacity (est.)', 'ความจุน้ำเต็ม (ประมาณ)'],
   '建議使用水量 (八成滿)': ['建议使用水量 (八成满)', 'Recommended fill (80%)', 'ปริมาณน้ำแนะนำ (80%)'],
   '估計缸體重量 (壓克力)': ['估计缸体重量 (亚克力)', 'Est. shell weight (acrylic)', 'น้ำหนักอ่างโดยประมาณ (อะคริลิก)'],
+  '估計缸體重量 (人造石)': ['估计缸体重量 (人造石)', 'Est. shell weight (solid surface)', 'น้ำหนักอ่างโดยประมาณ (โซลิดเซอร์เฟซ)'],
   '排水孔位置': ['排水孔位置', 'Drain position', 'ตำแหน่งท่อระบายน้ำ'],
   '✏️ 手繪自訂': ['✏️ 手绘自定义', '✏️ Custom sketch', '✏️ วาดเอง'],
   '（手繪剖面）': ['（手绘剖面）', ' (sketched profile)', ' (โปรไฟล์วาดเอง)'],
@@ -409,7 +420,7 @@ const I18N = {
   // 價格與詢價
   '⑧ 價格與詢價': ['⑧ 价格与询价', '⑧ Price & Quote', '⑧ ราคาและใบเสนอราคา'],
   '價格': ['价格', 'Price', 'ราคา'],
-  '固定價格，全球配送，運費依目的地報價；設計與規格會隨詢價單一併送出。': ['固定价格，全球配送，运费按目的地报价；设计与规格会随询价单一并送出。', 'Fixed price, delivered worldwide — shipping quoted by destination. Your design and full spec travel with the enquiry.', 'ราคาคงที่ จัดส่งทั่วโลก — ค่าขนส่งคิดตามปลายทาง แบบและสเปกทั้งหมดจะถูกส่งไปพร้อมคำขอ'],
+  '壓克力與人造石同一固定價格，全球配送，運費依材質重量與目的地報價；設計與規格會隨詢價單一併送出。': ['亚克力与人造石同一固定价格，全球配送，运费按材质重量与目的地报价；设计与规格会随询价单一并送出。', 'One fixed price for acrylic and solid surface, delivered worldwide — shipping quoted by material weight and destination. Your design and full spec travel with the enquiry.', 'ราคาคงที่เดียวกันทั้งอะคริลิกและโซลิดเซอร์เฟซ จัดส่งทั่วโลก — ค่าขนส่งคิดตามน้ำหนักวัสดุและปลายทาง แบบและสเปกทั้งหมดจะถูกส่งไปพร้อมคำขอ'],
   '送出設計並索取正式報價 →': ['送出设计并索取正式报价 →', 'Submit design & get a firm quote →', 'ส่งแบบและขอใบเสนอราคา →'],
   '請在「訂單資訊」填寫 Email，設計師才能回覆你的報價與 3D 渲染圖。': ['请在「订单信息」填写 Email，设计师才能回覆你的报价与 3D 渲染图。', 'Please enter your email under "Order Info" so our designer can reply with your quote and 3D render.', 'กรุณากรอกอีเมลใน "ข้อมูลคำสั่งซื้อ" เพื่อให้นักออกแบบตอบกลับพร้อมราคาและภาพ 3D'],
   '傳送中…': ['发送中…', 'Sending…', 'กำลังส่ง…'],
@@ -420,10 +431,10 @@ const I18N = {
 // 含 HTML 標記的區塊：id → [繁中, 简中, 英文]
 const I18N_HTML = {
   flowBox: [
-    '<b>客戶端</b>：於本頁面依想像調整造型與參數，3D 即時預覽<br><b>↓ 一鍵輸出</b><br><b>設計端</b>：DXF 三視圖（AutoCAD 可直接開啟修改）＋ JSON 規格表<br><b>↓ 設計師確認 / 微調</b><br><b>製造端</b>：依 CAD 圖進行模具開發與生產',
-    '<b>客户端</b>：于本页面按想象调整造型与参数，3D 实时预览<br><b>↓ 一键输出</b><br><b>设计端</b>：DXF 三视图（AutoCAD 可直接打开修改）＋ JSON 规格表<br><b>↓ 设计师确认 / 微调</b><br><b>制造端</b>：按 CAD 图进行模具开发与生产',
-    '<b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: mould development &amp; production from CAD',
-    '<b>ลูกค้า</b>: ปรับรูปทรงและพารามิเตอร์ที่นี่พร้อมพรีวิว 3D สด<br><b>↓ ส่งออกคลิกเดียว</b><br><b>นักออกแบบ</b>: แบบ DXF สามมุมมอง (แก้ไขใน AutoCAD ได้) + สเปก JSON<br><b>↓ นักออกแบบตรวจ / ปรับละเอียด</b><br><b>โรงงาน</b>: พัฒนาแม่พิมพ์และผลิตจาก CAD'
+    '<b>客戶端</b>：於本頁面依想像調整造型與參數，3D 即時預覽<br><b>↓ 一鍵輸出</b><br><b>設計端</b>：DXF 三視圖（AutoCAD 可直接開啟修改）＋ JSON 規格表<br><b>↓ 設計師確認 / 微調</b><br><b>製造端</b>：壓克力＝模具開發＋熱塑成型；人造石＝CNC 成型＋手工打磨',
+    '<b>客户端</b>：于本页面按想象调整造型与参数，3D 实时预览<br><b>↓ 一键输出</b><br><b>设计端</b>：DXF 三视图（AutoCAD 可直接打开修改）＋ JSON 规格表<br><b>↓ 设计师确认 / 微调</b><br><b>制造端</b>：亚克力＝模具开发＋热塑成型；人造石＝CNC 成型＋手工打磨',
+    '<b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: acrylic = mould + thermoforming; solid surface = CNC shaping + hand finishing',
+    '<b>ลูกค้า</b>: ปรับรูปทรงและพารามิเตอร์ที่นี่พร้อมพรีวิว 3D สด<br><b>↓ ส่งออกคลิกเดียว</b><br><b>นักออกแบบ</b>: แบบ DXF สามมุมมอง (แก้ไขใน AutoCAD ได้) + สเปก JSON<br><b>↓ นักออกแบบตรวจ / ปรับละเอียด</b><br><b>โรงงาน</b>: อะคริลิก = แม่พิมพ์ + ขึ้นรูปด้วยความร้อน; โซลิดเซอร์เฟซ = ขึ้นรูป CNC + ขัดแต่งด้วยมือ'
   ],
   skDescTop: [
     '從正上方看的缸口輪廓。畫一個<b>封閉</b>的形狀（頭尾會自動接起來）。也可以把紙上手稿拍照上傳（深色筆、白紙、光線均勻）。',
@@ -687,7 +698,7 @@ function buildTub(){
   const s = baseK();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG);
   const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N_SEG);
-  const mat = new THREE.MeshStandardMaterial({ color:P.color, roughness:0.22, metalness:0.05, side:THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ color:P.color, roughness:P.material==='solid'?0.6:0.22, metalness:0.05, side:THREE.DoubleSide });
 
   tubGroup.add(new THREE.Mesh(loftGeometry(outerPts, P.L, 0,   s, 0.07, P.H, P.dH), mat)); // 外殼
   tubGroup.add(new THREE.Mesh(loftGeometry(innerPts, inn.L, P.b, s, 0.03, P.H, P.dH), mat)); // 內壁
@@ -754,13 +765,15 @@ function computeSpec(){
   const useVol = fullVol*0.8;                   // 與水位模擬一致：八成滿
   const Hmid = P.H + P.dH/2;
   const shellVol = Ao*Hmid*taperF - Ai*(Hmid-P.b)*taperF;
-  const weight = shellVol*1.19e-6;
+  const density = P.material==='solid' ? 1.75e-6 : 1.19e-6;   // g/mm³→kg：壓克力 1.19、人造石 ~1.75
+  const weight = shellVol*density;
   return { inn, fullVol, useVol, weight };
 }
 
 function updateSpec(){
   const s = computeSpec();
   const rows = [
+    [t('材質'), t(P.material==='solid' ? '人造石 Solid Surface' : '壓克力')],
     [t('缸口造型'), P.shape==='custom' ? t('✏️ 手繪自訂') : t({rect:'圓角矩形',stadium:'圓端形',ellipse:'橢圓形'}[P.shape])],
     [t('外部尺寸 (長×寬)'), `${P.L} × ${P.W} mm`],
     [t('缸緣高度 前端 / 後端'), `${P.H} / ${P.H+P.dH} mm`],
@@ -770,7 +783,7 @@ function updateSpec(){
     [t('底部尺寸 (收縮後)'), `${Math.round(P.L*baseK())} × ${Math.round(P.W*baseK())} mm${(P.customProfile && P.shape==='custom') ? t('（手繪剖面）') : ''}`],
     [t('滿水容量 (估)'), `${s.fullVol.toFixed(0)} L`],
     [t('建議使用水量 (八成滿)'), `${s.useVol.toFixed(0)} L`],
-    [t('估計缸體重量 (壓克力)'), `${s.weight.toFixed(1)} kg`],
+    [t(P.material==='solid' ? '估計缸體重量 (人造石)' : '估計缸體重量 (壓克力)'), `${s.weight.toFixed(1)} kg`],
     [t('排水孔位置'), t({center:'中央', back:'靠背端', front:'前端'}[P.drain])],
   ];
   document.getElementById('spec').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
@@ -808,7 +821,7 @@ function exportDXF(){
   // ---------- 標題 ----------
   const topY = P.W/2 + gap;
   E.text(-P.L/2, topY + 270, 60, 'CUSTOM FREESTANDING BATHTUB - PRODUCTION DRAWING', 'TITLE');
-  E.text(-P.L/2, topY + 180, 35, `DATE: ${new Date().toISOString().slice(0,10)}   UNIT: mm   SHAPE: ${P.shape.toUpperCase()}   RIM: ${P.rim.toUpperCase()}   RISE ARC: ${P.arc}%   CUSTOMER: ${document.getElementById('custName').value || '-'}`, 'TITLE');
+  E.text(-P.L/2, topY + 180, 35, `DATE: ${new Date().toISOString().slice(0,10)}   UNIT: mm   MATERIAL: ${P.material==='solid'?'SOLID SURFACE':'ACRYLIC'}   SHAPE: ${P.shape.toUpperCase()}   RIM: ${P.rim.toUpperCase()}   RISE ARC: ${P.arc}%   CUSTOMER: ${document.getElementById('custName').value || '-'}`, 'TITLE');
   E.text(-P.L/2, topY + 110, 35, `L=${P.L}  W=${P.W}  RIM H FRONT=${P.H} / BACK=${HB}  WALL=${P.t}  BOTTOM=${P.b}  EGG=${P.egg}%  BASE=${Math.round(s*100)}%${P.customPts?'  PLAN=SKETCHED':''}${P.customProfile?'  PROFILE=SKETCHED':''}`, 'TITLE');
   E.text(-P.L/2, topY + 40, 35, `CAPACITY=${spec.fullVol.toFixed(0)}L  NOTE: ${document.getElementById('custNote').value || '-'}`, 'TITLE');
 
@@ -864,6 +877,7 @@ function exportJSON(){
     客戶姓名: document.getElementById('custName').value || '',
     備註: document.getElementById('custNote').value || '',
     設計參數: {
+      材質: P.material==='solid' ? '人造石 Solid Surface' : '壓克力', material_code: P.material,
       造型: {rect:'圓角矩形', stadium:'圓端形', ellipse:'橢圓形', custom:'手繪自訂'}[P.shape],
       shape_code: P.shape,
       手繪俯視輪廓_normalized: P.customPts ? P.customPts.map(p=>[+p[0].toFixed(4), +p[1].toFixed(4)]) : null,
@@ -880,7 +894,7 @@ function exportJSON(){
       內部長度_mm: s.inn.L, 內部寬度_mm: s.inn.W, 內部深度_前端_mm: s.inn.D,
       底部長度_mm: Math.round(P.L*P.taper/100), 底部寬度_mm: Math.round(P.W*P.taper/100),
       滿水容量_L: +s.fullVol.toFixed(1), 建議使用水量_L: +s.useVol.toFixed(1),
-      估計重量_kg: +s.weight.toFixed(1), 材質假設: '壓克力 (密度 1.19 g/cm³)'
+      估計重量_kg: +s.weight.toFixed(1), 材質假設: P.material==='solid' ? '人造石 solid surface (密度 1.75 g/cm³)' : '壓克力 (密度 1.19 g/cm³)'
     }
   };
   download(JSON.stringify(spec, null, 2), `bathtub_spec_${Date.now()}.json`, 'application/json');
@@ -907,6 +921,7 @@ async function sendQuote(btn){
     const fd = new FormData();
     fd.append('name', name || '(not given)');
     fd.append('email', email);
+    fd.append('material', P.material === 'solid' ? 'Solid surface' : 'Premium acrylic');
     fd.append('silhouette', P.shape === 'custom' ? 'Custom sketch' : P.shape);
     fd.append('size', P.L + 'x' + P.W + 'x' + P.H + ' mm (rim rear ' + (P.H + P.dH) + ')');
     fd.append('rim_profile', P.rim);
@@ -918,13 +933,13 @@ async function sendQuote(btn){
     fd.append('language', LANG);
     fd.append('page', 'design-studio');
     fd.append('request', 'estimate');
-    fd.append('estimate_range', 'USD $990 + shipping');
+    fd.append('estimate_range', 'USD $990 + shipping (acrylic & solid surface, same price)');
     fd.append('_subject', 'Kreiner Atelier — Design Studio (designer quote)');
     fd.append('_template', 'table');
     fd.append('_captcha', 'false');
     // 附上完整規格 JSON（含手繪輪廓／剖面），設計師可直接匯回本工具
     const spec = {
-      設計參數: { shape_code: P.shape, 外部長度_mm: P.L, 外部寬度_mm: P.W, 缸緣高度_前端_mm: P.H,
+      設計參數: { material_code: P.material, shape_code: P.shape, 外部長度_mm: P.L, 外部寬度_mm: P.W, 缸緣高度_前端_mm: P.H,
         靠背增高_mm: P.dH, 增高弧度_pct: P.arc, 蛋形係數_pct: P.egg, 底部收縮_pct: P.taper,
         缸壁厚度_mm: P.t, 缸底厚度_mm: P.b, 圓角半徑_mm: P.r, rim_code: P.rim, 排水孔位置: P.drain, 外觀顏色: P.color,
         手繪俯視輪廓_normalized: P.customPts, 手繪側牆剖面_k: P.customProfile },
@@ -1004,6 +1019,10 @@ function importSpecJSON(text){
   });
   if(d.手繪俯視輪廓_normalized) P.customPts = d.手繪俯視輪廓_normalized;
   if(d.手繪側牆剖面_k) P.customProfile = d.手繪側牆剖面_k;
+  if(d.material_code === 'solid' || d.material_code === 'acrylic'){
+    P.material = d.material_code;
+    document.querySelectorAll('.mat-btns button[data-mat]').forEach(b=>b.classList.toggle('active', b.dataset.mat === P.material));
+  }
   updateRowVis();
   buildTub();
 }
@@ -1216,6 +1235,12 @@ function setShape(s, btn){
   document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   updateRowVis();
+  buildTub();
+}
+function setMaterial(m, btn){
+  P.material = m;
+  document.querySelectorAll('.mat-btns button[data-mat]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
   buildTub();
 }
 function setDrain(d, btn){
