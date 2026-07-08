@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="shipping-rates.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif; }
   body { display:flex; flex-direction:column; height:100vh; overflow:hidden; background:#f0f2f5; }
@@ -266,6 +267,15 @@
         <span style="font-size:12.5px;color:#8a8478">價格</span>
         <b style="font-family:'Playfair Display',serif;font-size:22px;color:#9a7b43">USD $990 <span style="font-size:12px;color:#8a8478;font-weight:500">+ shipping</span></b>
       </div>
+      <div style="margin:2px 0 12px">
+        <div style="font-size:12.5px;color:#8a8478;margin-bottom:5px">配送目的地</div>
+        <select id="shipDest" style="width:100%;padding:8px 10px;font-size:13px;border:1px solid #ddd8cc;border-radius:8px;background:#fff;color:#1b1a16"></select>
+        <div id="shipEst" style="display:none;margin-top:9px;font-size:13.5px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#8a8478">運費估算</span><b id="shipVal"></b></div>
+          <div style="display:flex;justify-content:space-between;margin-top:3px"><span style="color:#8a8478">總價估算</span><b id="totVal" style="color:#9a7b43"></b></div>
+          <div class="tip" style="margin-top:6px">含門到門運費；正式報價時確認。</div>
+        </div>
+      </div>
       <div class="tip" style="margin-bottom:10px">壓克力與人造石同一固定價格，全球配送，運費依材質重量與目的地報價；設計與規格會隨詢價單一併送出。</div>
       <button id="quoteBtn" onclick="sendQuote(this)" style="width:100%;background:#1b1a16;color:#f4f1ea;border:none;padding:14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer">送出設計並索取正式報價 →</button>
       <div id="quoteBanner" style="display:none;margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.5"></div>
@@ -407,6 +417,11 @@ const I18N = {
   '建議使用水量 (八成滿)': ['建议使用水量 (八成满)', 'Recommended fill (80%)', 'ปริมาณน้ำแนะนำ (80%)'],
   '估計缸體重量 (壓克力)': ['估计缸体重量 (亚克力)', 'Est. shell weight (acrylic)', 'น้ำหนักอ่างโดยประมาณ (อะคริลิก)'],
   '估計缸體重量 (人造石)': ['估计缸体重量 (人造石)', 'Est. shell weight (solid surface)', 'น้ำหนักอ่างโดยประมาณ (โซลิดเซอร์เฟซ)'],
+  '配送目的地': ['配送目的地', 'Ship to', 'จัดส่งไปยัง'],
+  '選擇國家 / 地區…': ['选择国家 / 地区…', 'Select country / region…', 'เลือกประเทศ / ภูมิภาค…'],
+  '運費估算': ['运费估算', 'Est. shipping', 'ค่าส่งโดยประมาณ'],
+  '總價估算': ['总价估算', 'Est. total', 'ราคารวมโดยประมาณ'],
+  '含門到門運費；正式報價時確認。': ['含门到门运费；正式报价时确认。', 'Door-to-door estimate — confirmed on your firm quote.', 'ประมาณการแบบส่งถึงบ้าน — ยืนยันในใบเสนอราคา'],
   '排水孔位置': ['排水孔位置', 'Drain position', 'ตำแหน่งท่อระบายน้ำ'],
   '✏️ 手繪自訂': ['✏️ 手绘自定义', '✏️ Custom sketch', '✏️ วาดเอง'],
   '（手繪剖面）': ['（手绘剖面）', ' (sketched profile)', ' (โปรไฟล์วาดเอง)'],
@@ -787,7 +802,35 @@ function updateSpec(){
     [t('排水孔位置'), t({center:'中央', back:'靠背端', front:'前端'}[P.drain])],
   ];
   document.getElementById('spec').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  updateShipping();
 }
+
+// ===================== 運費估算（分區固定價，見 shipping-rates.js） =====================
+function shipRate(){
+  const sel = document.getElementById('shipDest');
+  if(!sel || !sel.value || !window.KA_SHIPPING) return null;
+  const c = KA_SHIPPING.countries.find(x=>x[0]===sel.value);
+  const z = c && KA_SHIPPING.zones[c[2]];
+  return z ? z[P.material==='solid' ? 'solid' : 'acrylic'] : null;
+}
+function updateShipping(){
+  const sel = document.getElementById('shipDest');
+  if(!sel) return;
+  if(sel.options.length && sel.options[0].value==='') sel.options[0].textContent = t('選擇國家 / 地區…');
+  const box = document.getElementById('shipEst');
+  const r = shipRate();
+  if(r == null){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  document.getElementById('shipVal').textContent = 'USD $' + r;
+  document.getElementById('totVal').textContent = 'USD $' + (990 + r);
+}
+(function initShipping(){
+  const sel = document.getElementById('shipDest');
+  if(!sel || !window.KA_SHIPPING) return;
+  sel.innerHTML = '<option value=""></option>' + KA_SHIPPING.countries.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('');
+  sel.addEventListener('change', updateShipping);
+  updateShipping();
+})();
 
 // ===================== DXF 輸出 =====================
 let dxf = '';
@@ -933,6 +976,12 @@ async function sendQuote(btn){
     fd.append('language', LANG);
     fd.append('page', 'design-studio');
     fd.append('request', 'estimate');
+    const selD = document.getElementById('shipDest');
+    const destName = selD && selD.value ? selD.options[selD.selectedIndex].textContent : '(not selected)';
+    const shipR = shipRate();
+    fd.append('destination', destName);
+    fd.append('est_shipping', shipR != null ? 'USD $' + shipR : '-');
+    fd.append('est_total', shipR != null ? 'USD $' + (990 + shipR) : '-');
     fd.append('estimate_range', 'USD $990 + shipping (acrylic & solid surface, same price)');
     fd.append('_subject', 'Kreiner Atelier — Design Studio (designer quote)');
     fd.append('_template', 'table');
