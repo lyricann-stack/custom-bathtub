@@ -187,7 +187,7 @@
   <div class="btns">
     <button class="btn btn-upl" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
     <button class="btn btn-dxf" onclick="exportConceptPDF(this)">⬇ Concept PDF (free)</button>
-    <button class="btn btn-json" onclick="showCadGate()">🔒 CAD pack (DXF + spec)</button>
+    <button class="btn btn-json" id="cadPackBtn" onclick="requestCadPack()">⬇ CAD pack (DXF + spec)</button>
     <input type="file" id="cadFile" accept=".dxf,.stl,.json" style="display:none">
   </div>
 </div>
@@ -208,16 +208,23 @@
         <button data-rim="bevel" onclick="setRim('bevel',this)">Beveled</button>
       </div>
       <button class="preset" onclick="applyPhotoPreset()">★ Photo preset: asymmetric egg tub</button>
+      <div class="rim-label" style="margin-top:10px">Factory classics (production-proven)</div>
+      <div class="drain-btns">
+        <button onclick="applyClassic('marbella',this)">Marbella</button>
+        <button onclick="applyClassic('victoria',this)">Victoria</button>
+        <button onclick="applyClassic('darwin',this)">Darwin</button>
+      </div>
     </div>
     <div class="group">
       <h3>② Dimensions (mm)</h3>
       <div class="row"><label>Overall length</label><input type="range" id="rL" min="1200" max="2200" step="10" value="1700"><div class="val"><input id="nL" value="1700"><span>mm</span></div></div>
       <div class="row"><label>Overall width</label><input type="range" id="rW" min="600" max="1200" step="10" value="850"><div class="val"><input id="nW" value="850"><span>mm</span></div></div>
       <div class="row"><label>Rim height (front)</label><input type="range" id="rH" min="400" max="750" step="10" value="550"><div class="val"><input id="nH" value="550"><span>mm</span></div></div>
-      <div class="row"><label>Wall thickness</label><input type="range" id="rT" min="8" max="40" step="1" value="15"><div class="val"><input id="nT" value="15"><span>mm</span></div></div>
+      <div class="row"><label>Wall thickness</label><input type="range" id="rT" min="5" max="40" step="1" value="15"><div class="val"><input id="nT" value="15"><span>mm</span></div></div>
       <div class="row"><label>Base thickness</label><input type="range" id="rB" min="20" max="80" step="5" value="40"><div class="val"><input id="nB" value="40"><span>mm</span></div></div>
       <div class="row" id="radiusRow" style="display:none"><label>Corner radius</label><input type="range" id="rR" min="50" max="300" step="10" value="150"><div class="val"><input id="nR" value="150"><span>mm</span></div></div>
       <div id="warn">⚠ Invalid parameters: interior space too small, please adjust</div>
+      <div id="lenWarn" class="tip" style="display:none;color:#b3541e">⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).</div>
     </div>
     <div class="group">
       <h3>③ Asymmetry Parameters</h3>
@@ -226,14 +233,32 @@
       <div class="row"><label>Egg factor</label><input type="range" id="rE" min="0" max="30" step="1" value="0"><div class="val"><input id="nE" value="0"><span>%</span></div></div>
       <div class="row"><label>Base taper</label><input type="range" id="rS" min="60" max="100" step="1" value="100"><div class="val"><input id="nS" value="100"><span>%</span></div></div>
       <div class="tip">Backrest rise = how much higher the rear rim is (sloped rim) | Egg factor = narrower front, wider rear | Base taper = footprint vs rim opening; smaller = more inward-curving walls</div>
+      <div class="rim-label" style="margin-top:10px">Side wall profile</div>
+      <div class="drain-btns wallmode-btns">
+        <button data-wallmode="curve" class="active" onclick="setWallMode('curve',this)">Default curve</button>
+        <button data-wallmode="arc" onclick="setWallMode('arc',this)">Arc R</button>
+        <button data-wallmode="s" onclick="setWallMode('s',this)">S-curve (2 arcs)</button>
+      </div>
+      <div class="row" id="wallRRow" style="display:none;margin-top:10px"><label>Side wall arc R</label><input type="range" id="rWR" min="600" max="4000" step="50" value="2000"><div class="val"><input id="nWR" value="2000"><span>mm</span></div></div>
+      <div class="row" id="wallR1Row" style="display:none;margin-top:10px"><label>Lower arc R1</label><input type="range" id="rWR1" min="600" max="4000" step="50" value="2000"><div class="val"><input id="nWR1" value="2000"><span>mm</span></div></div>
+      <div class="row" id="wallR2Row" style="display:none"><label>Upper arc R2 (reversed)</label><input type="range" id="rWR2" min="600" max="4000" step="50" value="1200"><div class="val"><input id="nWR2" value="1200"><span>mm</span></div></div>
+      <div class="row" id="wallMidRow" style="display:none"><label>S join height</label><input type="range" id="rWM" min="20" max="80" step="5" value="55"><div class="val"><input id="nWM" value="55"><span>%</span></div></div>
+      <div class="tip">Arc / S-curve run from the tapered base edge up to the rim (width section as reference). Smaller R = more curved. All R values are annotated on the CAD drawing — the factory reads them straight off. Sketched profiles are auto-fitted to arcs where possible.</div>
+      <div class="chk" style="margin-top:10px"><input type="checkbox" id="undercutToggle"><label for="undercutToggle">Allow undercut (bulge beyond rim — split mould: stone resin / premium)</label></div>
+      <div class="tip">Vertical demoulding cannot have undercuts. Unchecked = walls auto-limited to never bulge beyond the rim (standard acrylic)</div>
+      <div id="undercutWarn" class="tip" style="display:none;color:#b3541e">⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.</div>
     </div>
     <div class="group">
-      <h3>④ Drain Position</h3>
+      <h3>④ Drain & Floor Slope</h3>
       <div class="drain-btns">
         <button data-drain="center" class="active" onclick="setDrain('center',this)">Center</button>
-        <button data-drain="back" onclick="setDrain('back',this)">Rear end</button>
-        <button data-drain="front" onclick="setDrain('front',this)">Front end</button>
+        <button data-drain="back" onclick="setDrain('back',this)">End · rear</button>
+        <button data-drain="front" onclick="setDrain('front',this)">End · front</button>
+        <button data-drain="side" onclick="setDrain('side',this)">Short edge</button>
+        <button data-drain="side2" onclick="setDrain('side2',this)">Short edge · opposite</button>
       </div>
+      <div class="row" style="margin-top:12px"><label>Floor drain slope</label><input type="range" id="rSlope" min="1.3" max="1.5" step="0.05" value="1.5"><div class="val"><input id="nSlope" value="1.5"><span>°</span></div></div>
+      <div class="tip">Tub floor slopes towards the drain, drain at the lowest point (factory standard 1.3–1.5°). Drain detail follows the factory standard fitting, applied at mould stage.</div>
     </div>
     <div class="group">
       <h3>⑤ Material & Colour</h3>
@@ -356,6 +381,10 @@ const P = {
   dH:0, egg:0, taper:100,           // 不對稱參數：靠背增高 / 蛋形% / Base taper%
   drain:'center', color:'#f5f5f0', water:false, rim:'round',   // Rim profile：flat Flat / round Rounded / bevel Beveled
   arc:60,                                                       // Rise curvature 0–100%：0=直線，越高曲線越彎
+  slope:1.5,                        // 排水洩水角度（°）：缸內底面向排水孔傾斜，工廠常規 1.3–1.5
+  undercut:false,                   // 倒扣：false=限制側壁不外鼓超過缸口（上下垂直出模）；true=允許（左右合模）
+  wallMode:'curve',                 // 側壁剖面模式：curve 預設貝茲 / arc 單圓弧 / s 雙弧 S 曲線（工廠 R 值語言，短邊剖面為基準）
+  wallR:2000, wallR2:1200, wallMid:55,   // 單弧 R 或 S 下段 R1；S 上段 R2（反向）；S 轉折高度 %
   customPts:null,                   // 手繪俯視輪廓（normalized 至 ±0.5 bbox，96 點）
   customProfile:null                // 手繪側牆剖面 k(v)，25 個取樣值，k[24]=1
 };
@@ -474,6 +503,32 @@ const I18N = {
   'Product weight (est.)': ['产品重量（估）', 'น้ำหนักสินค้า (ประมาณ)', '產品重量（估）'],
   'Crated shipping weight (est.)': ['含木箱运送重量（估）', 'น้ำหนักรวมลังไม้ (ประมาณ)', '含木箱運送重量（估）'],
   'Email *': ['Email *', 'อีเมล *', 'Email *'],
+  '④ Drain & Floor Slope': ['④ 排水孔位置与泄水', '④ ตำแหน่งท่อน้ำทิ้งและความลาดเอียง', '④ 排水孔位置與洩水'],
+  'End · rear': ['两头·靠背端', 'ปลายอ่าง · ฝั่งพนักพิง', '兩頭·靠背端'],
+  'End · front': ['两头·前端', 'ปลายอ่าง · ฝั่งหน้า', '兩頭·前端'],
+  'Short edge': ['短边', 'ด้านสั้น', '短邊'],
+  'Floor drain slope': ['排水泄水角度', 'ความลาดเอียงพื้นอ่าง', '排水洩水角度'],
+  'Tub floor slopes towards the drain, drain at the lowest point (factory standard 1.3–1.5°). Drain detail follows the factory standard fitting, applied at mould stage.': ['缸内底面向排水孔倾斜，排水孔位于最低点（工厂常规 1.3–1.5°）。排水孔细部按工厂标准件，开模时套用。', 'พื้นอ่างลาดเอียงไปทางท่อน้ำทิ้ง โดยท่ออยู่จุดต่ำสุด (มาตรฐานโรงงาน 1.3–1.5°) รายละเอียดท่อน้ำทิ้งใช้อะไหล่มาตรฐานโรงงาน ใส่ในขั้นตอนแม่พิมพ์', '缸內底面向排水孔傾斜，排水孔位於最低點（工廠常規 1.3–1.5°）。排水孔細部依工廠標準件，開模時套用。'],
+  'Allow undercut (bulge beyond rim — split mould: stone resin / premium)': ['允许倒扣（外鼓超过缸口，需左右合模：人造石/高价款）', 'อนุญาต undercut (ผนังป่องเกินปากอ่าง — แม่พิมพ์แยกซ้ายขวา: โซลิดเซอร์เฟซ/พรีเมียม)', '允許倒扣（外鼓超過缸口，需左右合模：人造石/高價款）'],
+  'Vertical demoulding cannot have undercuts. Unchecked = walls auto-limited to never bulge beyond the rim (standard acrylic)': ['模具上下垂直出模时不可有倒扣；不勾选＝系统自动限制侧壁不外鼓超过缸口（常规亚克力款）', 'การถอดแม่พิมพ์แนวดิ่งต้องไม่มี undercut; ไม่ติ๊ก = ระบบจำกัดผนังไม่ให้ป่องเกินปากอ่างอัตโนมัติ (อะคริลิกมาตรฐาน)', '模具上下垂直出模時不可有倒扣；不勾選＝系統自動限制側壁不外鼓超過缸口（常規壓克力款）'],
+  'Undercut': ['倒扣', 'Undercut', '倒扣'],
+  'None (vertical demould)': ['无（垂直出模）', 'ไม่มี (ถอดแม่พิมพ์แนวดิ่ง)', '無（垂直出模）'],
+  'Yes (split mould)': ['有（左右合模）', 'มี (แม่พิมพ์แยกซ้ายขวา)', '有（左右合模）'],
+  '⬇ CAD pack (DXF + spec)': ['⬇ CAD 制造包（DXF＋规格）', '⬇ ชุดไฟล์ CAD (DXF + สเปก)', '⬇ CAD 製造包（DXF＋規格）'],
+  'Side wall arc R': ['侧壁弧度 R', 'รัศมีโค้งผนังข้าง R', '側壁弧度 R'],
+  'Side wall profile': ['侧壁剖面', 'โปรไฟล์ผนังข้าง', '側壁剖面'],
+  'Default curve': ['预设曲线', 'เส้นโค้งมาตรฐาน', '預設曲線'],
+  'Arc R': ['圆弧 R', 'โค้ง R', '圓弧 R'],
+  'S-curve (2 arcs)': ['S 曲线（双弧）', 'เส้น S (สองส่วนโค้ง)', 'S 曲線（雙弧）'],
+  'Lower arc R1': ['下段弧 R1', 'ส่วนโค้งล่าง R1', '下段弧 R1'],
+  'Upper arc R2 (reversed)': ['上段弧 R2（反向）', 'ส่วนโค้งบน R2 (กลับทิศ)', '上段弧 R2（反向）'],
+  'S join height': ['S 转折高度', 'ความสูงจุดต่อ S', 'S 轉折高度'],
+  'Arc / S-curve run from the tapered base edge up to the rim (width section as reference). Smaller R = more curved. All R values are annotated on the CAD drawing — the factory reads them straight off. Sketched profiles are auto-fitted to arcs where possible.': ['圆弧／S 曲线从收缩后的缸底边起、连到缸缘（以宽度方向剖面为基准）。R 越小越弯。所有 R 值都会标注在 CAD 图上，工厂直接照图开模。手绘剖面会尽可能自动拟合成圆弧。', 'ส่วนโค้ง / เส้น S เริ่มจากขอบฐาน (หลังสอบเข้า) ขึ้นไปถึงขอบอ่าง (อ้างอิงหน้าตัดด้านกว้าง) R เล็ก = โค้งมาก ค่า R ทุกค่าถูกระบุบนแบบ CAD — โรงงานอ่านได้โดยตรง โปรไฟล์ที่วาดเองจะถูกฟิตเป็นส่วนโค้งอัตโนมัติเท่าที่ทำได้', '圓弧／S 曲線從收縮後的缸底邊起、連到缸緣（以寬度方向剖面為基準）。R 越小越彎。所有 R 值都會標註在 CAD 圖上，工廠直接照圖開模。手繪剖面會盡可能自動擬合成圓弧。'],
+  'Freeform (no clean arc fit)': ['自由曲线（无法拟合圆弧）', 'เส้นอิสระ (ฟิตส่วนโค้งไม่ได้)', '自由曲線（無法擬合圓弧）'],
+  'Factory classics (production-proven)': ['工厂经典款（量产验证）', 'รุ่นคลาสสิกโรงงาน (ผ่านการผลิตจริง)', '工廠經典款（量產驗證）'],
+  'Short edge · opposite': ['短边·对侧', 'ด้านสั้น · ฝั่งตรงข้าม', '短邊·對側'],
+  '⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).': ['⚠ 内部长度不足 950mm——只适合坐姿／蹲姿使用（脚到臀约 900mm）。', '⚠ ความยาวภายในต่ำกว่า 950มม. — เหมาะกับการอาบแบบนั่ง/นั่งยองเท่านั้น (ขาถึงสะโพก ≈ 900มม.)', '⚠ 內部長度不足 950mm——只適合坐姿／蹲姿使用（腳到臀約 900mm）。'],
+  '⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.': ['⚠ 亚克力做倒扣需左右合模＋人工处理接缝，成本高。建议改用人造石，或按高价定制（Bespoke）继续。', '⚠ Undercut บนอะคริลิกต้องใช้แม่พิมพ์แยกซ้ายขวาและเก็บรอยต่อด้วยมือ — ต้นทุนสูง แนะนำโซลิดเซอร์เฟซ หรือทำต่อแบบ Bespoke พรีเมียม', '⚠ 壓克力做倒扣需左右合模＋人工處理接縫，成本高。建議改用人造石，或按高價客製（Bespoke）繼續。'],
 };
 // 含 HTML 標記的區塊：id → [英文, 简中, 泰文, 繁中]
 const I18N_HTML = {
@@ -642,13 +697,93 @@ function shoelace(pts){
 function bez(k0, c, v){ const u=1-v; return u*u*k0 + 2*u*v*c + v*v*1; }
 
 // 牆壁剖面：手繪剖面優先，否則用貝茲曲線
+// 倒扣限制：P.undercut=false（常規上下垂直出模）時，側壁任何高度都不得外鼓超過缸口（k ≤ 1）
 function wallK(v, k0, c){
+  let k;
   if(P.customProfile && P.shape === 'custom'){
     const arr = P.customProfile, t = Math.max(0, Math.min(1, v)) * (arr.length - 1);
     const i = Math.floor(t), f = t - i;
-    return arr[i] * (1 - f) + arr[Math.min(i + 1, arr.length - 1)] * f;
+    k = arr[i] * (1 - f) + arr[Math.min(i + 1, arr.length - 1)] * f;
+  } else if(P.wallMode === 'arc'){
+    k = arcK(v, k0);
+  } else if(P.wallMode === 's'){
+    k = sArcK(v, k0);
+  } else {
+    k = bez(k0, c, v);
   }
-  return bez(k0, c, v);
+  return P.undercut ? k : Math.min(k, 1);
+}
+
+// ---------- 側壁圓弧幾何（工廠 R 值語言，會議 2026-07-10 張總） ----------
+// 兩點＋半徑＋凸向的圓弧，在高度 z 取 x：side=+1 向 +x 外鼓、side=-1 反向（內凹）
+// R 太小時自動夾到可成弧的最小值（弦長一半）
+function arcBetween(p, q, Rr, side, z){
+  const dx=q[0]-p[0], dz=q[1]-p[1], d=Math.max(1e-6, Math.hypot(dx,dz));
+  const R=Math.max(Rr, d/2 + 0.5);
+  const m=Math.sqrt(Math.max(0, R*R - d*d/4));
+  const cx2=(p[0]+q[0])/2 - side*m*dz/d, cz=(p[1]+q[1])/2 + side*m*dx/d;   // 圓心在弦法線側
+  const sq=Math.sqrt(Math.max(0, R*R - (z-cz)*(z-cz)));
+  return side>0 ? cx2+sq : cx2-sq;
+}
+// 單弧：以寬度方向（短邊，如 580）剖面為定義基準——起點＝收縮後缸底邊 (W/2·k0, 0)、終點＝缸緣邊 (W/2, H)
+function arcK(v, k0){
+  const x1 = P.W/2, x0 = x1*k0, h = Math.max(1, P.H + P.dH/2);
+  const z = Math.max(0, Math.min(1, v))*h;
+  return arcBetween([x0,0], [x1,h], P.wallR, +1, z)/x1;
+}
+// S 曲線（雙弧，達爾文式）：下段 R1 外鼓、上段 R2 反向內收，轉折點在弦上 P.wallMid% 高度
+function sArcK(v, k0){
+  const x1 = P.W/2, x0 = x1*k0, h = Math.max(1, P.H + P.dH/2);
+  const vm = Math.max(0.15, Math.min(0.85, P.wallMid/100));
+  const J = [x0 + (x1-x0)*vm, h*vm];
+  const z = Math.max(0, Math.min(1, v))*h;
+  const xr = (z <= J[1]) ? arcBetween([x0,0], J, P.wallR, +1, z)
+                         : arcBetween(J, [x1,h], P.wallR2, -1, z);
+  return xr/x1;
+}
+
+// ---------- 手繪剖面 → 圓弧擬合（把自由曲線翻成工廠 R 語言） ----------
+// Kasa 最小平方圓擬合：回傳圓心/半徑/最大偏差
+function fitCircle(pts){
+  let Sx=0,Sz=0,Sxx=0,Szz=0,Sxz=0,Sxr=0,Szr=0,Sr=0;
+  const n=pts.length;
+  pts.forEach(([x,z])=>{ const r=x*x+z*z; Sx+=x; Sz+=z; Sxx+=x*x; Szz+=z*z; Sxz+=x*z; Sxr+=x*r; Szr+=z*r; Sr+=r; });
+  // 解 3x3：[Sxx Sxz Sx; Sxz Szz Sz; Sx Sz n]·[A B C] = [Sxr Szr Sr]，圓 x²+z² = A·x+B·z+C
+  const M=[[Sxx,Sxz,Sx],[Sxz,Szz,Sz],[Sx,Sz,n]], V=[Sxr,Szr,Sr];
+  const det=m=>m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])-m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])+m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  const D=det(M);
+  if(Math.abs(D)<1e-9) return {cx:0, cz:0, R:1e9, err:1e9};
+  const rep=(m,c2,v2)=>m.map((row,i2)=>row.map((x2,j2)=>j2===c2?v2[i2]:x2));
+  const A=det(rep(M,0,V))/D, B=det(rep(M,1,V))/D, C=det(rep(M,2,V))/D;
+  const cx=A/2, cz=B/2, R=Math.sqrt(Math.max(0, C+cx*cx+cz*cz));
+  let err=0;
+  pts.forEach(([x,z])=>{ err=Math.max(err, Math.abs(Math.hypot(x-cx,z-cz)-R)); });
+  return {cx, cz, R, err};
+}
+// 把手繪側牆剖面（k 取樣）擬合成 1–3 段圓弧；容差 6mm（實際 mm 座標）
+function fitProfileArcs(){
+  if(!(P.customProfile && P.shape==='custom')) return null;
+  const h=Math.max(1, P.H+P.dH/2), x1=P.W/2, arr=P.customProfile, N=arr.length-1;
+  const pts=arr.map((k,i)=>[Math.min(k,P.undercut?k:1)*x1, i/N*h]);
+  const TOL=6;
+  const tryFit=bnd=>{
+    const arcs=[];
+    for(let s2=0;s2<bnd.length-1;s2++){
+      const seg=pts.slice(bnd[s2], bnd[s2+1]+1);
+      const c=fitCircle(seg);
+      arcs.push({R:c.R, err:c.err, v0:bnd[s2]/N, v1:bnd[s2+1]/N, straight:c.R>12000});
+    }
+    return arcs;
+  };
+  let best=null;
+  [[0,N],[0,Math.round(N/2),N],[0,Math.round(N/3),Math.round(2*N/3),N]].forEach(bnd=>{
+    if(best && best.ok) return;
+    const arcs=tryFit(bnd), maxErr=Math.max(...arcs.map(a=>a.err));
+    const cand={arcs, maxErr, ok:maxErr<=TOL};
+    if(!best || cand.ok || maxErr<best.maxErr) best=cand;
+  });
+  best.label=best.arcs.map(a=>a.straight?'STR':'R'+Math.round(a.R)).join(' + ');
+  return best;
 }
 // 缸底相對缸口的比例
 function baseK(){ return (P.customProfile && P.shape === 'custom') ? P.customProfile[0] : P.taper/100; }
@@ -662,14 +797,17 @@ function innerDims(){
 }
 
 // 放樣曲面：由底環(z0, 縮放k0)漸變至缸緣(rimH(x), 縮放1)
-function loftGeometry(pts, L, z0, k0, bulge, H, dH){
+// z0f（選用）：底環各點的高度函式（如洩水斜底），未提供則用固定 z0
+function loftGeometry(pts, L, z0, k0, bulge, H, dH, z0f){
   const pos=[], idx=[];
+  const kBase = wallK(0, k0, 1+bulge);
   for(let m=0;m<=M_RING;m++){
     const v=m/M_RING, k=wallK(v, k0, 1+bulge);
     for(let i=0;i<N_SEG;i++){
       const [x,y]=pts[i];
       const zTop=rimH(x, L, H, dH);
-      pos.push(x*k, z0+v*(zTop-z0), y*k);
+      const zB = z0f ? z0f(x*kBase, y*kBase) : z0;
+      pos.push(x*k, zB+v*(zTop-zB), y*k);
     }
   }
   for(let m=0;m<M_RING;m++)
@@ -725,12 +863,38 @@ function capGeometry(pts, k, z){
   return g;
 }
 
+// 排水位置（工廠常規三式）：中間集中 / 兩頭（長軸 X 正負端）/ 短邊（寬軸 Y 端）
 function drainXY(){
   const inn=innerDims(), s=baseK();
-  const reach = inn.L/2*s - 130;
+  const reach = Math.max(0, inn.L/2*s - 130);
+  const reachW = Math.max(0, inn.W/2*s - 110);
   if(P.drain==='back')  return {x:-reach, y:0};
   if(P.drain==='front') return {x: reach, y:0};
+  if(P.drain==='side')  return {x:0, y:reachW};
+  if(P.drain==='side2') return {x:0, y:-reachW};
   return {x:0, y:0};
+}
+
+// 洩水斜底：缸內底面高度（排水孔＝最低點 P.b，向外以 P.slope° 升高）
+function floorZ(x, y){
+  const d = drainXY();
+  return P.b + Math.tan(P.slope*Math.PI/180) * Math.hypot(x-d.x, y-d.y);
+}
+
+// 洩水斜底封蓋（以排水孔為扇心，環點依距離升高）
+function slopedCapGeometry(pts, k, z0){
+  const d = drainXY();
+  const pos=[d.x, z0, d.y], idx=[];
+  for(let i=0;i<N_SEG;i++){
+    const x=pts[i][0]*k, y=pts[i][1]*k;
+    pos.push(x, floorZ(x, y), y);
+  }
+  for(let i=0;i<N_SEG;i++) idx.push(0, i+1, (i+1)%N_SEG+1);
+  const g=new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
 }
 
 function buildTub(){
@@ -748,12 +912,12 @@ function buildTub(){
   const mat = new THREE.MeshStandardMaterial({ color:P.color, roughness:P.material==='solid'?0.6:0.22, metalness:0.05, side:THREE.DoubleSide });
 
   tubGroup.add(new THREE.Mesh(loftGeometry(outerPts, P.L, 0,   s, 0.07, P.H, P.dH), mat)); // 外殼
-  tubGroup.add(new THREE.Mesh(loftGeometry(innerPts, inn.L, P.b, s, 0.03, P.H, P.dH), mat)); // 內壁
+  tubGroup.add(new THREE.Mesh(loftGeometry(innerPts, inn.L, P.b, s, 0.03, P.H, P.dH, floorZ), mat)); // 內壁（底=洩水斜底）
   tubGroup.add(new THREE.Mesh(stripGeometry(outerPts, P.L, innerPts, inn.L, P.H, P.dH), mat)); // 缸緣
   tubGroup.add(new THREE.Mesh(capGeometry(outerPts, s, 0), mat));   // 底封板
-  tubGroup.add(new THREE.Mesh(capGeometry(innerPts, s, P.b), mat)); // 缸內底面
+  tubGroup.add(new THREE.Mesh(slopedCapGeometry(innerPts, s, P.b), mat)); // 缸內底面（向排水孔傾斜 P.slope°）
 
-  // 排水孔
+  // 排水孔（位於斜底最低點）
   const d = drainXY();
   const drain = new THREE.Mesh(
     new THREE.CylinderGeometry(26, 26, 8, 32),
@@ -841,9 +1005,25 @@ function updateSpec(){
     [t('Recommended fill (80%)'), `${s.useVol.toFixed(0)} L`],
     [t('Product weight (est.)'), `~${s.weight.toFixed(0)} kg`],
     [t('Crated shipping weight (est.)'), `~${s.crated.toFixed(0)} kg`],
-    [t('Drain position'), t({center:'Center', back:'Rear end', front:'Front end'}[P.drain])],
+    [t('Side wall profile'), (function(){
+      if(P.customProfile && P.shape==='custom'){
+        const fit=fitProfileArcs();
+        return (fit && fit.ok) ? `≈ ${fit.label}` : t('Freeform (no clean arc fit)');
+      }
+      if(P.wallMode==='arc') return `R${P.wallR}`;
+      if(P.wallMode==='s')   return `R${P.wallR} + R${P.wallR2}`;
+      return t('Default curve');
+    })()],
+    [t('Drain position'), t({center:'Center', back:'End · rear', front:'End · front', side:'Short edge', side2:'Short edge · opposite'}[P.drain])],
+    [t('Floor drain slope'), `${P.slope}°`],
+    [t('Undercut'), P.undercut ? t('Yes (split mould)') : t('None (vertical demould)')],
   ];
   document.getElementById('spec').innerHTML = rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  // 會議規範警示：內長 <950 只能坐姿／蹲姿；壓克力＋倒扣＝左右合模高成本
+  const lw = document.getElementById('lenWarn');
+  if(lw){ lw.style.display = (s.inn.L < 950) ? 'block' : 'none'; lw.textContent = t('⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).'); }
+  const uw = document.getElementById('undercutWarn');
+  if(uw){ uw.style.display = (P.undercut && P.material==='acrylic') ? 'block' : 'none'; uw.textContent = t('⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.'); }
   updatePrice();
 }
 
@@ -856,7 +1036,7 @@ const OPTS = { oneOfOne:false, backrest:false, basin:false };
 const STD_COLOR = '#f5f5f0';   // Classic White＝標準色，其餘皆為客製色
 function tierKey(){
   if(OPTS.oneOfOne) return 'oneofone';
-  if(P.shape === 'custom' || extGroup) return 'bespoke';
+  if(P.shape === 'custom' || extGroup || P.undercut) return 'bespoke';   // 倒扣＝左右合模，非常規 → Bespoke
   return 'mtm';
 }
 function priceParts(){
@@ -919,83 +1099,378 @@ function updateShipping(){
   updateShipping();
 })();
 
-// ===================== DXF 輸出 =====================
+// ===================== DXF 輸出（Kreiner 銷售線圖版型） =====================
+// 版面：左側標題欄｜F-F 縱剖（左上）｜平面圖（右上）｜G-G 橫剖（左下）｜公差註記（右下）
+// 標註採分解式線段（尺寸界線＋尺寸線＋實心箭頭＋文字），R12/AC1009 全相容
 let dxf = '';
 const E = {
   line:(x1,y1,x2,y2,layer)=>{ dxf += `0\nLINE\n8\n${layer}\n10\n${x1.toFixed(2)}\n20\n${y1.toFixed(2)}\n11\n${x2.toFixed(2)}\n21\n${y2.toFixed(2)}\n`; },
   circle:(x,y,r,layer)=>{ dxf += `0\nCIRCLE\n8\n${layer}\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n40\n${r.toFixed(2)}\n`; },
-  text:(x,y,h,str,layer)=>{ dxf += `0\nTEXT\n8\n${layer}\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n40\n${h}\n1\n${str}\n`; },
+  solid:(a,b,c,layer)=>{ dxf += `0\nSOLID\n8\n${layer}\n10\n${a[0].toFixed(2)}\n20\n${a[1].toFixed(2)}\n11\n${b[0].toFixed(2)}\n21\n${b[1].toFixed(2)}\n12\n${c[0].toFixed(2)}\n22\n${c[1].toFixed(2)}\n13\n${c[0].toFixed(2)}\n23\n${c[1].toFixed(2)}\n`; },
+  rect:(x,y,w,h,layer)=>{ E.line(x,y,x+w,y,layer); E.line(x+w,y,x+w,y+h,layer); E.line(x+w,y+h,x,y+h,layer); E.line(x,y+h,x,y,layer); },
+  text:(x,y,h,str,layer,align,rot)=>{
+    dxf += `0\nTEXT\n8\n${layer}\n10\n${x.toFixed(2)}\n20\n${y.toFixed(2)}\n40\n${h}\n1\n${str}\n`;
+    if(rot) dxf += `50\n${(+rot).toFixed(1)}\n`;
+    if(align) dxf += `72\n${align===1?1:2}\n11\n${x.toFixed(2)}\n21\n${y.toFixed(2)}\n`;   // 對齊點：1=置中 2=靠右
+  },
   poly:(pts,ox,oy,layer)=>{ for(let i=0;i<pts.length;i++){ const a=pts[i], b=pts[(i+1)%pts.length]; E.line(a[0]+ox, a[1]+oy, b[0]+ox, b[1]+oy, layer); } },
   path:(pts,ox,oy,layer)=>{ for(let i=0;i<pts.length-1;i++){ E.line(pts[i][0]+ox, pts[i][1]+oy, pts[i+1][0]+ox, pts[i+1][1]+oy, layer); } }
 };
 
-// 端點側壁剖面線（放樣曲線投影）
-function endProfile(sign, L, H, dH, s, bulge){
-  const pts=[];
-  for(let m=0;m<=12;m++){
-    const v=m/12, k=wallK(v, s, 1+bulge);
-    const x=sign*(L/2)*k;
-    pts.push([x, v*rimH(sign*L/2, L, H, dH)]);
+// HEADER＋TABLES（線型與圖層定義：虛線/中心線在任何 CAD 都正確顯示）
+function dxfHeaderTables(){
+  let s = '0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n';
+  s += '0\nSECTION\n2\nTABLES\n';
+  s += '0\nTABLE\n2\nLTYPE\n70\n3\n';
+  s += '0\nLTYPE\n2\nCONTINUOUS\n70\n0\n3\nSolid line\n72\n65\n73\n0\n40\n0\n';
+  s += '0\nLTYPE\n2\nDASHED\n70\n0\n3\n- - - - -\n72\n65\n73\n2\n40\n120\n49\n80\n49\n-40\n';
+  s += '0\nLTYPE\n2\nCENTER\n70\n0\n3\n____ _ ____\n72\n65\n73\n4\n40\n290\n49\n180\n49\n-40\n49\n30\n49\n-40\n';
+  s += '0\nENDTAB\n';
+  const layers = [ ['OUTLINE',7,'CONTINUOUS'], ['HIDDEN',8,'DASHED'], ['CENTER',1,'CENTER'],
+                   ['DIM',3,'CONTINUOUS'], ['TEXT',7,'CONTINUOUS'], ['TITLE',5,'CONTINUOUS'],
+                   ['SECTION',6,'CONTINUOUS'], ['PARAMS',9,'CONTINUOUS'] ];
+  s += `0\nTABLE\n2\nLAYER\n70\n${layers.length}\n`;
+  layers.forEach(([n,c,lt])=>{ s += `0\nLAYER\n2\n${n}\n70\n0\n62\n${c}\n6\n${lt}\n`; });
+  s += '0\nENDTAB\n0\nENDSEC\n';
+  return s;
+}
+
+// ---------- 分解式標註工具 ----------
+const DIMTXT = 46, ARW = 62, EXT_GAP = 18, EXT_OVER = 36;
+function arrowAt(x, y, ang, layer){
+  const bx = x - ARW*Math.cos(ang), by = y - ARW*Math.sin(ang);
+  const w = ARW*0.17, nx = -Math.sin(ang)*w, ny = Math.cos(ang)*w;
+  E.solid([x,y], [bx+nx,by+ny], [bx-nx,by-ny], layer || 'DIM');
+}
+// 水平標註：p1/p2=幾何端點 [x,y]，dy=尺寸線 y；label 省略時自動取整數距離
+function dimH(p1, p2, dy, label){
+  let [x1,y1]=p1, [x2,y2]=p2;
+  if(x2<x1){ [x1,x2]=[x2,x1]; [y1,y2]=[y2,y1]; }
+  const d1=Math.sign(dy-y1)||1, d2=Math.sign(dy-y2)||1;
+  E.line(x1, y1+d1*EXT_GAP, x1, dy+d1*EXT_OVER, 'DIM');
+  E.line(x2, y2+d2*EXT_GAP, x2, dy+d2*EXT_OVER, 'DIM');
+  const txt = label !== undefined ? String(label) : String(Math.round(x2-x1));
+  if(x2-x1 >= ARW*3){
+    E.line(x1, dy, x2, dy, 'DIM');
+    arrowAt(x1, dy, Math.PI); arrowAt(x2, dy, 0);
+    E.text((x1+x2)/2, dy+18, DIMTXT, txt, 'DIM', 1);
+  } else {                                              // 小尺寸：箭頭在外側、文字在旁
+    E.line(x1-ARW*2.2, dy, x2+ARW*2.2, dy, 'DIM');
+    arrowAt(x1, dy, 0); arrowAt(x2, dy, Math.PI);
+    E.text(x2+ARW*2.2+16, dy+18, DIMTXT, txt, 'DIM');
+  }
+}
+// 垂直標註：dx=尺寸線 x；文字旋轉 90°
+function dimV(p1, p2, dx, label){
+  let [x1,y1]=p1, [x2,y2]=p2;
+  if(y2<y1){ [y1,y2]=[y2,y1]; [x1,x2]=[x2,x1]; }
+  const d1=Math.sign(dx-x1)||1, d2=Math.sign(dx-x2)||1;
+  E.line(x1+d1*EXT_GAP, y1, dx+d1*EXT_OVER, y1, 'DIM');
+  E.line(x2+d2*EXT_GAP, y2, dx+d2*EXT_OVER, y2, 'DIM');
+  const txt = label !== undefined ? String(label) : String(Math.round(y2-y1));
+  if(y2-y1 >= ARW*3){
+    E.line(dx, y1, dx, y2, 'DIM');
+    arrowAt(dx, y1, -Math.PI/2); arrowAt(dx, y2, Math.PI/2);
+    E.text(dx-18, (y1+y2)/2, DIMTXT, txt, 'DIM', 1, 90);
+  } else {
+    E.line(dx, y1-ARW*2.2, dx, y2+ARW*2.2, 'DIM');
+    arrowAt(dx, y1, Math.PI/2); arrowAt(dx, y2, -Math.PI/2);
+    E.text(dx-18, y2+ARW*2.2+16, DIMTXT, txt, 'DIM', 0, 90);
+  }
+}
+
+// ---------- 剖面幾何 ----------
+// 輪廓與剖切軸的交點範圍：axis='L'（y=0 剖切，取 x 範圍）/ 'W'（x=0 剖切，取 y 範圍）
+function sectionSpan(pts, axis){
+  let lo=0, hi=0;
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i], b=pts[(i+1)%pts.length];
+    const pa = axis==='L' ? a[1] : a[0], pb = axis==='L' ? b[1] : b[0];
+    const qa = axis==='L' ? a[0] : a[1], qb = axis==='L' ? b[0] : b[1];
+    if((pa<=0 && pb>0) || (pa>0 && pb<=0)){
+      const f = pa/(pa-pb), q = qa+(qb-qa)*f;
+      if(q<lo) lo=q; if(q>hi) hi=q;
+    }
+  }
+  return {lo, hi};
+}
+// 剖切面上的牆曲線：qEdge=缸口處座標（含正負），Lref=rimH 的參考長度，z0=牆脚高度
+function wallCurveQ(qEdge, Lref, axis, bulge, z0){
+  const s=baseK(), pts=[];
+  const zTop = rimH(axis==='L' ? qEdge : 0, Lref, P.H, P.dH);
+  for(let m=0;m<=16;m++){
+    const v=m/16, k=wallK(v, s, 1+bulge);
+    pts.push([qEdge*k, z0 + v*(zTop-z0)]);
   }
   return pts;
+}
+// 缸緣曲線（外頂 → 內頂，含圓弧/斜角鼓起）
+function rimCurveQ(qo, qi, LrefO, LrefI, axis){
+  const RM = P.rim==='flat' ? 1 : 10, rise = P.t*0.5, pts=[];
+  for(let m=0;m<=RM;m++){
+    const u=m/RM, q=qo+(qi-qo)*u, Lu=LrefO+(LrefI-LrefO)*u;
+    const bump = P.rim==='round' ? Math.sin(u*Math.PI)*rise : P.rim==='bevel' ? (u<0.5?u*2:(1-u)*2)*rise : 0;
+    pts.push([q, rimH(axis==='L'? q : 0, Lu, P.H, P.dH) + bump]);
+  }
+  return pts;
+}
+// 洩水斜底曲線（兩內牆脚之間）
+function floorCurveQ(q1, q2, axis){
+  const pts=[], N=32;
+  for(let i=0;i<=N;i++){
+    const q=q1+(q2-q1)*i/N;
+    pts.push([q, floorZ(axis==='L'? q : 0, axis==='L'? 0 : q)]);
+  }
+  return pts;
+}
+
+// ---------- 剖面視圖（真剖面：外牆＋內牆＋缸緣＋洩水斜底） ----------
+function drawSectionView(cx, by, axis, tag){
+  const inn=innerDims(), s=baseK(), d=drainXY();
+  const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
+  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
+  const so = sectionSpan(outerPts, axis), si = sectionSpan(innerPts, axis);
+  const zRimO = q => rimH(axis==='L'? q : 0, P.L, P.H, P.dH);
+  const zRimI = q => rimH(axis==='L'? q : 0, inn.L, P.H, P.dH);
+  const zf    = q => floorZ(axis==='L'? q : 0, axis==='L'? 0 : q);
+  const T = pts => pts.map(p=>[cx+p[0], by+p[1]]);
+
+  // 外底＋外牆
+  E.line(cx+so.lo*s, by, cx+so.hi*s, by, 'OUTLINE');
+  E.path(T(wallCurveQ(so.lo, P.L, axis, 0.07, 0)), 0, 0, 'OUTLINE');
+  E.path(T(wallCurveQ(so.hi, P.L, axis, 0.07, 0)), 0, 0, 'OUTLINE');
+  // 缸緣（外頂 → 內頂）
+  E.path(T(rimCurveQ(so.lo, si.lo, P.L, inn.L, axis)), 0, 0, 'OUTLINE');
+  E.path(T(rimCurveQ(so.hi, si.hi, P.L, inn.L, axis)), 0, 0, 'OUTLINE');
+  // 內牆（牆脚落在洩水斜底上）
+  E.path(T(wallCurveQ(si.lo, inn.L, axis, 0.03, zf(si.lo*s))), 0, 0, 'OUTLINE');
+  E.path(T(wallCurveQ(si.hi, inn.L, axis, 0.03, zf(si.hi*s))), 0, 0, 'OUTLINE');
+  // 洩水斜底
+  E.path(T(floorCurveQ(si.lo*s, si.hi*s, axis)), 0, 0, 'OUTLINE');
+  // 中心線
+  const zmax = Math.max(zRimO(so.lo), zRimO(so.hi)) + P.t;
+  E.line(cx, by-130, cx, by+zmax+130, 'CENTER');
+
+  // 排水孔（若落在此剖切面上）：小凹槽＋引線註記，細部依工廠標準件
+  const onCut = axis==='L' ? Math.abs(d.y) < 1 : Math.abs(d.x) < 1;
+  const qd = axis==='L' ? d.x : d.y;
+  if(onCut){
+    E.line(cx+qd-45, by+P.b, cx+qd-45, by+P.b-14, 'OUTLINE');
+    E.line(cx+qd+45, by+P.b, cx+qd+45, by+P.b-14, 'OUTLINE');
+    E.line(cx+qd-45, by+P.b-14, cx+qd+45, by+P.b-14, 'OUTLINE');
+    E.line(cx+qd, by+P.b-14, cx+qd+330, by-150, 'DIM');
+    E.text(cx+qd+350, by-185, 40, 'DRAIN: FACTORY STD DETAIL', 'TEXT');
+    // 洩水角度註記（斜底中點引線）
+    const qm = (qd + si.hi*s) / 2;
+    E.line(cx+qm, by+zf(qm), cx+qm, by+P.b+150, 'DIM');
+    E.text(cx+qm, by+P.b+175, 40, `SLOPE ${P.slope}%%d`, 'TEXT', 1);
+  }
+
+  // 側壁 R 值標註（短邊剖面＝R 值定義基準）
+  if(axis==='W'){
+    const leader = (vq, label)=>{
+      const kq = wallK(vq, s, 1.07);
+      const qx = so.hi*kq, qz = vq*zRimO(so.hi);
+      E.line(cx+qx, by+qz, cx+qx+420, by+qz+230, 'DIM');
+      E.text(cx+qx+440, by+qz+250, 46, label, 'TEXT');
+    };
+    if(P.customProfile && P.shape==='custom'){
+      const fit = fitProfileArcs();
+      if(fit && fit.ok) fit.arcs.forEach(a=>leader(Math.max(0.1, Math.min(0.9, (a.v0+a.v1)/2)), `${a.straight?'STRAIGHT':'R'+Math.round(a.R)} (FIT)`));
+    } else if(P.wallMode==='arc'){
+      leader(0.55, `R${Math.round(P.wallR)}`);
+    } else if(P.wallMode==='s'){
+      const vm = Math.max(0.15, Math.min(0.85, P.wallMid/100));
+      leader(vm*0.5, `R${Math.round(P.wallR)}`);
+      leader(vm + (1-vm)*0.55, `R${Math.round(P.wallR2)} (REV)`);
+    }
+  }
+
+  // ---- 標註 ----
+  // 上緣鏈式：缸緣厚 t ─ 內部淨長/寬 ─ 缸緣厚 t
+  const dyT = by + zmax + 340;
+  dimH([cx+so.lo, by+zRimO(so.lo)], [cx+si.lo, by+zRimI(si.lo)], dyT, Math.round(si.lo-so.lo));
+  dimH([cx+si.lo, by+zRimI(si.lo)], [cx+si.hi, by+zRimI(si.hi)], dyT);
+  dimH([cx+si.hi, by+zRimI(si.hi)], [cx+so.hi, by+zRimO(so.hi)], dyT, Math.round(so.hi-si.hi));
+  // 底部：端部退縮＋底部長度；總長在更下方
+  const dyB1 = by - 270, dyB2 = by - 560;
+  dimH([cx+so.lo, by+zRimO(so.lo)], [cx+so.lo*s, by], dyB1, Math.round(so.lo*s-so.lo));
+  dimH([cx+so.lo*s, by], [cx+so.hi*s, by], dyB1);
+  dimH([cx+so.lo, by+zRimO(so.lo)], [cx+so.hi, by+zRimO(so.hi)], dyB2);
+  // 高度：左＝總高（後端）；右＝前端高（不對稱時）
+  dimV([cx+so.lo*s, by], [cx+so.lo, by+zRimO(so.lo)], cx+so.lo-350);
+  if(axis==='L' && P.dH>0) dimV([cx+so.hi*s, by], [cx+so.hi, by+zRimO(so.hi)], cx+so.hi+350);
+  // 內深（排水孔＝最低點處）＋缸底厚
+  const q0 = onCut ? qd : 0;
+  dimV([cx+q0, by+zf(q0)], [cx+q0, by+zRimI(si.hi)], cx+q0+330);
+  dimV([cx+q0-160, by], [cx+q0-160, by+P.b], cx+q0-380, P.b);
+  // 視圖名稱
+  E.text(cx, by-800, 64, `SECTION ${tag}-${tag}`, 'TEXT', 1);
+}
+
+// ---------- 平面圖 ----------
+function drawPlanView(cx, cy){
+  const inn=innerDims(), s=baseK(), d=drainXY();
+  const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
+  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
+  E.poly(outerPts, cx, cy, 'OUTLINE');
+  E.poly(innerPts, cx, cy, 'OUTLINE');
+  E.poly(outerPts.map(p=>[p[0]*s, p[1]*s]), cx, cy, 'HIDDEN');       // 底部輪廓（收縮後）
+  let nX=1e9, xX=-1e9, nY=1e9, xY=-1e9;
+  outerPts.forEach(p=>{ nX=Math.min(nX,p[0]); xX=Math.max(xX,p[0]); nY=Math.min(nY,p[1]); xY=Math.max(xY,p[1]); });
+  // 中心線
+  E.line(cx+nX-150, cy, cx+xX+150, cy, 'CENTER');
+  E.line(cx, cy+nY-150, cx, cy+xY+150, 'CENTER');
+  // 排水孔
+  E.circle(cx+d.x, cy+d.y, 26, 'OUTLINE');
+  E.circle(cx+d.x, cy+d.y, 8, 'OUTLINE');
+  // 剖切符號：F-F 沿長軸（水平線）、G-G 沿寬軸（垂直線）
+  const cutMark = (x, y, horiz, letter)=>{
+    if(horiz){
+      E.line(x-75, y, x+75, y, 'SECTION'); E.line(x-75, y-12, x+75, y-12, 'SECTION');
+      E.line(x, y-12, x, y-140, 'SECTION'); arrowAt(x, y-150, -Math.PI/2, 'SECTION');
+      E.text(x, y-290, 58, letter, 'SECTION', 1);
+    } else {
+      E.line(x, y-75, x, y+75, 'SECTION'); E.line(x-12, y-75, x-12, y+75, 'SECTION');
+      E.line(x-12, y, x-140, y, 'SECTION'); arrowAt(x-150, y, Math.PI, 'SECTION');
+      E.text(x-230, y-20, 58, letter, 'SECTION', 2);
+    }
+  };
+  cutMark(cx+nX-220, cy, true, 'F'); cutMark(cx+xX+220, cy, true, 'F');
+  cutMark(cx, cy+nY-220, false, 'G'); cutMark(cx, cy+xY+220, false, 'G');
+  // 標註：總長／總寬／排水孔偏移
+  dimH([cx+nX, cy], [cx+xX, cy], cy+nY-340);
+  dimV([cx, cy+nY], [cx, cy+xY], cx+xX+360);
+  if(Math.abs(d.x)>1) dimH([cx, cy+d.y], [cx+d.x, cy+d.y], cy+nY-160, Math.round(Math.abs(d.x)));
+  if(Math.abs(d.y)>1) dimV([cx+d.x, cy], [cx+d.x, cy+d.y], cx+nX-360, Math.round(Math.abs(d.y)));
+  E.text(cx, cy+nY-620, 64, 'PLAN VIEW', 'TEXT', 1);
+}
+
+// ---------- 標題欄（Kreiner 版型，英文為主） ----------
+function drawTitleBlock(x, y, w, h, D){
+  E.rect(x, y, w, h, 'TITLE');
+  let cy = y + h;
+  // 品牌區
+  E.line(x, cy-460, x+w, cy-460, 'TITLE');
+  E.text(x+w/2, cy-180, 150, 'KREINER', 'TITLE', 1);
+  E.text(x+w/2, cy-290, 46, 'Deutschland 1892', 'TITLE', 1);
+  E.text(x+w/2, cy-405, 44, 'Dongguan Shengchang Industries Co.Ltd.', 'TITLE', 1);
+  cy -= 460;
+  // 資料列
+  const rows = [
+    ['Name', D.name], ['Design ID', D.designId], ['Code', D.code], ['Dimensions', D.dims],
+    ['Material', D.material], ['Units', 'mm'], ['Proportion', D.scale], ['Capacity', D.cap],
+    ['Est. weight', D.weight], ['Draftsman', D.drafts], ['Date', D.date],
+    ['Auditing', ''], ['Approved', ''], ['Projection', '']
+  ];
+  const rowH = 165, labW = 330;
+  rows.forEach(([lab, val], i)=>{
+    const ry = cy - rowH*(i+1);
+    E.line(x, ry, x+w, ry, 'TITLE');
+    E.line(x+labW, ry, x+labW, ry+rowH, 'TITLE');
+    E.text(x+24, ry+rowH/2-20, 40, lab, 'TITLE');
+    if(lab === 'Projection'){
+      // 第一角法投影符號
+      const px = x+labW+150, py = ry+rowH/2, ps = 55;
+      E.circle(px, py, ps*0.52, 'TITLE'); E.circle(px, py, ps*0.28, 'TITLE');
+      E.line(px-ps*0.85, py, px+ps*0.85, py, 'CENTER');
+      const tx = px+ps*1.5;
+      E.line(tx, py-ps*0.52, tx, py+ps*0.52, 'TITLE');
+      E.line(tx+ps*0.95, py-ps*0.28, tx+ps*0.95, py+ps*0.28, 'TITLE');
+      E.line(tx, py-ps*0.52, tx+ps*0.95, py-ps*0.28, 'TITLE');
+      E.line(tx, py+ps*0.52, tx+ps*0.95, py+ps*0.28, 'TITLE');
+    } else if(val){
+      const maxW = w - labW - 60;                                   // 自動縮字避免超出欄位
+      const h2 = Math.max(24, Math.min(42, maxW / (0.62 * String(val).length)));
+      E.text(x+labW+26, ry+rowH/2-20, Math.round(h2), val, 'TITLE');
+    }
+  });
+}
+
+// ---------- 公差註記 ----------
+function drawToleranceNote(x, y){
+  const lines = [
+    'NOTE: GENERAL TOLERANCES',
+    'DIM OVER 400mm : +5 / -10 mm',
+    'DIM 100 - 400mm : %%p3 mm',
+    'DIM UNDER 100mm : %%p2 mm'
+  ];
+  lines.forEach((s2, i)=> E.text(x, y - i*100, i ? 46 : 52, s2, 'TEXT'));
 }
 
 function exportDXF(){
   const inn = innerDims(), spec = computeSpec(), s = baseK();
   const HB = P.H + P.dH;
-  const gap = 350;
-  const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
-  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
-  dxf = '0\nSECTION\n2\nENTITIES\n';
+  dxf = dxfHeaderTables();
+  dxf += '0\nSECTION\n2\nENTITIES\n';
 
-  // ---------- 標題 ----------
-  const topY = P.W/2 + gap;
-  E.text(-P.L/2, topY + 270, 60, 'CUSTOM FREESTANDING BATHTUB - PRODUCTION DRAWING', 'TITLE');
-  E.text(-P.L/2, topY + 180, 35, `DATE: ${new Date().toISOString().slice(0,10)}   UNIT: mm   MATERIAL: ${P.material==='solid'?'SOLID SURFACE':'ACRYLIC'}   SHAPE: ${P.shape.toUpperCase()}   RIM: ${P.rim.toUpperCase()}   RISE ARC: ${P.arc}%   CUSTOMER: ${document.getElementById('custName').value || '-'}`, 'TITLE');
-  E.text(-P.L/2, topY + 110, 35, `L=${P.L}  W=${P.W}  RIM H FRONT=${P.H} / BACK=${HB}  WALL=${P.t}  BOTTOM=${P.b}  EGG=${P.egg}%  BASE=${Math.round(s*100)}%${P.customPts?'  PLAN=SKETCHED':''}${P.customProfile?'  PROFILE=SKETCHED':''}`, 'TITLE');
-  E.text(-P.L/2, topY + 40, 35, `CAPACITY=${spec.fullVol.toFixed(0)}L  NOTE: ${document.getElementById('custNote').value || '-'}`, 'TITLE');
+  // ---- 版面配置（1:1 模型空間 mm；A4 橫式列印比例自動計算）----
+  const DZ = 900;                                              // 視圖周圍標註區
+  const ffH = HB + P.t, ggH = rimH(0, P.L, P.H, P.dH) + P.t;
+  const col1 = Math.max(P.L, P.W) + DZ*2;                      // 左欄：F-F（上）＋ G-G（下）
+  const col2 = Math.max(P.L, 1600) + DZ*2;                     // 右欄：平面圖（上）＋ 公差（下）
+  const row1 = Math.max(ffH, P.W) + DZ*2;
+  const row2 = Math.max(ggH + DZ*2, 1500);
+  const TBW = 1100, M = 70;
+  const shW = M + TBW + col1 + col2 + M;
+  const shH = M + row1 + row2 + M;
 
-  // ---------- 俯視圖 TOP VIEW ----------
-  E.poly(outerPts, 0, 0, 'OUTLINE');                                  // 缸口外緣
-  E.poly(innerPts, 0, 0, 'OUTLINE');                                  // 缸口內緣
-  E.poly(outerPts.map(p=>[p[0]*s, p[1]*s]), 0, 0, 'HIDDEN');          // 底部輪廓（收縮後）
-  const d = drainXY();
-  E.circle(d.x, d.y, 26, 'OUTLINE');
-  E.line(-P.L/2-80, 0, P.L/2+80, 0, 'CENTER');
-  E.line(0, -P.W/2-80, 0, P.W/2+80, 'CENTER');
-  E.text(-P.L/2, P.W/2+60, 40, 'TOP VIEW (DASHED=BASE FOOTPRINT)', 'TEXT');
-  E.text(-P.L/2, -P.W/2-120, 32, `L=${P.L} / INNER L=${inn.L} / BASE L=${Math.round(P.L*s)}`, 'DIM');
-  E.text(P.L/2+100, 0, 32, `W=${P.W} / INNER W=${inn.W}`, 'DIM');
+  // 圖框
+  E.rect(0, 0, shW, shH, 'TITLE');
+  E.rect(M, M, shW-2*M, shH-2*M, 'TITLE');
 
-  // ---------- 前視圖 FRONT VIEW（可見缸緣斜面）----------
-  const fy = -(P.W/2 + gap + HB);
-  E.line(-P.L/2*s, fy, P.L/2*s, fy, 'OUTLINE');                       // 底邊
-  E.path(endProfile(1, P.L, P.H, P.dH, s, 0.07).map(p=>[p[0], fy+p[1]]), 0, 0, 'OUTLINE');   // Front end側壁曲線
-  E.path(endProfile(-1, P.L, P.H, P.dH, s, 0.07).map(p=>[p[0], fy+p[1]]), 0, 0, 'OUTLINE');  // 後端側壁曲線
-  const rimPts = [];                                                  // 缸緣線（後高前低，依弧形/直線取樣）
-  for(let m=0;m<=24;m++){ const x = -P.L/2 + P.L*m/24; rimPts.push([x, fy + rimH(x, P.L, P.H, P.dH)]); }
-  E.path(rimPts, 0, 0, 'OUTLINE');
-  E.line(-inn.L/2, fy+P.b, inn.L/2, fy+P.b, 'HIDDEN');                // 缸內底面
-  E.text(-P.L/2, fy+HB+60, 40, 'FRONT VIEW (SLOPED RIM)', 'TEXT');
-  E.text(-P.L/2, fy-90, 32, `RIM H: BACK=${HB} FRONT=${P.H}  BOTTOM=${P.b}  INNER DEPTH=${inn.D}`, 'DIM');
+  const den = Math.max(2, Math.ceil(Math.max(shW/297, shH/210)));
+  const code = `C-CUS-${Math.round(P.L/100)}${Math.round(P.W/10)}F.00`;
+  const custName = document.getElementById('custName').value;
 
-  // ---------- 側視圖 SIDE VIEW ----------
-  const sx = P.L/2 + gap + P.W/2;
-  E.line(sx-P.W/2*s, fy, sx+P.W/2*s, fy, 'OUTLINE');
-  E.path(endProfile(1, P.W, P.H+P.dH/2, 0, s, 0.07).map(p=>[sx+p[0], fy+p[1]]), 0, 0, 'OUTLINE');
-  E.path(endProfile(-1, P.W, P.H+P.dH/2, 0, s, 0.07).map(p=>[sx+p[0], fy+p[1]]), 0, 0, 'OUTLINE');
-  E.line(sx-P.W/2, fy+HB, sx+P.W/2, fy+HB, 'OUTLINE');                // 後端缸緣（高）
-  E.line(sx-P.W/2, fy+P.H, sx+P.W/2, fy+P.H, 'HIDDEN');               // Front end缸緣（低，虛線）
-  E.text(sx-P.W/2, fy+HB+60, 40, 'SIDE VIEW', 'TEXT');
-  E.text(sx-P.W/2, fy-90, 32, `W=${P.W}  WALL=${P.t}  BASE W=${Math.round(P.W*s)}`, 'DIM');
+  drawTitleBlock(M, M, TBW, shH-2*M, {
+    name: custName ? `CUSTOM TUB - ${custName}` : 'CUSTOM FREESTANDING BATHTUB',
+    designId: DESIGN_ID,
+    code,
+    dims: `${P.L}x${P.W}x${inn.D}/${HB}mm`,
+    material: P.material==='solid' ? 'SOLID SURFACE' : 'ACRYLIC',
+    scale: '1:' + den,
+    cap: `${spec.fullVol.toFixed(0)} L`,
+    weight: `${spec.weight.toFixed(1)} kg`,
+    drafts: 'KREINER ATELIER DESIGN STUDIO',
+    date: new Date().toISOString().slice(0,10)
+  });
+
+  const gx = M + TBW;
+  drawSectionView(gx + col1/2, M + row2 + DZ, 'L', 'F');       // F-F 縱剖（左上）
+  drawSectionView(gx + col1/2, M + DZ*0.9,     'W', 'G');       // G-G 橫剖（左下）
+  drawPlanView(gx + col1 + col2/2, M + row2 + row1/2);          // 平面圖（右上）
+  drawToleranceNote(gx + col1 + 300, M + 1300);                 // 公差註記（右下）
+
+  // 一般註記
+  const rimNote = P.rim==='round' ? `RIM EDGE: ROLLED, R${Math.max(3, Math.round(P.t/2))}`
+                : P.rim==='bevel' ? `RIM EDGE: BEVELLED, CHAMFER ${Math.max(3, Math.round(P.t/2))}mm`
+                : `RIM EDGE: FLAT / SHARP (WALL ${P.t}mm)`;
+  E.text(gx + col1 + 300, M + 800, 44, rimNote, 'TEXT');
+  if(P.customProfile && P.shape==='custom'){
+    const fit = fitProfileArcs();
+    E.text(gx + col1 + 300, M + 680, 44, fit && fit.ok
+      ? `SIDE WALL (SKETCHED) = FITTED ARCS ${fit.label} (MAX DEV ${fit.maxErr.toFixed(1)}mm, WIDTH SECTION REF)`
+      : 'SIDE WALL (SKETCHED): FREEFORM POLYLINE - NO CLEAN ARC FIT. SIMPLIFY SKETCH FOR ARC-BASED TOOLING.', 'TEXT');
+  } else if(P.wallMode==='arc'){
+    E.text(gx + col1 + 300, M + 680, 44, `SIDE WALL: CIRCULAR ARC R${Math.round(P.wallR)} (WIDTH SECTION REFERENCE)`, 'TEXT');
+  } else if(P.wallMode==='s'){
+    E.text(gx + col1 + 300, M + 680, 44, `SIDE WALL: S-CURVE R${Math.round(P.wallR)} (LOWER) + R${Math.round(P.wallR2)} (UPPER, REVERSED), JOIN AT ${P.wallMid}% H (WIDTH SECTION REF)`, 'TEXT');
+  }
+  E.text(gx + col1 + 300, M + 560, 44, `FLOOR SLOPE ${P.slope}%%d TOWARDS DRAIN (DRAIN AT LOWEST POINT)`, 'TEXT');
+  E.text(gx + col1 + 300, M + 440, 44, 'DRAIN DETAIL PER FACTORY STANDARD FITTING (AT MOULD STAGE)', 'TEXT');
+  E.text(gx + col1 + 300, M + 320, 44, `UNDERCUT: ${P.undercut ? 'ALLOWED (SPLIT MOULD)' : 'NONE (VERTICAL DEMOULD)'}`, 'TEXT');
+  if(document.getElementById('custNote').value)
+    E.text(gx + col1 + 300, M + 200, 44, `REMARK: ${document.getElementById('custNote').value}`, 'TEXT');
 
   // 嵌入參數（PARAMS 圖層，供本系統重新上傳還原設計 — 閉環）
   const paramsJson = JSON.stringify({ _bathtub:1, shape:P.shape, L:P.L, W:P.W, H:P.H, t:P.t, b:P.b, r:P.r,
-    dH:P.dH, egg:P.egg, taper:P.taper, arc:P.arc, rim:P.rim, drain:P.drain });
-  E.text(-P.L/2, fy - 220, 20, paramsJson, 'PARAMS');
+    dH:P.dH, egg:P.egg, taper:P.taper, arc:P.arc, rim:P.rim, drain:P.drain, slope:P.slope, undercut:P.undercut?1:0,
+    wallMode:P.wallMode, wallR:P.wallR, wallR2:P.wallR2, wallMid:P.wallMid });
+  E.text(M + 30, 16, 22, paramsJson, 'PARAMS');
 
   dxf += '0\nENDSEC\n0\nEOF\n';
-  download(dxf, `bathtub_${P.L}x${P.W}x${P.H}-${HB}_${Date.now()}.dxf`, 'application/dxf');
+  download(dxf, `${DESIGN_ID}_${code}_${P.L}x${P.W}x${inn.D}-${HB}.dxf`, 'application/dxf');
 }
 
 // ===================== JSON 規格表輸出 =====================
@@ -1018,7 +1493,9 @@ function exportJSON(){
       缸壁厚度_mm: P.t, 缸底厚度_mm: P.b, 圓角半徑_mm: P.r,
       缸緣造型: {flat:'Flat', round:'Rounded', bevel:'Beveled'}[P.rim], rim_code: P.rim,
       增高弧度_pct: P.arc,
-      排水孔位置: P.drain, 外觀顏色: P.color
+      排水孔位置: P.drain, 外觀顏色: P.color,
+      排水洩水角度_deg: P.slope, 允許倒扣: P.undercut,
+      側壁模式: P.wallMode, 側壁弧度R_mm: P.wallR, 上段弧R2_mm: P.wallR2, S轉折高度_pct: P.wallMid
     },
     計算規格: {
       內部長度_mm: s.inn.L, 內部寬度_mm: s.inn.W, 內部深度_前端_mm: s.inn.D,
@@ -1086,6 +1563,8 @@ async function sendQuote(btn){
       設計參數: { material_code: P.material, shape_code: P.shape, 外部長度_mm: P.L, 外部寬度_mm: P.W, 缸緣高度_前端_mm: P.H,
         靠背增高_mm: P.dH, 增高弧度_pct: P.arc, 蛋形係數_pct: P.egg, 底部收縮_pct: P.taper,
         缸壁厚度_mm: P.t, 缸底厚度_mm: P.b, 圓角半徑_mm: P.r, rim_code: P.rim, 排水孔位置: P.drain, 外觀顏色: P.color,
+        排水洩水角度_deg: P.slope, 允許倒扣: P.undercut,
+        側壁模式: P.wallMode, 側壁弧度R_mm: P.wallR, 上段弧R2_mm: P.wallR2, S轉折高度_pct: P.wallMid,
         手繪俯視輪廓_normalized: P.customPts, 手繪側牆剖面_k: P.customProfile },
       計算規格: { 滿水容量_L: +s.fullVol.toFixed(1), 估計重量_kg: +s.weight.toFixed(1) }
     };
@@ -1101,6 +1580,21 @@ async function sendQuote(btn){
   btn.textContent = t('Submit design & get a firm quote →');
   if(btn.firstChild) i18nNodes.push([btn.firstChild, 'Submit design & get a firm quote →']);
 }
+
+// ---------- CAD 閘門開關 ----------
+// ⚠ TODO（測試完畢後改回）：CAD_GATE 改為 true → CAD 製造包不開放直接下載，
+//   只在客戶送出設計（＋收訂金）後隨正式報價寄出（MASA 的審核機制）。
+//   目前 false = 測試模式：按鈕直接下載 DXF＋規格 JSON。
+const CAD_GATE = false;
+function requestCadPack(){
+  if(CAD_GATE){ showCadGate(); return; }
+  exportDXF();
+  exportJSON();
+}
+(function initCadBtn(){
+  const b = document.getElementById('cadPackBtn');
+  if(b && CAD_GATE) b.textContent = '🔒 CAD pack (DXF + spec)';
+})();
 
 // ---------- CAD 閘門：免費層不提供可製造檔案 ----------
 function showCadGate(){
@@ -1224,7 +1718,10 @@ document.getElementById('cadFile').addEventListener('change', e=>{
 
 // 套用參數物件（來自 DXF 內嵌 PARAMS 或 JSON 規格表）
 function applyParams(p){
-  ['L','W','H','t','b','r','dH','egg','taper','arc'].forEach(k=>{ if(typeof p[k] === 'number') P[k] = p[k]; });
+  ['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid'].forEach(k=>{ if(typeof p[k] === 'number') P[k] = p[k]; });
+  if(typeof p.undercut !== 'undefined') P.undercut = !!(+p.undercut);
+  if(p.wallMode && ['curve','arc','s'].includes(p.wallMode)) P.wallMode = p.wallMode;
+  else if(typeof p.wallArc !== 'undefined' && +p.wallArc) P.wallMode = 'arc';   // 舊版閉環相容
   if(p.rim) P.rim = p.rim;
   if(p.drain) P.drain = p.drain;
   if(p.shape) P.shape = p.shape;
@@ -1240,7 +1737,10 @@ function importSpecJSON(text){
   applyParams({
     shape: d.shape_code, L: d.外部長度_mm, W: d.外部寬度_mm, H: d.缸緣高度_前端_mm,
     t: d.缸壁厚度_mm, b: d.缸底厚度_mm, r: d.圓角半徑_mm, dH: d.靠背增高_mm,
-    egg: d.蛋形係數_pct, taper: d.底部收縮_pct, arc: d.增高弧度_pct, rim: d.rim_code, drain: d.排水孔位置
+    egg: d.蛋形係數_pct, taper: d.底部收縮_pct, arc: d.增高弧度_pct, rim: d.rim_code, drain: d.排水孔位置,
+    slope: d.排水洩水角度_deg, undercut: typeof d.允許倒扣 !== 'undefined' ? (d.允許倒扣 ? 1 : 0) : undefined,
+    wallR: d.側壁弧度R_mm, wallR2: d.上段弧R2_mm, wallMid: d.S轉折高度_pct,
+    wallMode: d.側壁模式, wallArc: typeof d.側壁圓弧模式 !== 'undefined' ? (d.側壁圓弧模式 ? 1 : 0) : undefined
   });
   if(d.手繪俯視輪廓_normalized) P.customPts = d.手繪俯視輪廓_normalized;
   if(d.手繪側牆剖面_k) P.customProfile = d.手繪側牆剖面_k;
@@ -1436,7 +1936,8 @@ function importSTL(buf){
 // ===================== UI 綁定 =====================
 const sliderMap = [
   ['rL','nL','L'], ['rW','nW','W'], ['rH','nH','H'], ['rT','nT','t'],
-  ['rB','nB','b'], ['rR','nR','r'], ['rDH','nDH','dH'], ['rE','nE','egg'], ['rS','nS','taper'], ['rArc','nArc','arc']
+  ['rB','nB','b'], ['rR','nR','r'], ['rDH','nDH','dH'], ['rE','nE','egg'], ['rS','nS','taper'], ['rArc','nArc','arc'],
+  ['rSlope','nSlope','slope'], ['rWR','nWR','wallR'], ['rWR1','nWR1','wallR'], ['rWR2','nWR2','wallR2'], ['rWM','nWM','wallMid']
 ];
 sliderMap.forEach(([rid,nid,key])=>{
   const r=document.getElementById(rid), n=document.getElementById(nid);
@@ -1453,7 +1954,21 @@ function syncUI(){
     document.getElementById(nid).value = P[key];
   });
   document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.toggle('active', b.dataset.shape===P.shape));
+  document.getElementById('undercutToggle').checked = P.undercut;
+  document.querySelectorAll('.wallmode-btns button').forEach(b=>b.classList.toggle('active', b.dataset.wallmode===P.wallMode));
+  document.getElementById('wallRRow').style.display  = (P.wallMode==='arc') ? 'flex' : 'none';
+  document.getElementById('wallR1Row').style.display = (P.wallMode==='s') ? 'flex' : 'none';
+  document.getElementById('wallR2Row').style.display = (P.wallMode==='s') ? 'flex' : 'none';
+  document.getElementById('wallMidRow').style.display = (P.wallMode==='s') ? 'flex' : 'none';
   updateRowVis();
+}
+
+function setWallMode(m, btn){
+  P.wallMode = m;
+  document.querySelectorAll('.wallmode-btns button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  syncUI();
+  buildTub();
 }
 
 function setShape(s, btn){
@@ -1487,6 +2002,21 @@ function applyPhotoPreset(){
   Object.assign(P, { shape:'ellipse', L:1700, W:850, H:520, t:15, b:40, dH:130, egg:12, taper:72, drain:'front' });
   syncUI();
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
+  buildTub();
+}
+
+// 工廠經典款（量產驗證，依 2024–2026 銷售線圖範本近似參數；1600x800、內深≈445–450、總高 580/600）
+const CLASSICS = {
+  marbella: { shape:'stadium', L:1600, W:800, H:485, t:20, b:40, r:150, dH:95,  egg:0, taper:72, arc:60, rim:'round', drain:'center', slope:1.5, wallMode:'arc', wallR:2000, undercut:false },
+  victoria: { shape:'stadium', L:1600, W:800, H:490, t:20, b:40, r:150, dH:110, egg:0, taper:75, arc:55, rim:'round', drain:'back',   slope:1.5, wallMode:'arc', wallR:1800, undercut:false },
+  darwin:   { shape:'ellipse', L:1600, W:800, H:490, t:20, b:40, r:150, dH:90,  egg:6, taper:75, arc:60, rim:'round', drain:'center', slope:1.5, wallMode:'arc', wallR:1500, undercut:false }
+};
+function applyClassic(k){
+  Object.assign(P, CLASSICS[k]);
+  P.customPts = null; P.customProfile = null;
+  document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim===P.rim));
+  document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
+  syncUI();
   buildTub();
 }
 
@@ -1766,6 +2296,7 @@ document.getElementById('customColor').addEventListener('input', e=>{
   P.color = e.target.value; buildTub();
 });
 document.getElementById('waterToggle').addEventListener('change', e=>{ P.water = e.target.checked; buildTub(); });
+document.getElementById('undercutToggle').addEventListener('change', e=>{ P.undercut = e.target.checked; buildTub(); });
 
 // ===================== 滑鼠 / 觸控（360° 自由旋轉） =====================
 let dragging=false, lastX=0, lastY=0, pinchD=0;
@@ -1809,8 +2340,11 @@ function animate(){
 // ?clean=1 攝影棚模式：隱藏介面/格線，背景米白，供擷取產品渲染圖
 const q = new URLSearchParams(location.search);
 if(q.get('preset') === 'photo') applyPhotoPreset();
-['L','W','H','t','b','r','dH','egg','taper','arc'].forEach(k=>{ if(q.get(k) !== null) P[k] = +q.get(k); });
+['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid'].forEach(k=>{ if(q.get(k) !== null) P[k] = +q.get(k); });
 ['shape','rim','drain'].forEach(k=>{ if(q.get(k)) P[k] = q.get(k); });
+if(q.get('undercut') !== null) P.undercut = q.get('undercut') === '1';
+if(q.get('wallMode') && ['curve','arc','s'].includes(q.get('wallMode'))) P.wallMode = q.get('wallMode');
+else if(q.get('wallArc') === '1') P.wallMode = 'arc';
 if(q.get('color')) P.color = '#' + q.get('color').replace('#','');
 if(q.get('water')) P.water = q.get('water') === '1';
 syncUI();
