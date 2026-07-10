@@ -1409,18 +1409,23 @@ function exportDXF(){
   const DZ = 900;                                              // 視圖周圍標註區
   const ffH = HB + P.t, ggH = rimH(0, P.L, P.H, P.dH) + P.t;
   const col1 = Math.max(P.L, P.W) + DZ*2;                      // 左欄：F-F（上）＋ G-G（下）
-  const col2 = Math.max(P.L, 1600) + DZ*2;                     // 右欄：平面圖（上）＋ 公差（下）
-  const row1 = Math.max(ffH, P.W) + DZ*2;
+  let col2 = Math.max(P.L, 1600) + DZ*2;                       // 右欄：平面圖（上）＋ 公差（下）
+  let row1 = Math.max(ffH, P.W) + DZ*2;
   const row2 = Math.max(ggH + DZ*2, 1500);
   const TBW = 1100, M = 70;
-  const shW = M + TBW + col1 + col2 + M;
-  const shH = M + row1 + row2 + M;
+  let shW = M + TBW + col1 + col2 + M;
+  let shH = M + row1 + row2 + M;
+
+  // 版面吸附 A4 橫式比例（297×210）：列印/匯出 PDF 選 A4 橫式「符合頁面」時剛好滿版，
+  // 比例為乾淨的 1:den（標題欄 Proportion 同步顯示）
+  const den = Math.max(2, Math.ceil(Math.max(shW/297, shH/210)));
+  col2 += 297*den - shW;                                       // 多餘寬度給右欄（平面圖/註記區）
+  row1 += 210*den - shH;                                       // 多餘高度給上排
+  shW = 297*den; shH = 210*den;
 
   // 圖框
   E.rect(0, 0, shW, shH, 'TITLE');
   E.rect(M, M, shW-2*M, shH-2*M, 'TITLE');
-
-  const den = Math.max(2, Math.ceil(Math.max(shW/297, shH/210)));
   const code = `C-CUS-${Math.round(P.L/100)}${Math.round(P.W/10)}F.00`;
   const custName = document.getElementById('custName').value;
 
