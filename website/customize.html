@@ -614,13 +614,14 @@ dir2.position.set(-1800, 1200, -1000);
 scene.add(dir2);
 
 // 地板（單面Material：轉到下方仰視時地板自動消失，不會擋住視線）
+// 深色底座：與白色缸體拉開對比，細節（缸緣、收縮、斜底）看得清楚
 const floor = new THREE.Mesh(
   new THREE.CircleGeometry(5000, 64),
-  new THREE.MeshStandardMaterial({color:0xe8e3d6, roughness:0.95})
+  new THREE.MeshStandardMaterial({color:0x4a463d, roughness:0.95})
 );
 floor.rotation.x = -Math.PI/2;
 scene.add(floor);
-const grid = new THREE.GridHelper(6000, 30, 0xd4ccba, 0xe0d9c8);
+const grid = new THREE.GridHelper(6000, 30, 0x6b675c, 0x5a564c);
 grid.position.y = 1;
 scene.add(grid);
 
