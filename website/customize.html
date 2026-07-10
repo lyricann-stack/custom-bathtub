@@ -247,7 +247,7 @@
       <div class="chk" style="margin-top:10px"><input type="checkbox" id="skirtToggle"><label for="skirtToggle">Pedestal skirt base (Oneida-style)</label></div>
       <div class="row" id="skirtHRow" style="display:none;margin-top:10px"><label>Skirt height</label><input type="range" id="rSkH" min="80" max="300" step="10" value="180"><div class="val"><input id="nSkH" value="180"><span>mm</span></div></div>
       <div class="row" id="skirtWRow" style="display:none"><label>Waist width</label><input type="range" id="rSkW" min="45" max="90" step="1" value="58"><div class="val"><input id="nSkW" value="58"><span>%</span></div></div>
-      <div class="row" id="skirtRRow" style="display:none"><label>Skirt arc R</label><input type="range" id="rSkR" min="150" max="1500" step="25" value="400"><div class="val"><input id="nSkR" value="400"><span>mm</span></div></div>
+      <div class="row" id="skirtRRow" style="display:none"><label>Skirt arc R</label><input type="range" id="rSkR" min="300" max="1500" step="25" value="400"><div class="val"><input id="nSkR" value="400"><span>mm</span></div></div>
       <div class="tip" id="skirtTip" style="display:none">Outer shell only: skirt foot width = Base taper, tucks in to the waist, then the wall profile continues to the rim. The inner bowl stays a normal bowl.</div>
       <div class="chk" style="margin-top:10px"><input type="checkbox" id="undercutToggle"><label for="undercutToggle">Allow undercut (bulge beyond rim — split mould: stone resin / premium)</label></div>
       <div class="tip">Vertical demoulding cannot have undercuts. Unchecked = walls auto-limited to never bulge beyond the rim (standard acrylic)</div>
@@ -745,14 +745,46 @@ function coreX(z, kw, zA, c){
   return bez(kw, c, v2) * x1;
 }
 
+// 裙擺安全幾何（快取）：
+// ① 收腰寬度不得窄於「內缸壁在該高度＋壁厚」——否則外殼切進內缸
+// ② 弧的有效 R 由數值檢查迭代放大，直到整段弧與內缸壁保持安全距離（R 太小＝做得太飽會咬穿）
+// 圖面標註與規格表都顯示有效值
+let _skirtCache = { key:'' };
+function skirtGeom(){
+  const key = [P.W, P.H, P.dH, P.b, P.t, P.taper, P.skirtH, P.waistK, P.skirtR, P.shape,
+               P.customProfile ? 1 : 0].join(',');
+  if(_skirtCache.key === key) return _skirtCache;
+  const x1 = P.W/2, h = Math.max(1, P.H + P.dH/2);
+  const zA = Math.max(h*0.08, Math.min(h*0.6, P.skirtH));
+  const inn = innerDims(), s = baseK(), k0 = s;
+  const innerX = z => (z <= P.b) ? 0 : (inn.W/2) * wallK((z - P.b) / Math.max(1, h - P.b), s, 1.03, true);
+  // ① 收腰下限
+  const kw = Math.max(P.waistK/100, (innerX(zA) + P.t) / x1);
+  // ② R 下限：先夾弦長 0.75 倍，再迭代放大到全程安全（R→∞ 退化為直線弦，必收斂）
+  const d = Math.hypot((kw - k0)*x1, zA);
+  let R = Math.max(P.skirtR, d*0.75);
+  for(let it = 0; it < 14; it++){
+    let ok = true;
+    for(let m = 1; m < 24; m++){
+      const z = zA*m/24;
+      if(arcBetween([k0*x1, 0], [kw*x1, zA], R, -1, z) < innerX(z) + P.t*0.75){ ok = false; break; }
+    }
+    if(ok) break;
+    R *= 1.3;
+  }
+  _skirtCache = { key, zA, kw, R };
+  return _skirtCache;
+}
+function skirtReff(){ return skirtGeom().R; }
+function waistKeff(){ return skirtGeom().kw; }
+
 // 裙擺式外殼（Oneida 式三段）：裙擺脚（寬=底部收縮）反向弧外翻 → 收腰 → 上段剖面到缸緣
 function skirtShellK(v, k0, c){
   const x1 = P.W/2, h = Math.max(1, P.H + P.dH/2);
   const z = Math.max(0, Math.min(1, v)) * h;
-  const zA = Math.max(h*0.08, Math.min(h*0.6, P.skirtH));
-  const kw = P.waistK/100;
-  if(z <= zA) return arcBetween([k0*x1, 0], [kw*x1, zA], P.skirtR, -1, z) / x1;
-  return coreX(z, kw, zA, c) / x1;
+  const g = skirtGeom();
+  if(z <= g.zA) return arcBetween([k0*x1, 0], [g.kw*x1, g.zA], g.R, -1, z) / x1;
+  return coreX(z, g.kw, g.zA, c) / x1;
 }
 
 // ---------- 側壁圓弧幾何（工廠 R 值語言，會議 2026-07-10 張總） ----------
@@ -1055,7 +1087,7 @@ function updateSpec(){
       if(P.wallMode==='s')   return `R${P.wallR} + R${P.wallR2}`;
       return t('Default curve');
     })()],
-    [t('Pedestal skirt'), P.skirt ? `R${P.skirtR} · ${P.skirtH}mm` : t('None')],
+    [t('Pedestal skirt'), P.skirt ? `R${Math.round(skirtReff())} · ${P.skirtH}mm` : t('None')],
     [t('Drain position'), t({center:'Center', back:'End · rear', front:'End · front', side:'Short edge', side2:'Short edge · opposite'}[P.drain])],
     [t('Floor drain slope'), `${P.slope}°`],
     [t('Undercut'), P.undercut ? t('Yes (split mould)') : t('None (vertical demould)')],
@@ -1329,7 +1361,7 @@ function drawSectionView(cx, by, axis, tag){
     }
     if(P.skirt && !(P.customProfile && P.shape==='custom')){
       const hRef = Math.max(1, P.H + P.dH/2);
-      leader(Math.max(0.05, (P.skirtH/hRef)*0.45), `R${Math.round(P.skirtR)} (SKIRT)`);
+      leader(Math.max(0.05, (P.skirtH/hRef)*0.45), `R${Math.round(skirtReff())} (SKIRT)`);
     }
   }
 
@@ -1495,7 +1527,7 @@ function exportDXF(){
   drawToleranceNote(gx + col1 + 300, M + 1300);                 // 公差註記（右下）
 
   // 一般註記
-  if(P.skirt) E.text(gx + col1 + 300, M + 920, 44, `PEDESTAL SKIRT (OUTER SHELL): ARC R${Math.round(P.skirtR)} REV, WAIST ${P.waistK}% AT ${P.skirtH}mm, FOOT WIDTH = BASE TAPER`, 'TEXT');
+  if(P.skirt) E.text(gx + col1 + 300, M + 920, 44, `PEDESTAL SKIRT (OUTER SHELL): ARC R${Math.round(skirtReff())} REV, WAIST ${P.waistK}% AT ${P.skirtH}mm, FOOT WIDTH = BASE TAPER`, 'TEXT');
   const rimNote = P.rim==='round' ? `RIM EDGE: ROLLED, R${Math.max(3, Math.round(P.t/2))}`
                 : P.rim==='bevel' ? `RIM EDGE: BEVELLED, CHAMFER ${Math.max(3, Math.round(P.t/2))}mm`
                 : `RIM EDGE: FLAT / SHARP (WALL ${P.t}mm)`;
