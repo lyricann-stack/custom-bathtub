@@ -151,6 +151,8 @@
   .studio-strip .sub { color:#66614f; font-size:12.5px; margin-top:4px; }
   .studio-strip .btns { display:flex; gap:8px; flex-wrap:wrap; }
   @media (max-width:900px){ [data-nav-links]{ display:none !important; } }
+  /* 簡易模式（預設）：把設計師參數全部收起來，客人只看到造型／材質色彩／價格／送出 */
+  body.simple .designer-only { display:none !important; }
 </style>
 </head>
 <body>
@@ -185,7 +187,7 @@
     <div class="sub">Sketch any shape · sculpt it live in 3D · export designer-ready CAD — we build it from there</div>
   </div>
   <div class="btns">
-    <button class="btn btn-upl" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
+    <button class="btn btn-upl designer-only" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
     <button class="btn btn-dxf" onclick="exportConceptPDF(this)">⬇ Concept PDF (free)</button>
     <button class="btn btn-json" id="cadPackBtn" onclick="requestCadPack()">⬇ CAD pack (DXF + spec)</button>
     <input type="file" id="cadFile" accept=".dxf,.stl,.json" style="display:none">
@@ -193,6 +195,10 @@
 </div>
 <main>
   <div id="panel">
+    <div id="modeBar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+      <span class="tip" id="modeTip" style="margin:0">Drag the gold dots on the tub to shape it — everything else updates automatically.</span>
+      <button id="modeBtn" class="preset" style="width:auto;margin:0;padding:7px 13px;flex-shrink:0"></button>
+    </div>
     <div class="group">
       <h3>① Tub Shape (Freestanding)</h3>
       <div class="shape-btns">
@@ -215,18 +221,24 @@
         <button onclick="applyClassic('darwin',this)">Darwin</button>
       </div>
     </div>
-    <div class="group">
+    <div class="group designer-only">
       <h3>② Dimensions (mm)</h3>
-      <div class="row"><label>Overall length</label><input type="range" id="rL" min="1200" max="2200" step="10" value="1700"><div class="val"><input id="nL" value="1700"><span>mm</span></div></div>
-      <div class="row"><label>Overall width</label><input type="range" id="rW" min="600" max="1200" step="10" value="850"><div class="val"><input id="nW" value="850"><span>mm</span></div></div>
-      <div class="row"><label>Rim height (front)</label><input type="range" id="rH" min="400" max="750" step="10" value="550"><div class="val"><input id="nH" value="550"><span>mm</span></div></div>
-      <div class="row"><label>Wall thickness</label><input type="range" id="rT" min="5" max="40" step="1" value="15"><div class="val"><input id="nT" value="15"><span>mm</span></div></div>
-      <div class="row"><label>Base thickness</label><input type="range" id="rB" min="20" max="80" step="5" value="40"><div class="val"><input id="nB" value="40"><span>mm</span></div></div>
+      <div class="row"><label>Overall length</label><input type="range" id="rL" min="1200" max="2200" step="10" value="1600"><div class="val"><input id="nL" value="1600"><span>mm</span></div></div>
+      <div class="row"><label>Overall width</label><input type="range" id="rW" min="600" max="1200" step="10" value="800"><div class="val"><input id="nW" value="800"><span>mm</span></div></div>
+      <div class="row"><label>Rim height (front)</label><input type="range" id="rH" min="400" max="750" step="10" value="580"><div class="val"><input id="nH" value="580"><span>mm</span></div></div>
+      <div class="row"><label>Wall thickness</label><input type="range" id="rT" min="5" max="40" step="1" value="20"><div class="val"><input id="nT" value="20"><span>mm</span></div></div>
+      <div class="row"><label>Base thickness</label><input type="range" id="rB" min="20" max="200" step="5" value="130"><div class="val"><input id="nB" value="130"><span>mm</span></div></div>
       <div class="row" id="radiusRow" style="display:none"><label>Corner radius</label><input type="range" id="rR" min="50" max="300" step="10" value="150"><div class="val"><input id="nR" value="150"><span>mm</span></div></div>
+      <div class="row" id="lipRow"><label>Rim edge width</label><input type="range" id="rLip" min="10" max="40" step="1" value="20"><div class="val"><input id="nLip" value="20"><span>mm</span></div></div>
+      <div class="row" id="obLRow"><label>Outer base length</label><input type="range" id="rObL" min="600" max="2000" step="2" value="1190"><div class="val"><input id="nObL" value="1190"><span>mm</span></div></div>
+      <div class="row" id="obWRow"><label>Outer base width</label><input type="range" id="rObW" min="300" max="1000" step="2" value="600"><div class="val"><input id="nObW" value="600"><span>mm</span></div></div>
+      <div class="row" id="ibLRow"><label>Inner base length</label><input type="range" id="rIbL" min="500" max="1900" step="2" value="1108"><div class="val"><input id="nIbL" value="1108"><span>mm</span></div></div>
+      <div class="row" id="ibWRow"><label>Inner base width</label><input type="range" id="rIbW" min="250" max="950" step="2" value="518"><div class="val"><input id="nIbW" value="518"><span>mm</span></div></div>
       <div id="warn">⚠ Invalid parameters: interior space too small, please adjust</div>
       <div id="lenWarn" class="tip" style="display:none;color:#b3541e">⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).</div>
+      <div id="thinWarn" class="tip" style="display:none;color:#b3541e">⚠ Wall thickness below 5mm between inner and outer shells — adjust base sizes or arc R.</div>
     </div>
-    <div class="group">
+    <div class="group designer-only">
       <h3>③ Asymmetry Parameters</h3>
       <div class="row"><label>Backrest rise (rear)</label><input type="range" id="rDH" min="0" max="250" step="10" value="0"><div class="val"><input id="nDH" value="0"><span>mm</span></div></div>
       <div class="row"><label>Rise curvature</label><input type="range" id="rArc" min="0" max="100" step="5" value="60"><div class="val"><input id="nArc" value="60"><span>%</span></div></div>
@@ -235,16 +247,21 @@
       <div class="tip">Backrest rise = how much higher the rear rim is (sloped rim) | Egg factor = narrower front, wider rear | Base taper = footprint vs rim opening; smaller = more inward-curving walls</div>
       <div class="rim-label" style="margin-top:10px">Side wall profile</div>
       <div class="drain-btns wallmode-btns">
-        <button data-wallmode="curve" class="active" onclick="setWallMode('curve',this)">Default curve</button>
+        <button data-wallmode="factory" class="active" onclick="setWallMode('factory',this)">Factory arcs (per-side R)</button>
+        <button data-wallmode="curve" onclick="setWallMode('curve',this)">Default curve</button>
         <button data-wallmode="arc" onclick="setWallMode('arc',this)">Arc R</button>
         <button data-wallmode="s" onclick="setWallMode('s',this)">S-curve (2 arcs)</button>
       </div>
+      <div class="row" id="riLRow" style="margin-top:10px"><label>Inner wall R — length section</label><input type="range" id="rRiL" min="300" max="5000" step="1" value="1001"><div class="val"><input id="nRiL" value="1001"><span>mm</span></div></div>
+      <div class="row" id="riWRow"><label>Inner wall R — width section</label><input type="range" id="rRiW" min="300" max="5000" step="1" value="1152"><div class="val"><input id="nRiW" value="1152"><span>mm</span></div></div>
+      <div class="row" id="roLRow"><label>Outer wall R — length section</label><input type="range" id="rRoL" min="300" max="5000" step="1" value="887"><div class="val"><input id="nRoL" value="887"><span>mm</span></div></div>
+      <div class="row" id="roWRow"><label>Outer wall R — width section</label><input type="range" id="rRoW" min="300" max="5000" step="1" value="1743"><div class="val"><input id="nRoW" value="1743"><span>mm</span></div></div>
       <div class="row" id="wallRRow" style="display:none;margin-top:10px"><label>Side wall arc R</label><input type="range" id="rWR" min="600" max="4000" step="50" value="2000"><div class="val"><input id="nWR" value="2000"><span>mm</span></div></div>
       <div class="row" id="wallR1Row" style="display:none;margin-top:10px"><label>Lower arc R1</label><input type="range" id="rWR1" min="600" max="4000" step="50" value="2000"><div class="val"><input id="nWR1" value="2000"><span>mm</span></div></div>
       <div class="row" id="wallR2Row" style="display:none"><label>Upper arc R2 (reversed)</label><input type="range" id="rWR2" min="600" max="4000" step="50" value="1200"><div class="val"><input id="nWR2" value="1200"><span>mm</span></div></div>
       <div class="row" id="wallMidRow" style="display:none"><label>S join height</label><input type="range" id="rWM" min="20" max="80" step="5" value="55"><div class="val"><input id="nWM" value="55"><span>%</span></div></div>
       <div class="tip">Arc / S-curve run from the tapered base edge up to the rim (width section as reference). Smaller R = more curved. All R values are annotated on the CAD drawing — the factory reads them straight off. Sketched profiles are auto-fitted to arcs where possible.</div>
-      <div class="chk" style="margin-top:10px"><input type="checkbox" id="skirtToggle"><label for="skirtToggle">Pedestal skirt base (Oneida-style)</label></div>
+      <div class="chk" id="skirtChk" style="margin-top:10px"><input type="checkbox" id="skirtToggle"><label for="skirtToggle">Pedestal skirt base (Oneida-style)</label></div>
       <div class="row" id="skirtHRow" style="display:none;margin-top:10px"><label>Skirt height</label><input type="range" id="rSkH" min="80" max="300" step="10" value="180"><div class="val"><input id="nSkH" value="180"><span>mm</span></div></div>
       <div class="row" id="skirtWRow" style="display:none"><label>Waist width</label><input type="range" id="rSkW" min="45" max="90" step="1" value="58"><div class="val"><input id="nSkW" value="58"><span>%</span></div></div>
       <div class="row" id="skirtRRow" style="display:none"><label>Skirt arc R</label><input type="range" id="rSkR" min="300" max="1500" step="25" value="400"><div class="val"><input id="nSkR" value="400"><span>mm</span></div></div>
@@ -253,7 +270,7 @@
       <div class="tip">Vertical demoulding cannot have undercuts. Unchecked = walls auto-limited to never bulge beyond the rim (standard acrylic)</div>
       <div id="undercutWarn" class="tip" style="display:none;color:#b3541e">⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.</div>
     </div>
-    <div class="group">
+    <div class="group designer-only">
       <h3>④ Drain & Floor Slope</h3>
       <div class="drain-btns">
         <button data-drain="center" class="active" onclick="setDrain('center',this)">Center</button>
@@ -264,6 +281,7 @@
       </div>
       <div class="row" style="margin-top:12px"><label>Floor drain slope</label><input type="range" id="rSlope" min="1.3" max="1.5" step="0.05" value="1.5"><div class="val"><input id="nSlope" value="1.5"><span>°</span></div></div>
       <div class="tip">Tub floor slopes towards the drain, drain at the lowest point (factory standard 1.3–1.5°). Drain detail follows the factory standard fitting, applied at mould stage.</div>
+      <div class="chk" id="ovfChk" style="margin-top:10px"><input type="checkbox" id="ovfToggle"><label for="ovfToggle">Overflow drain (factory standard, 75mm below rim)</label></div>
     </div>
     <div class="group">
       <h3>⑤ Material & Colour</h3>
@@ -331,7 +349,7 @@
       <button id="quoteBtn" onclick="sendQuote(this)" style="width:100%;background:#1b1a16;color:#f4f1ea;border:none;padding:14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer">Submit design & get a firm quote →</button>
       <div id="quoteBanner" style="display:none;margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.5"></div>
     </div>
-    <div class="group">
+    <div class="group designer-only">
       <h3>Production Flow</h3>
       <div class="flow" id="flowBox">
         <b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: acrylic = mould + thermoforming; solid surface = CNC shaping + hand finishing
@@ -381,16 +399,23 @@
 <script>
 // ===================== 狀態 =====================
 const P = {
-  shape:'ellipse', L:1700, W:850, H:550, t:15, b:40, r:150,
+  shape:'ellipse', L:1600, W:800, H:580, t:20, b:130, r:150,
   material:'acrylic',               // 'acrylic' Acrylic (gloss)/ 'solid' 人造石 solid surface（霧面）
-  dH:0, egg:0, taper:100,           // 不對稱參數：靠背增高 / 蛋形% / Base taper%
-  drain:'center', color:'#f5f5f0', water:false, rim:'round',   // Rim profile：flat Flat / round Rounded / bevel Beveled
+  dH:0, egg:0, taper:74,            // 不對稱參數：靠背增高 / 蛋形% / Base taper%（legacy 模式用）
+  drain:'center', color:'#f5f5f0', water:false, rim:'flat',    // Rim profile：flat Flat / round Rounded / bevel Beveled
   arc:60,                                                       // Rise curvature 0–100%：0=直線，越高曲線越彎
   slope:1.5,                        // 排水洩水角度（°）：缸內底面向排水孔傾斜，工廠常規 1.3–1.5
   undercut:false,                   // 倒扣：false=限制側壁不外鼓超過缸口（上下垂直出模）；true=允許（左右合模）
-  wallMode:'curve',                 // 側壁剖面模式：curve 預設貝茲 / arc 單圓弧 / s 雙弧 S 曲線（工廠 R 值語言，短邊剖面為基準）
-  wallR:2000, wallR2:1200, wallMid:55,   // 單弧 R 或 S 下段 R1；S 上段 R2（反向）；S 轉折高度 %
-  skirt:false, skirtH:180, waistK:58, skirtR:400,   // 裙擺式底座（Oneida 式，僅外殼）：裙擺高 mm / 收腰寬 % / 裙擺弧 R
+  wallMode:'factory',               // 側壁剖面模式：factory 工廠弧（內外缸/長短邊獨立 R，達爾文圖面語言）/ curve 預設貝茲 / arc 單圓弧 / s 雙弧 S 曲線
+  wallR:2000, wallR2:1200, wallMid:55,   // legacy：單弧 R 或 S 下段 R1；S 上段 R2（反向）；S 轉折高度 %
+  // ---- factory 模式參數（2026-07-13 依達爾文工廠圖：上口＋底部＋連接弧 R 的開模語言）----
+  lip:20,                           // 浴缸邊寬（缸口平邊，外缸口→內缸口）
+  obL:1190, obW:600,                // 外缸底長/寬（mm，絕對值）
+  ibL:1108, ibW:518,                // 內缸底長/寬（mm，絕對值）
+  riL:1001, riW:1152,               // 內缸側弧 R：長邊剖面 / 短邊剖面
+  roL:887,  roW:1743,               // 外缸側弧 R：長邊剖面 / 短邊剖面
+  ovf:true, ovfDrop:75,             // 溢水口（工廠標準件）＋距缸緣距離 mm
+  skirt:false, skirtH:180, waistK:58, skirtR:400,   // 裙擺式底座（Oneida 式，僅外殼、legacy 模式）：裙擺高 mm / 收腰寬 % / 裙擺弧 R
   customPts:null,                   // 手繪俯視輪廓（normalized 至 ±0.5 bbox，96 點）
   customProfile:null                // 手繪側牆剖面 k(v)，25 個取樣值，k[24]=1
 };
@@ -522,6 +547,25 @@ const I18N = {
   'Yes (split mould)': ['有（左右合模）', 'มี (แม่พิมพ์แยกซ้ายขวา)', '有（左右合模）'],
   '⬇ CAD pack (DXF + spec)': ['⬇ CAD 制造包（DXF＋规格）', '⬇ ชุดไฟล์ CAD (DXF + สเปก)', '⬇ CAD 製造包（DXF＋規格）'],
   'Side wall arc R': ['侧壁弧度 R', 'รัศมีโค้งผนังข้าง R', '側壁弧度 R'],
+  'Designer mode': ['设计师模式', 'โหมดนักออกแบบ', '設計師模式'],
+  'Simple mode': ['简易模式', 'โหมดง่าย', '簡易模式'],
+  'Drag the gold dots on the tub to shape it — everything else updates automatically.': ['拖动缸体上的金色圆点即可塑形——其余数值自动同步。', 'ลากจุดสีทองบนตัวอ่างเพื่อปรับรูปทรง — ค่าอื่น ๆ ปรับให้อัตโนมัติ', '拖曳缸體上的金色圓點即可塑形——其餘數值自動同步。'],
+  'Factory arcs (per-side R)': ['工厂弧线（长短边独立 R）', 'ส่วนโค้งโรงงาน (R แยกด้านยาว/สั้น)', '工廠弧線（長短邊獨立 R）'],
+  'Rim edge width': ['缸边宽', 'ความกว้างขอบอ่าง', '缸邊寬'],
+  'Outer base length': ['外缸底长', 'ความยาวฐานนอก', '外缸底長'],
+  'Outer base width': ['外缸底宽', 'ความกว้างฐานนอก', '外缸底寬'],
+  'Inner base length': ['内缸底长', 'ความยาวก้นอ่างใน', '內缸底長'],
+  'Inner base width': ['内缸底宽', 'ความกว้างก้นอ่างใน', '內缸底寬'],
+  'Inner wall R — length section': ['内缸侧弧 R（长边剖面）', 'R ผนังใน (หน้าตัดด้านยาว)', '內缸側弧 R（長邊剖面）'],
+  'Inner wall R — width section': ['内缸侧弧 R（短边剖面）', 'R ผนังใน (หน้าตัดด้านสั้น)', '內缸側弧 R（短邊剖面）'],
+  'Outer wall R — length section': ['外缸侧弧 R（长边剖面）', 'R ผนังนอก (หน้าตัดด้านยาว)', '外缸側弧 R（長邊剖面）'],
+  'Outer wall R — width section': ['外缸侧弧 R（短边剖面）', 'R ผนังนอก (หน้าตัดด้านสั้น)', '外缸側弧 R（短邊剖面）'],
+  'Overflow drain (factory standard, 75mm below rim)': ['溢水口（工厂标准件，距缸缘 75mm）', 'ช่องน้ำล้น (มาตรฐานโรงงาน ต่ำกว่าขอบ 75 มม.)', '溢水口（工廠標準件，距缸緣 75mm）'],
+  'Outer base (L×W)': ['外缸底尺寸 (长×宽)', 'ฐานนอก (ยาว×กว้าง)', '外缸底尺寸 (長×寬)'],
+  'Inner base (L×W)': ['内缸底尺寸 (长×宽)', 'ก้นอ่างใน (ยาว×กว้าง)', '內缸底尺寸 (長×寬)'],
+  'Overflow': ['溢水口', 'ช่องน้ำล้น', '溢水口'],
+  'Yes (factory std)': ['有（工厂标准件）', 'มี (มาตรฐานโรงงาน)', '有（工廠標準件）'],
+  '⚠ Wall thickness below 5mm between inner and outer shells — adjust base sizes or arc R.': ['⚠ 内外缸之间壁厚不足 5mm——请调整底部尺寸或弧度 R。', '⚠ ความหนาผนังระหว่างเปลือกในและนอกต่ำกว่า 5 มม. — โปรดปรับขนาดฐานหรือรัศมี R', '⚠ 內外缸之間壁厚不足 5mm——請調整底部尺寸或弧度 R。'],
   'Side wall profile': ['侧壁剖面', 'โปรไฟล์ผนังข้าง', '側壁剖面'],
   'Default curve': ['预设曲线', 'เส้นโค้งมาตรฐาน', '預設曲線'],
   'Arc R': ['圆弧 R', 'โค้ง R', '圓弧 R'],
@@ -592,6 +636,8 @@ function applyLang(){
   document.documentElement.lang = LANG === 'en' ? 'en' : (LANG === 'th' ? 'th' : (LANG === 'zhS' ? 'zh-Hans' : 'zh-Hant'));
   if(typeof padTop !== 'undefined'){ padTop.redraw(); padSide.redraw(); }
   if(typeof updateSpec === 'function' && tubGroup) updateSpec();
+  if(typeof setStudioMode === 'function' && document.getElementById('modeBtn'))
+    setStudioMode(document.body.classList.contains('simple'));   // 重整模式按鈕文字（不在 i18nNodes 內）
 }
 // 語言完全交由站上導覽列的 langSel 控制（見檔尾接線），設計器不再有自己的語言選項
 
@@ -858,29 +904,73 @@ function fitProfileArcs(){
   best.label=best.arcs.map(a=>a.straight?'STR':'R'+Math.round(a.R)).join(' + ');
   return best;
 }
-// 缸底相對缸口的比例
+// 缸底相對缸口的比例（legacy 模式）
 function baseK(){ return (P.customProfile && P.shape === 'custom') ? P.customProfile[0] : P.taper/100; }
+
+// ---------- Factory 模式（達爾文圖面語言，2026-07-13）----------
+// 內外殼各自獨立：上口尺寸＋底部尺寸＋連接弧 R；長邊/短邊剖面 R 各自獨立。
+// 幾何為「每軸縮放」：點 (x,y) 在高度 z 映射為 (x·kx(z), y·ky(z))，
+// kx 由長邊剖面弧決定、ky 由短邊剖面弧決定，0°/90° 剖面即為圖面上的真實弧。
+function isFactory(){ return P.wallMode === 'factory' && !(P.customProfile && P.shape === 'custom'); }
+// v=0 → 該殼體底部、v=1 → 缸緣；inner=true 內缸（底部在 z=P.b）
+function facK(v, inner){
+  const h = Math.max(1, P.H + P.dH/2);
+  if(inner){
+    const z = P.b + Math.max(0, Math.min(1, v)) * (h - P.b);
+    const xt = Math.max(1, (P.L - 2*P.lip)/2), yt = Math.max(1, (P.W - 2*P.lip)/2);
+    let kx = arcBetween([P.ibL/2, P.b], [xt, h], P.riL, +1, z) / xt;
+    let ky = arcBetween([P.ibW/2, P.b], [yt, h], P.riW, +1, z) / yt;
+    if(!P.undercut){ kx = Math.min(kx, 1); ky = Math.min(ky, 1); }
+    return [kx, ky];
+  }
+  const z = Math.max(0, Math.min(1, v)) * h;
+  let kx = arcBetween([P.obL/2, 0], [P.L/2, h], P.roL, +1, z) / (P.L/2);
+  let ky = arcBetween([P.obW/2, 0], [P.W/2, h], P.roW, +1, z) / (P.W/2);
+  if(!P.undercut){ kx = Math.min(kx, 1); ky = Math.min(ky, 1); }
+  return [kx, ky];
+}
+// 統一介面：任何模式回傳 [kx, ky]（legacy 模式 kx=ky=wallK）
+function shellKxy(v, inner){
+  if(isFactory()) return facK(v, inner);
+  const k = wallK(v, baseK(), inner ? 1.03 : 1.07, inner);
+  return [k, k];
+}
+// 內外殼最小壁厚掃描（factory 模式防呆：全高度、長寬兩軸取最小水平間距）
+function minWallGap(){
+  if(!isFactory()) return 99;
+  const h = Math.max(1, P.H + P.dH/2);
+  const xtI = (P.L - 2*P.lip)/2, ytI = (P.W - 2*P.lip)/2;
+  let g = P.lip;                                   // 缸口平邊本身也是壁厚的一部分
+  for(let i=0;i<=24;i++){
+    const z = P.b + (h - P.b)*i/24;
+    const [ox, oy] = facK(z/h, false);
+    const [ix, iy] = facK((z - P.b)/Math.max(1, h - P.b), true);
+    g = Math.min(g, ox*P.L/2 - ix*xtI, oy*P.W/2 - iy*ytI);
+  }
+  return g;
+}
 
 // ===================== 曲面放樣建模 =====================
 let tubGroup = null;
 const N_SEG = 96, M_RING = 24;
 
 function innerDims(){
-  return { L:P.L-2*P.t, W:P.W-2*P.t, D:P.H-P.b, r:Math.max(P.r-P.t,10) };
+  const e = isFactory() ? P.lip : P.t;   // factory 模式：內缸口＝外缸口 − 2×邊寬
+  return { L:P.L-2*e, W:P.W-2*e, D:P.H-P.b, r:Math.max(P.r-e,10) };
 }
 
-// 放樣曲面：由底環(z0, 縮放k0)漸變至缸緣(rimH(x), 縮放1)
+// 放樣曲面：由底環漸變至缸緣(rimH(x), 縮放1)；縮放採每軸 [kx,ky]（factory 長短邊獨立弧）
 // z0f（選用）：底環各點的高度函式（如洩水斜底）；inner=true 表示內殼（不套裙擺）
-function loftGeometry(pts, L, z0, k0, bulge, H, dH, z0f, inner){
+function loftGeometry(pts, L, z0, H, dH, z0f, inner){
   const pos=[], idx=[];
-  const kBase = wallK(0, k0, 1+bulge, inner);
+  const [kbx, kby] = shellKxy(0, inner);
   for(let m=0;m<=M_RING;m++){
-    const v=m/M_RING, k=wallK(v, k0, 1+bulge, inner);
+    const v=m/M_RING, [kx, ky]=shellKxy(v, inner);
     for(let i=0;i<N_SEG;i++){
       const [x,y]=pts[i];
       const zTop=rimH(x, L, H, dH);
-      const zB = z0f ? z0f(x*kBase, y*kBase) : z0;
-      pos.push(x*k, zB+v*(zTop-zB), y*k);
+      const zB = z0f ? z0f(x*kbx, y*kby) : z0;
+      pos.push(x*kx, zB+v*(zTop-zB), y*ky);
     }
   }
   for(let m=0;m<M_RING;m++)
@@ -925,9 +1015,9 @@ function stripGeometry(ptsA, LA, ptsB, LB, H, dH){
 }
 
 // Flat封蓋（底板 / 缸內底面）
-function capGeometry(pts, k, z){
+function capGeometry(pts, kx, ky, z){
   const pos=[0*1,z,0], idx=[];
-  for(let i=0;i<N_SEG;i++) pos.push(pts[i][0]*k, z, pts[i][1]*k);
+  for(let i=0;i<N_SEG;i++) pos.push(pts[i][0]*kx, z, pts[i][1]*ky);
   for(let i=0;i<N_SEG;i++) idx.push(0, i+1, (i+1)%N_SEG+1);
   const g=new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
@@ -938,9 +1028,9 @@ function capGeometry(pts, k, z){
 
 // 排水位置（工廠常規三式）：中間集中 / 兩頭（長軸 X 正負端）/ 短邊（寬軸 Y 端）
 function drainXY(){
-  const inn=innerDims(), s=baseK();
-  const reach = Math.max(0, inn.L/2*s - 130);
-  const reachW = Math.max(0, inn.W/2*s - 110);
+  const inn=innerDims(), fac=isFactory(), s=baseK();
+  const reach = Math.max(0, (fac ? P.ibL/2 : inn.L/2*s) - 130);
+  const reachW = Math.max(0, (fac ? P.ibW/2 : inn.W/2*s) - 110);
   if(P.drain==='back')  return {x:-reach, y:0};
   if(P.drain==='front') return {x: reach, y:0};
   if(P.drain==='side')  return {x:0, y:reachW};
@@ -955,11 +1045,11 @@ function floorZ(x, y){
 }
 
 // 洩水斜底封蓋（以排水孔為扇心，環點依距離升高）
-function slopedCapGeometry(pts, k, z0){
+function slopedCapGeometry(pts, kx, ky, z0){
   const d = drainXY();
   const pos=[d.x, z0, d.y], idx=[];
   for(let i=0;i<N_SEG;i++){
-    const x=pts[i][0]*k, y=pts[i][1]*k;
+    const x=pts[i][0]*kx, y=pts[i][1]*ky;
     pos.push(x, floorZ(x, y), y);
   }
   for(let i=0;i<N_SEG;i++) idx.push(0, i+1, (i+1)%N_SEG+1);
@@ -979,16 +1069,16 @@ function buildTub(){
   document.getElementById('warn').style.display = valid ? 'none' : 'block';
   if(!valid){ scene.add(tubGroup); return; }
 
-  const s = baseK();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG);
   const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N_SEG);
+  const [obx, oby] = shellKxy(0, false), [ibx, iby] = shellKxy(0, true);
   const mat = new THREE.MeshStandardMaterial({ color:P.color, roughness:P.material==='solid'?0.6:0.22, metalness:0.05, side:THREE.DoubleSide });
 
-  tubGroup.add(new THREE.Mesh(loftGeometry(outerPts, P.L, 0,   s, 0.07, P.H, P.dH), mat)); // 外殼
-  tubGroup.add(new THREE.Mesh(loftGeometry(innerPts, inn.L, P.b, s, 0.03, P.H, P.dH, floorZ, true), mat)); // 內壁（底=洩水斜底，不套裙擺）
+  tubGroup.add(new THREE.Mesh(loftGeometry(outerPts, P.L, 0,   P.H, P.dH), mat)); // 外殼
+  tubGroup.add(new THREE.Mesh(loftGeometry(innerPts, inn.L, P.b, P.H, P.dH, floorZ, true), mat)); // 內壁（底=洩水斜底，不套裙擺）
   tubGroup.add(new THREE.Mesh(stripGeometry(outerPts, P.L, innerPts, inn.L, P.H, P.dH), mat)); // 缸緣
-  tubGroup.add(new THREE.Mesh(capGeometry(outerPts, s, 0), mat));   // 底封板
-  tubGroup.add(new THREE.Mesh(slopedCapGeometry(innerPts, s, P.b), mat)); // 缸內底面（向排水孔傾斜 P.slope°）
+  tubGroup.add(new THREE.Mesh(capGeometry(outerPts, obx, oby, 0), mat));   // 底封板
+  tubGroup.add(new THREE.Mesh(slopedCapGeometry(innerPts, ibx, iby, P.b), mat)); // 缸內底面（向排水孔傾斜 P.slope°）
 
   // 排水孔（位於斜底最低點）
   const d = drainXY();
@@ -999,6 +1089,21 @@ function buildTub(){
   drain.position.set(d.x, P.b+4, d.y);
   tubGroup.add(drain);
 
+  // 溢水口（工廠標準件，細部不建模）：後端內壁、距缸緣 P.ovfDrop
+  if(P.ovf){
+    const hRef = Math.max(1, P.H + P.dH/2);
+    const zo = Math.max(P.b+40, rimH(-inn.L/2, inn.L, P.H, P.dH) - P.ovfDrop);
+    const vo = Math.max(0, Math.min(1, (zo - P.b) / Math.max(1, hRef - P.b)));
+    const ko = shellKxy(vo, true);
+    const om = new THREE.Mesh(
+      new THREE.CylinderGeometry(26, 26, 6, 24),
+      new THREE.MeshStandardMaterial({color:0x666e75, metalness:0.8, roughness:0.3})
+    );
+    om.rotation.z = Math.PI/2;
+    om.position.set(-(inn.L/2)*ko[0] + 8, zo, 0);
+    tubGroup.add(om);
+  }
+
   // 水位模擬（藍色半透明 = 水）：沿內壁放樣的水體，水面平坦、高度 = 內部深度的八成
   if(P.water){
     const wd = inn.D*0.8, wl = P.b + wd;
@@ -1008,8 +1113,8 @@ function buildTub(){
       for(let i=0;i<N_SEG;i++){
         const [x,y] = innerPts[i];
         const vEff = (z - P.b) / Math.max(1, rimH(x, inn.L, P.H, P.dH) - P.b);   // 對應內壁的高度參數
-        const k = wallK(vEff, s, 1.03, true) * 0.985;
-        wpos.push(x*k, z, y*k);
+        const kw = shellKxy(vEff, true);
+        wpos.push(x*kw[0]*0.985, z, y*kw[1]*0.985);
       }
     }
     for(let m=0;m<WM;m++)
@@ -1034,14 +1139,15 @@ function buildTub(){
   scene.add(tubGroup);
   orbit.target.set(0, (P.H+P.dH/2)/2, 0);
   updateSpec();
+  if(typeof buildHandles === 'function') buildHandles();
 }
 
 // ===================== 規格計算 =====================
 function computeSpec(){
-  const inn = innerDims(), s = P.taper/100;
-  // 數值積分：截面積隨高度以 k(v)^2 縮放
+  const inn = innerDims();
+  // 數值積分：截面積隨高度以 kx(v)·ky(v) 縮放（factory 模式長短邊獨立弧）
   let taperF = 0;
-  for(let i=0;i<=32;i++){ const k = wallK(i/32, s, 1.05, true); taperF += k*k; }   // 內腔容積：不含裙擺
+  for(let i=0;i<=32;i++){ const ks = shellKxy(i/32, true); taperF += ks[0]*ks[1]; }   // 內腔容積：不含裙擺
   taperF /= 33;
   const Ai = shoelace(outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N_SEG));
   const Ao = shoelace(outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG));
@@ -1073,7 +1179,13 @@ function updateSpec(){
     [t('Rim profile'), t({flat:'Flat', round:'Rounded', bevel:'Beveled'}[P.rim])],
     [t('Interior size (L×W)'), `${s.inn.L} × ${s.inn.W} mm`],
     [t('Interior depth (front)'), `${s.inn.D} mm`],
-    [t('Base footprint (tapered)'), `${Math.round(P.L*baseK())} × ${Math.round(P.W*baseK())} mm${(P.customProfile && P.shape==='custom') ? t(' (sketched profile)') : ''}`],
+    ...(isFactory() ? [
+      [t('Rim edge width'), `${P.lip} mm`],
+      [t('Outer base (L×W)'), `${P.obL} × ${P.obW} mm`],
+      [t('Inner base (L×W)'), `${P.ibL} × ${P.ibW} mm`],
+    ] : [
+      [t('Base footprint (tapered)'), `${Math.round(P.L*baseK())} × ${Math.round(P.W*baseK())} mm${(P.customProfile && P.shape==='custom') ? t(' (sketched profile)') : ''}`],
+    ]),
     [t('Full capacity (est.)'), `${s.fullVol.toFixed(0)} L`],
     [t('Recommended fill (80%)'), `${s.useVol.toFixed(0)} L`],
     [t('Product weight (est.)'), `~${s.weight.toFixed(0)} kg`],
@@ -1083,10 +1195,12 @@ function updateSpec(){
         const fit=fitProfileArcs();
         return (fit && fit.ok) ? `≈ ${fit.label}` : t('Freeform (no clean arc fit)');
       }
+      if(isFactory()) return `IN R${P.riL}/R${P.riW} · OUT R${P.roL}/R${P.roW}`;
       if(P.wallMode==='arc') return `R${P.wallR}`;
       if(P.wallMode==='s')   return `R${P.wallR} + R${P.wallR2}`;
       return t('Default curve');
     })()],
+    ...(isFactory() ? [[t('Overflow'), P.ovf ? t('Yes (factory std)') : t('None')]] : []),
     [t('Pedestal skirt'), P.skirt ? `R${Math.round(skirtReff())} · ${P.skirtH}mm` : t('None')],
     [t('Drain position'), t({center:'Center', back:'End · rear', front:'End · front', side:'Short edge', side2:'Short edge · opposite'}[P.drain])],
     [t('Floor drain slope'), `${P.slope}°`],
@@ -1098,6 +1212,8 @@ function updateSpec(){
   if(lw){ lw.style.display = (s.inn.L < 950) ? 'block' : 'none'; lw.textContent = t('⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).'); }
   const uw = document.getElementById('undercutWarn');
   if(uw){ uw.style.display = (P.undercut && P.material==='acrylic') ? 'block' : 'none'; uw.textContent = t('⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.'); }
+  const tw = document.getElementById('thinWarn');
+  if(tw){ tw.style.display = (minWallGap() < 5) ? 'block' : 'none'; tw.textContent = t('⚠ Wall thickness below 5mm between inner and outer shells — adjust base sizes or arc R.'); }
   updatePrice();
 }
 
@@ -1269,12 +1385,13 @@ function sectionSpan(pts, axis){
   return {lo, hi};
 }
 // 剖切面上的牆曲線：qEdge=缸口處座標（含正負），Lref=rimH 的參考長度，z0=牆脚高度
-// inner=true → 內殼（不套裙擺）
-function wallCurveQ(qEdge, Lref, axis, bulge, z0, inner){
-  const s=baseK(), pts=[];
+// inner=true → 內殼（不套裙擺）；axis 決定取 kx（長邊剖面）或 ky（短邊剖面）
+function wallCurveQ(qEdge, Lref, axis, z0, inner){
+  const pts=[];
   const zTop = rimH(axis==='L' ? qEdge : 0, Lref, P.H, P.dH);
   for(let m=0;m<=28;m++){
-    const v=m/28, k=wallK(v, s, 1+bulge, inner);
+    const v=m/28, ks=shellKxy(v, inner);
+    const k = axis==='L' ? ks[0] : ks[1];
     pts.push([qEdge*k, z0 + v*(zTop-z0)]);
   }
   return pts;
@@ -1301,27 +1418,30 @@ function floorCurveQ(q1, q2, axis){
 
 // ---------- 剖面視圖（真剖面：外牆＋內牆＋缸緣＋洩水斜底） ----------
 function drawSectionView(cx, by, axis, tag){
-  const inn=innerDims(), s=baseK(), d=drainXY();
+  const inn=innerDims(), d=drainXY();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
   const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
   const so = sectionSpan(outerPts, axis), si = sectionSpan(innerPts, axis);
+  const kbO2 = shellKxy(0, false), kbI2 = shellKxy(0, true);
+  const sO = axis==='L' ? kbO2[0] : kbO2[1];   // 外殼底部縮放（該軸）
+  const sI = axis==='L' ? kbI2[0] : kbI2[1];   // 內缸底部縮放（該軸）
   const zRimO = q => rimH(axis==='L'? q : 0, P.L, P.H, P.dH);
   const zRimI = q => rimH(axis==='L'? q : 0, inn.L, P.H, P.dH);
   const zf    = q => floorZ(axis==='L'? q : 0, axis==='L'? 0 : q);
   const T = pts => pts.map(p=>[cx+p[0], by+p[1]]);
 
   // 外底＋外牆
-  E.line(cx+so.lo*s, by, cx+so.hi*s, by, 'OUTLINE');
-  E.path(T(wallCurveQ(so.lo, P.L, axis, 0.07, 0)), 0, 0, 'OUTLINE');
-  E.path(T(wallCurveQ(so.hi, P.L, axis, 0.07, 0)), 0, 0, 'OUTLINE');
+  E.line(cx+so.lo*sO, by, cx+so.hi*sO, by, 'OUTLINE');
+  E.path(T(wallCurveQ(so.lo, P.L, axis, 0)), 0, 0, 'OUTLINE');
+  E.path(T(wallCurveQ(so.hi, P.L, axis, 0)), 0, 0, 'OUTLINE');
   // 缸緣（外頂 → 內頂）
   E.path(T(rimCurveQ(so.lo, si.lo, P.L, inn.L, axis)), 0, 0, 'OUTLINE');
   E.path(T(rimCurveQ(so.hi, si.hi, P.L, inn.L, axis)), 0, 0, 'OUTLINE');
   // 內牆（牆脚落在洩水斜底上，不套裙擺）
-  E.path(T(wallCurveQ(si.lo, inn.L, axis, 0.03, zf(si.lo*s), true)), 0, 0, 'OUTLINE');
-  E.path(T(wallCurveQ(si.hi, inn.L, axis, 0.03, zf(si.hi*s), true)), 0, 0, 'OUTLINE');
+  E.path(T(wallCurveQ(si.lo, inn.L, axis, zf(si.lo*sI), true)), 0, 0, 'OUTLINE');
+  E.path(T(wallCurveQ(si.hi, inn.L, axis, zf(si.hi*sI), true)), 0, 0, 'OUTLINE');
   // 洩水斜底
-  E.path(T(floorCurveQ(si.lo*s, si.hi*s, axis)), 0, 0, 'OUTLINE');
+  E.path(T(floorCurveQ(si.lo*sI, si.hi*sI, axis)), 0, 0, 'OUTLINE');
   // 中心線
   const zmax = Math.max(zRimO(so.lo), zRimO(so.hi)) + P.t;
   E.line(cx, by-130, cx, by+zmax+130, 'CENTER');
@@ -1336,15 +1456,27 @@ function drawSectionView(cx, by, axis, tag){
     E.line(cx+qd, by+P.b-14, cx+qd+330, by-150, 'DIM');
     E.text(cx+qd+350, by-185, 40, 'DRAIN: FACTORY STD DETAIL', 'TEXT');
     // 洩水角度註記（斜底中點引線）
-    const qm = (qd + si.hi*s) / 2;
+    const qm = (qd + si.hi*sI) / 2;
     E.line(cx+qm, by+zf(qm), cx+qm, by+P.b+150, 'DIM');
     E.text(cx+qm, by+P.b+175, 40, `SLOPE ${P.slope}%%d`, 'TEXT', 1);
   }
 
-  // 側壁 R 值標註（短邊剖面＝R 值定義基準）
-  if(axis==='W'){
+  // 側壁 R 值標註
+  if(isFactory()){
+    // factory 模式：內外缸 R 分開標（比照工廠圖「内缸侧弧度／外缸侧弧度」）
+    const Ri = axis==='L' ? P.riL : P.riW, Ro = axis==='L' ? P.roL : P.roW;
+    const ksI = shellKxy(0.55, true), ksO = shellKxy(0.4, false);
+    const kI = axis==='L' ? ksI[0] : ksI[1], kO = axis==='L' ? ksO[0] : ksO[1];
+    const qI = si.hi*kI, zI = P.b + 0.55*(zRimI(si.hi) - P.b);
+    const qO = so.hi*kO, zO = 0.4*zRimO(so.hi);
+    E.line(cx+qI, by+zI, cx+qI+430, by+zI+300, 'DIM');
+    E.text(cx+qI+450, by+zI+320, 46, `R${Math.round(Ri)} (INNER WALL)`, 'TEXT');
+    E.line(cx+qO, by+zO, cx+qO+520, by+zO+120, 'DIM');
+    E.text(cx+qO+540, by+zO+140, 46, `R${Math.round(Ro)} (OUTER WALL)`, 'TEXT');
+  } else if(axis==='W'){
+    // legacy：短邊剖面＝R 值定義基準
     const leader = (vq, label)=>{
-      const kq = wallK(vq, s, 1.07);
+      const kq = wallK(vq, baseK(), 1.07);
       const qx = so.hi*kq, qz = vq*zRimO(so.hi);
       E.line(cx+qx, by+qz, cx+qx+420, by+qz+230, 'DIM');
       E.text(cx+qx+440, by+qz+250, 46, label, 'TEXT');
@@ -1365,20 +1497,37 @@ function drawSectionView(cx, by, axis, tag){
     }
   }
 
+  // 溢水口（工廠標準件）：後端內壁、距缸緣 P.ovfDrop（長邊剖面才畫）
+  if(P.ovf && axis==='L'){
+    const zo = zRimI(si.lo) - P.ovfDrop;
+    const vo = Math.max(0, Math.min(1, (zo - P.b) / Math.max(1, zRimI(si.lo) - P.b)));
+    const kso = shellKxy(vo, true);
+    const qo = si.lo * kso[0];
+    E.line(cx+qo, by+zo-30, cx+qo, by+zo+30, 'OUTLINE');
+    E.line(cx+qo, by+zo+30, cx+qo+34, by+zo+30, 'OUTLINE');
+    E.line(cx+qo, by+zo-30, cx+qo+34, by+zo-30, 'OUTLINE');
+    dimV([cx+qo, by+zo+30], [cx+si.lo, by+zRimI(si.lo)], cx+qo+260, P.ovfDrop);
+    E.line(cx+qo+34, by+zo, cx+qo+560, by+zo+300, 'DIM');
+    E.text(cx+qo+580, by+zo+330, 40, 'OVERFLOW: FACTORY STD DETAIL', 'TEXT');
+  }
+
   // ---- 標註 ----
-  // 上緣鏈式：缸緣厚 t ─ 內部淨長/寬 ─ 缸緣厚 t
+  // 上緣鏈式：缸緣邊寬 ─ 內部淨長/寬 ─ 缸緣邊寬（factory＝浴缸邊寬 20）
   const dyT = by + zmax + 340;
   dimH([cx+so.lo, by+zRimO(so.lo)], [cx+si.lo, by+zRimI(si.lo)], dyT, Math.round(si.lo-so.lo));
   dimH([cx+si.lo, by+zRimI(si.lo)], [cx+si.hi, by+zRimI(si.hi)], dyT);
   dimH([cx+si.hi, by+zRimI(si.hi)], [cx+so.hi, by+zRimO(so.hi)], dyT, Math.round(so.hi-si.hi));
-  // 底部：端部退縮＋底部長度；總長在更下方
+  // 內缸底長/寬（比照工廠圖 1108 内缸底长：延伸線從缸底拉到上方第二條尺寸線）
+  const dyT2 = dyT + 300;
+  dimH([cx+si.lo*sI, by+P.b], [cx+si.hi*sI, by+P.b], dyT2);
+  // 底部：端部退縮＋外缸底長/寬；總長在更下方
   const dyB1 = by - 270, dyB2 = by - 560;
-  dimH([cx+so.lo, by+zRimO(so.lo)], [cx+so.lo*s, by], dyB1, Math.round(so.lo*s-so.lo));
-  dimH([cx+so.lo*s, by], [cx+so.hi*s, by], dyB1);
+  dimH([cx+so.lo, by+zRimO(so.lo)], [cx+so.lo*sO, by], dyB1, Math.round(so.lo*sO-so.lo));
+  dimH([cx+so.lo*sO, by], [cx+so.hi*sO, by], dyB1);
   dimH([cx+so.lo, by+zRimO(so.lo)], [cx+so.hi, by+zRimO(so.hi)], dyB2);
   // 高度：左＝總高（後端）；右＝前端高（不對稱時）
-  dimV([cx+so.lo*s, by], [cx+so.lo, by+zRimO(so.lo)], cx+so.lo-350);
-  if(axis==='L' && P.dH>0) dimV([cx+so.hi*s, by], [cx+so.hi, by+zRimO(so.hi)], cx+so.hi+350);
+  dimV([cx+so.lo*sO, by], [cx+so.lo, by+zRimO(so.lo)], cx+so.lo-350);
+  if(axis==='L' && P.dH>0) dimV([cx+so.hi*sO, by], [cx+so.hi, by+zRimO(so.hi)], cx+so.hi+350);
   // 內深（排水孔＝最低點處）＋缸底厚
   const q0 = onCut ? qd : 0;
   dimV([cx+q0, by+zf(q0)], [cx+q0, by+zRimI(si.hi)], cx+q0+330);
@@ -1389,14 +1538,18 @@ function drawSectionView(cx, by, axis, tag){
 
 // ---------- 平面圖 ----------
 function drawPlanView(cx, cy){
-  const inn=innerDims(), s=baseK(), d=drainXY();
+  const inn=innerDims(), d=drainXY();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
   const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
+  const kbO = shellKxy(0, false), kbI = shellKxy(0, true);
   E.poly(outerPts, cx, cy, 'OUTLINE');
   E.poly(innerPts, cx, cy, 'OUTLINE');
-  E.poly(outerPts.map(p=>[p[0]*s, p[1]*s]), cx, cy, 'HIDDEN');       // 底部輪廓（收縮後）
+  E.poly(outerPts.map(p=>[p[0]*kbO[0], p[1]*kbO[1]]), cx, cy, 'HIDDEN');       // 外缸底輪廓
+  E.poly(innerPts.map(p=>[p[0]*kbI[0], p[1]*kbI[1]]), cx, cy, 'OUTLINE');      // 內缸底輪廓（工廠圖為實線）
   let nX=1e9, xX=-1e9, nY=1e9, xY=-1e9;
   outerPts.forEach(p=>{ nX=Math.min(nX,p[0]); xX=Math.max(xX,p[0]); nY=Math.min(nY,p[1]); xY=Math.max(xY,p[1]); });
+  let inX=1e9, ixX=-1e9, inY=1e9, ixY=-1e9;
+  innerPts.forEach(p=>{ inX=Math.min(inX,p[0]*kbI[0]); ixX=Math.max(ixX,p[0]*kbI[0]); inY=Math.min(inY,p[1]*kbI[1]); ixY=Math.max(ixY,p[1]*kbI[1]); });
   // 中心線
   E.line(cx+nX-150, cy, cx+xX+150, cy, 'CENTER');
   E.line(cx, cy+nY-150, cx, cy+xY+150, 'CENTER');
@@ -1417,9 +1570,19 @@ function drawPlanView(cx, cy){
   };
   cutMark(cx+nX-220, cy, true, 'F'); cutMark(cx+xX+220, cy, true, 'F');
   cutMark(cx, cy+nY-220, false, 'G'); cutMark(cx, cy+xY+220, false, 'G');
-  // 標註：總長／總寬／排水孔偏移
+  // 溢水口記號（後端 −x、內缸口邊）
+  if(P.ovf){
+    let iTop=1e9; innerPts.forEach(p=>{ iTop=Math.min(iTop, p[0]); });   // 內缸口後端（−x）
+    E.line(cx+iTop+26, cy-70, cx+iTop+26, cy+70, 'OUTLINE');
+    E.line(cx+iTop+42, cy-70, cx+iTop+42, cy+70, 'OUTLINE');
+    E.line(cx+iTop+26, cy-70, cx+iTop+42, cy-70, 'OUTLINE');
+    E.line(cx+iTop+26, cy+70, cx+iTop+42, cy+70, 'OUTLINE');
+  }
+  // 標註：總長／總寬／內缸底長寬／排水孔偏移
   dimH([cx+nX, cy], [cx+xX, cy], cy+nY-340);
   dimV([cx, cy+nY], [cx, cy+xY], cx+xX+360);
+  dimH([cx+inX, cy], [cx+ixX, cy], cy+xY+340);                       // 內缸底長（上方）
+  dimV([cx, cy+inY], [cx, cy+ixY], cx+nX-560);                       // 內缸底寬（左側）
   if(Math.abs(d.x)>1) dimH([cx, cy+d.y], [cx+d.x, cy+d.y], cy+nY-160, Math.round(Math.abs(d.x)));
   if(Math.abs(d.y)>1) dimV([cx+d.x, cy], [cx+d.x, cy+d.y], cx+nX-360, Math.round(Math.abs(d.y)));
   E.text(cx, cy+nY-620, 64, 'PLAN VIEW', 'TEXT', 1);
@@ -1537,6 +1700,9 @@ function exportDXF(){
     E.text(gx + col1 + 300, M + 680, 44, fit && fit.ok
       ? `SIDE WALL (SKETCHED) = FITTED ARCS ${fit.label} (MAX DEV ${fit.maxErr.toFixed(1)}mm, WIDTH SECTION REF)`
       : 'SIDE WALL (SKETCHED): FREEFORM POLYLINE - NO CLEAN ARC FIT. SIMPLIFY SKETCH FOR ARC-BASED TOOLING.', 'TEXT');
+  } else if(isFactory()){
+    E.text(gx + col1 + 300, M + 680, 44, `SIDE WALLS: INNER R${P.riL}(L-SEC)/R${P.riW}(W-SEC), OUTER R${P.roL}(L-SEC)/R${P.roW}(W-SEC); RIM EDGE ${P.lip}mm`, 'TEXT');
+    if(P.ovf) E.text(gx + col1 + 300, M + 920, 44, `OVERFLOW ${P.ovfDrop}mm BELOW RIM, REAR END, PER FACTORY STANDARD FITTING`, 'TEXT');
   } else if(P.wallMode==='arc'){
     E.text(gx + col1 + 300, M + 680, 44, `SIDE WALL: CIRCULAR ARC R${Math.round(P.wallR)} (WIDTH SECTION REFERENCE)`, 'TEXT');
   } else if(P.wallMode==='s'){
@@ -1552,6 +1718,8 @@ function exportDXF(){
   const paramsJson = JSON.stringify({ _bathtub:1, shape:P.shape, L:P.L, W:P.W, H:P.H, t:P.t, b:P.b, r:P.r,
     dH:P.dH, egg:P.egg, taper:P.taper, arc:P.arc, rim:P.rim, drain:P.drain, slope:P.slope, undercut:P.undercut?1:0,
     wallMode:P.wallMode, wallR:P.wallR, wallR2:P.wallR2, wallMid:P.wallMid,
+    lip:P.lip, obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW, riL:P.riL, riW:P.riW, roL:P.roL, roW:P.roW,
+    ovf:P.ovf?1:0, ovfDrop:P.ovfDrop,
     skirt:P.skirt?1:0, skirtH:P.skirtH, waistK:P.waistK, skirtR:P.skirtR });
   E.text(M + 30, 16, 22, paramsJson, 'PARAMS');
 
@@ -1582,11 +1750,14 @@ function exportJSON(){
       排水孔位置: P.drain, 外觀顏色: P.color,
       排水洩水角度_deg: P.slope, 允許倒扣: P.undercut,
       側壁模式: P.wallMode, 側壁弧度R_mm: P.wallR, 上段弧R2_mm: P.wallR2, S轉折高度_pct: P.wallMid,
+      缸邊寬_mm: P.lip, 外缸底長_mm: P.obL, 外缸底寬_mm: P.obW, 內缸底長_mm: P.ibL, 內缸底寬_mm: P.ibW,
+      內缸弧R_長邊剖面_mm: P.riL, 內缸弧R_短邊剖面_mm: P.riW, 外缸弧R_長邊剖面_mm: P.roL, 外缸弧R_短邊剖面_mm: P.roW,
+      溢水口: P.ovf, 溢水口距缸緣_mm: P.ovfDrop,
       裙擺式底座: P.skirt, 裙擺高度_mm: P.skirtH, 收腰寬度_pct: P.waistK, 裙擺弧R_mm: P.skirtR
     },
     計算規格: {
       內部長度_mm: s.inn.L, 內部寬度_mm: s.inn.W, 內部深度_前端_mm: s.inn.D,
-      底部長度_mm: Math.round(P.L*P.taper/100), 底部寬度_mm: Math.round(P.W*P.taper/100),
+      底部長度_mm: isFactory() ? P.obL : Math.round(P.L*P.taper/100), 底部寬度_mm: isFactory() ? P.obW : Math.round(P.W*P.taper/100),
       滿水容量_L: +s.fullVol.toFixed(1), 建議使用水量_L: +s.useVol.toFixed(1),
       估計重量_kg: +s.weight.toFixed(1), 材質假設: P.material==='solid' ? 'Solid surface (density 1.75 g/cm³)' : 'Premium acrylic (density 1.19 g/cm³)'
     }
@@ -1652,6 +1823,9 @@ async function sendQuote(btn){
         缸壁厚度_mm: P.t, 缸底厚度_mm: P.b, 圓角半徑_mm: P.r, rim_code: P.rim, 排水孔位置: P.drain, 外觀顏色: P.color,
         排水洩水角度_deg: P.slope, 允許倒扣: P.undercut,
         側壁模式: P.wallMode, 側壁弧度R_mm: P.wallR, 上段弧R2_mm: P.wallR2, S轉折高度_pct: P.wallMid,
+        缸邊寬_mm: P.lip, 外缸底長_mm: P.obL, 外缸底寬_mm: P.obW, 內缸底長_mm: P.ibL, 內缸底寬_mm: P.ibW,
+        內缸弧R_長邊剖面_mm: P.riL, 內缸弧R_短邊剖面_mm: P.riW, 外缸弧R_長邊剖面_mm: P.roL, 外缸弧R_短邊剖面_mm: P.roW,
+        溢水口: P.ovf, 溢水口距缸緣_mm: P.ovfDrop,
         裙擺式底座: P.skirt, 裙擺高度_mm: P.skirtH, 收腰寬度_pct: P.waistK, 裙擺弧R_mm: P.skirtR,
         手繪俯視輪廓_normalized: P.customPts, 手繪側牆剖面_k: P.customProfile },
       計算規格: { 滿水容量_L: +s.fullVol.toFixed(1), 估計重量_kg: +s.weight.toFixed(1) }
@@ -1711,8 +1885,10 @@ async function exportConceptPDF(btn){
   if(btn){ btn.disabled = true; btn.textContent = t('Generating PDF…'); }
   try {
     const JsPDF = await loadJsPDF();
+    if(handleGroup) handleGroup.visible = false;          // 快照不含拖曳把手
     resize(); updateCamera(); renderer.render(scene, camera);
     const img = renderer.domElement.toDataURL('image/jpeg', 0.9);
+    if(handleGroup) handleGroup.visible = true;
     const cw = renderer.domElement.width, ch = renderer.domElement.height;
     const doc = new JsPDF({unit:'mm', format:'a4'});
     doc.setFont('helvetica','bold'); doc.setFontSize(19); doc.setTextColor(27,26,22);
@@ -1806,10 +1982,12 @@ document.getElementById('cadFile').addEventListener('change', e=>{
 
 // 套用參數物件（來自 DXF 內嵌 PARAMS 或 JSON 規格表）
 function applyParams(p){
-  ['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid','skirtH','waistK','skirtR'].forEach(k=>{ if(typeof p[k] === 'number') P[k] = p[k]; });
+  ['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid','skirtH','waistK','skirtR',
+   'lip','obL','obW','ibL','ibW','riL','riW','roL','roW','ovfDrop'].forEach(k=>{ if(typeof p[k] === 'number') P[k] = p[k]; });
   if(typeof p.undercut !== 'undefined') P.undercut = !!(+p.undercut);
   if(typeof p.skirt !== 'undefined') P.skirt = !!(+p.skirt);
-  if(p.wallMode && ['curve','arc','s'].includes(p.wallMode)) P.wallMode = p.wallMode;
+  if(typeof p.ovf !== 'undefined') P.ovf = !!(+p.ovf);
+  if(p.wallMode && ['factory','curve','arc','s'].includes(p.wallMode)) P.wallMode = p.wallMode;
   else if(typeof p.wallArc !== 'undefined' && +p.wallArc) P.wallMode = 'arc';   // 舊版閉環相容
   if(p.rim) P.rim = p.rim;
   if(p.drain) P.drain = p.drain;
@@ -1830,6 +2008,9 @@ function importSpecJSON(text){
     slope: d.排水洩水角度_deg, undercut: typeof d.允許倒扣 !== 'undefined' ? (d.允許倒扣 ? 1 : 0) : undefined,
     wallR: d.側壁弧度R_mm, wallR2: d.上段弧R2_mm, wallMid: d.S轉折高度_pct,
     wallMode: d.側壁模式, wallArc: typeof d.側壁圓弧模式 !== 'undefined' ? (d.側壁圓弧模式 ? 1 : 0) : undefined,
+    lip: d.缸邊寬_mm, obL: d.外缸底長_mm, obW: d.外缸底寬_mm, ibL: d.內缸底長_mm, ibW: d.內缸底寬_mm,
+    riL: d.內缸弧R_長邊剖面_mm, riW: d.內缸弧R_短邊剖面_mm, roL: d.外缸弧R_長邊剖面_mm, roW: d.外缸弧R_短邊剖面_mm,
+    ovf: typeof d.溢水口 !== 'undefined' ? (d.溢水口 ? 1 : 0) : undefined, ovfDrop: d.溢水口距缸緣_mm,
     skirt: typeof d.裙擺式底座 !== 'undefined' ? (d.裙擺式底座 ? 1 : 0) : undefined,
     skirtH: d.裙擺高度_mm, waistK: d.收腰寬度_pct, skirtR: d.裙擺弧R_mm
   });
@@ -2021,6 +2202,7 @@ function importSTL(buf){
   orbit.target.set(0, size.y/2, 0);
   orbit.radius = Math.max(1200, Math.max(size.x, size.y, size.z) * 2.2);
   document.getElementById('extBanner').style.display = 'block';
+  if(typeof buildHandles === 'function') buildHandles();  // 外部模型檢視中不顯示把手
   if(typeof updatePrice === 'function') updatePrice();   // 上傳 CAD ＝ Bespoke 層級
 }
 
@@ -2029,7 +2211,9 @@ const sliderMap = [
   ['rL','nL','L'], ['rW','nW','W'], ['rH','nH','H'], ['rT','nT','t'],
   ['rB','nB','b'], ['rR','nR','r'], ['rDH','nDH','dH'], ['rE','nE','egg'], ['rS','nS','taper'], ['rArc','nArc','arc'],
   ['rSlope','nSlope','slope'], ['rWR','nWR','wallR'], ['rWR1','nWR1','wallR'], ['rWR2','nWR2','wallR2'], ['rWM','nWM','wallMid'],
-  ['rSkH','nSkH','skirtH'], ['rSkW','nSkW','waistK'], ['rSkR','nSkR','skirtR']
+  ['rSkH','nSkH','skirtH'], ['rSkW','nSkW','waistK'], ['rSkR','nSkR','skirtR'],
+  ['rLip','nLip','lip'], ['rObL','nObL','obL'], ['rObW','nObW','obW'], ['rIbL','nIbL','ibL'], ['rIbW','nIbW','ibW'],
+  ['rRiL','nRiL','riL'], ['rRiW','nRiW','riW'], ['rRoL','nRoL','roL'], ['rRoW','nRoW','roW']
 ];
 sliderMap.forEach(([rid,nid,key])=>{
   const r=document.getElementById(rid), n=document.getElementById(nid);
@@ -2048,13 +2232,18 @@ function syncUI(){
   document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.toggle('active', b.dataset.shape===P.shape));
   document.getElementById('undercutToggle').checked = P.undercut;
   document.querySelectorAll('.wallmode-btns button').forEach(b=>b.classList.toggle('active', b.dataset.wallmode===P.wallMode));
+  const fac = P.wallMode==='factory';
+  ['lipRow','obLRow','obWRow','ibLRow','ibWRow','riLRow','riWRow','roLRow','roWRow'].forEach(id=>{ document.getElementById(id).style.display = fac ? 'flex' : 'none'; });
+  document.getElementById('ovfChk').style.display = fac ? 'flex' : 'none';
+  document.getElementById('ovfToggle').checked = P.ovf;
   document.getElementById('wallRRow').style.display  = (P.wallMode==='arc') ? 'flex' : 'none';
   document.getElementById('wallR1Row').style.display = (P.wallMode==='s') ? 'flex' : 'none';
   document.getElementById('wallR2Row').style.display = (P.wallMode==='s') ? 'flex' : 'none';
   document.getElementById('wallMidRow').style.display = (P.wallMode==='s') ? 'flex' : 'none';
+  document.getElementById('skirtChk').style.display = fac ? 'none' : 'flex';
   document.getElementById('skirtToggle').checked = P.skirt;
-  ['skirtHRow','skirtWRow','skirtRRow'].forEach(id=>{ document.getElementById(id).style.display = P.skirt ? 'flex' : 'none'; });
-  document.getElementById('skirtTip').style.display = P.skirt ? 'block' : 'none';
+  ['skirtHRow','skirtWRow','skirtRRow'].forEach(id=>{ document.getElementById(id).style.display = (P.skirt && !fac) ? 'flex' : 'none'; });
+  document.getElementById('skirtTip').style.display = (P.skirt && !fac) ? 'block' : 'none';
   updateRowVis();
 }
 
@@ -2094,17 +2283,19 @@ function setRim(r, btn){
 
 // 照片款預設：不對稱蛋形缸（後緣高、蛋形口、底部內收）
 function applyPhotoPreset(){
-  Object.assign(P, { shape:'ellipse', L:1700, W:850, H:520, t:15, b:40, dH:130, egg:12, taper:72, drain:'front' });
+  Object.assign(P, { shape:'ellipse', L:1700, W:850, H:520, t:15, b:40, dH:130, egg:12, taper:72, drain:'front', wallMode:'curve', ovf:false });
   syncUI();
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
   buildTub();
 }
 
-// 工廠經典款（量產驗證，依 2024–2026 銷售線圖範本近似參數；1600x800、內深≈445–450、總高 580/600）
+// 工廠經典款（量產驗證）：Darwin＝2026-07-13 工廠圖精確參數（factory 模式）；
+// Marbella/Victoria 仍為銷售線圖近似參數（legacy arc 模式），待工廠圖到位後改 factory
 const CLASSICS = {
-  marbella: { shape:'stadium', L:1600, W:800, H:485, t:20, b:40, r:150, dH:95,  egg:0, taper:72, arc:60, rim:'round', drain:'center', slope:1.5, wallMode:'arc', wallR:2000, undercut:false },
-  victoria: { shape:'stadium', L:1600, W:800, H:490, t:20, b:40, r:150, dH:110, egg:0, taper:75, arc:55, rim:'round', drain:'back',   slope:1.5, wallMode:'arc', wallR:1800, undercut:false },
-  darwin:   { shape:'ellipse', L:1600, W:800, H:490, t:20, b:40, r:150, dH:90,  egg:6, taper:75, arc:60, rim:'round', drain:'center', slope:1.5, wallMode:'arc', wallR:1500, undercut:false }
+  marbella: { shape:'stadium', L:1600, W:800, H:485, t:20, b:40, r:150, dH:95,  egg:0, taper:72, arc:60, rim:'round', drain:'center', slope:1.5, wallMode:'arc', wallR:2000, undercut:false, ovf:false },
+  victoria: { shape:'stadium', L:1600, W:800, H:490, t:20, b:40, r:150, dH:110, egg:0, taper:75, arc:55, rim:'round', drain:'back',   slope:1.5, wallMode:'arc', wallR:1800, undercut:false, ovf:false },
+  darwin:   { shape:'ellipse', L:1600, W:800, H:580, t:20, b:130, r:150, dH:0, egg:0, taper:74, arc:60, rim:'flat', drain:'center', slope:1.5, wallMode:'factory', undercut:false,
+              lip:20, obL:1190, obW:600, ibL:1108, ibW:518, riL:1001, riW:1152, roL:887, roW:1743, ovf:true, ovfDrop:75 }
 };
 function applyClassic(k){
   Object.assign(P, CLASSICS[k]);
@@ -2376,7 +2567,8 @@ function confirmSketch(){
 function updateRowVis(){
   document.getElementById('radiusRow').style.display = (P.shape==='rect') ? 'flex' : 'none';
   document.getElementById('rE').closest('.row').style.display = (P.shape==='custom') ? 'none' : 'flex';
-  document.getElementById('rS').closest('.row').style.display = (P.customProfile && P.shape==='custom') ? 'none' : 'flex';
+  document.getElementById('rS').closest('.row').style.display = ((P.customProfile && P.shape==='custom') || P.wallMode==='factory') ? 'none' : 'flex';
+  document.getElementById('rT').closest('.row').style.display = (P.wallMode==='factory') ? 'none' : 'flex';   // factory：壁厚由內外殼幾何決定
 }
 
 document.querySelectorAll('.sw').forEach(sw=>{
@@ -2393,12 +2585,129 @@ document.getElementById('customColor').addEventListener('input', e=>{
 document.getElementById('waterToggle').addEventListener('change', e=>{ P.water = e.target.checked; buildTub(); });
 document.getElementById('undercutToggle').addEventListener('change', e=>{ P.undercut = e.target.checked; buildTub(); });
 document.getElementById('skirtToggle').addEventListener('change', e=>{ P.skirt = e.target.checked; syncUI(); buildTub(); });
+document.getElementById('ovfToggle').addEventListener('change', e=>{ P.ovf = e.target.checked; buildTub(); });
+
+// ===================== 簡易 / 設計師模式切換 =====================
+function setStudioMode(simple){
+  document.body.classList.toggle('simple', simple);
+  const b = document.getElementById('modeBtn');
+  if(b) b.textContent = t(simple ? 'Designer mode' : 'Simple mode');
+  try { localStorage.setItem('ka_studio_mode', simple ? 's' : 'd'); } catch(e){}
+}
+document.getElementById('modeBtn').addEventListener('click', ()=> setStudioMode(!document.body.classList.contains('simple')));
+
+// ===================== 拖曳把手（簡易模式核心：直接在缸體上拉外型） =====================
+// 4 顆金色把手：長度（+x 端）／寬度（+z 側）／高度（後端缸緣）／弧度飽滿度（−z 側，僅 factory 模式）
+// 拖曳時等比連動 factory 底部尺寸與 R → 客人拉出的每個造型都是一張合法工廠圖
+let handleGroup = null, dragH = null;
+const _ray = new THREE.Raycaster(), _mv = new THREE.Vector2(), _dragPlane = new THREE.Plane(), _hitPt = new THREE.Vector3();
+function buildHandles(){
+  if(handleGroup){
+    scene.remove(handleGroup);
+    handleGroup.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); });
+    handleGroup = null;
+  }
+  if(extGroup || !tubGroup || !tubGroup.children.length || window._noHandles) return;
+  handleGroup = new THREE.Group();
+  const mk = name => {
+    const m = new THREE.Mesh(
+      new THREE.SphereGeometry(30, 20, 14),
+      new THREE.MeshStandardMaterial({color:0x9a7b43, roughness:0.35, metalness:0.2, emissive:0x2e2410})
+    );
+    m.userData.h = name;
+    handleGroup.add(m);
+    return m;
+  };
+  mk('len'); mk('wid'); mk('hgt');
+  if(isFactory()) mk('blg');
+  scene.add(handleGroup);
+  updateHandles();
+}
+function updateHandles(){
+  if(!handleGroup) return;
+  const h = Math.max(1, P.H + P.dH/2);
+  handleGroup.children.forEach(m=>{
+    const n = m.userData.h, ks = shellKxy(0.55, false);
+    if(n === 'len')      m.position.set((P.L/2)*Math.max(ks[0], 0.82) + 46, h*0.55, 0);
+    else if(n === 'wid') m.position.set(0, h*0.55, (P.W/2)*Math.max(ks[1], 0.82) + 46);
+    else if(n === 'hgt'){ const xr = -P.L/2*0.88; m.position.set(xr, rimH(xr, P.L, P.H, P.dH) + 44, 0); }
+    else { const kb = shellKxy(0.5, false); m.position.set(0, h*0.5, -((P.W/2)*kb[1] + 46)); }
+  });
+}
+let _pendingBuild = false;
+function requestBuild(){
+  if(_pendingBuild) return;
+  _pendingBuild = true;
+  requestAnimationFrame(()=>{ _pendingBuild = false; syncUI(); buildTub(); });
+}
+// 弧半徑 ↔ 中點鼓度換算（外缸短邊剖面為基準）
+function _sagX(R, p, qEnd, zm){ return arcBetween(p, qEnd, R, +1, zm); }
+function _solveR(p, qEnd, zm, targetX){
+  const chord = Math.hypot(qEnd[0]-p[0], qEnd[1]-p[1]);
+  let lo = chord*0.55, hi = 30000;
+  // arcBetween 對 R 單調遞減（R 越大越平）
+  for(let i=0;i<40;i++){
+    const mid = (lo+hi)/2;
+    if(_sagX(mid, p, qEnd, zm) > targetX) lo = mid; else hi = mid;
+  }
+  return (lo+hi)/2;
+}
+canvas.addEventListener('pointerdown', e=>{
+  if(!handleGroup) return;
+  const r = canvas.getBoundingClientRect();
+  _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  _ray.setFromCamera(_mv, camera);
+  const hit = _ray.intersectObjects(handleGroup.children)[0];
+  if(!hit) return;
+  const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+  _dragPlane.setFromNormalAndCoplanarPoint(camDir, hit.object.position.clone());
+  dragH = { name: hit.object.userData.h, start: { L:P.L, W:P.W, H:P.H, obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW, roL:P.roL, roW:P.roW, riL:P.riL, riW:P.riW, wallR:P.wallR, taper:P.taper } };
+  dragging = false;                       // 壓住把手時不旋轉視角
+  e.stopImmediatePropagation();
+}, true);
+window.addEventListener('pointermove', e=>{
+  if(!dragH) return;
+  const r = canvas.getBoundingClientRect();
+  _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+  _ray.setFromCamera(_mv, camera);
+  if(!_ray.ray.intersectPlane(_dragPlane, _hitPt)) return;
+  const st = dragH.start, h = Math.max(1, P.H + P.dH/2);
+  if(dragH.name === 'len'){
+    const newL = Math.max(1200, Math.min(2200, Math.round((Math.abs(_hitPt.x) - 46)*2/10)*10));
+    const f = newL/st.L;
+    P.L = newL;
+    P.obL = Math.min(newL-40, Math.round(st.obL*f/2)*2);
+    P.ibL = Math.min(P.obL-30, Math.round(st.ibL*f/2)*2);
+    P.riL = Math.round(st.riL*f); P.roL = Math.round(st.roL*f);
+    requestBuild();
+  } else if(dragH.name === 'wid'){
+    const newW = Math.max(600, Math.min(1200, Math.round((Math.abs(_hitPt.z) - 46)*2/10)*10));
+    const f = newW/st.W;
+    P.W = newW;
+    P.obW = Math.min(newW-40, Math.round(st.obW*f/2)*2);
+    P.ibW = Math.min(P.obW-30, Math.round(st.ibW*f/2)*2);
+    P.riW = Math.round(st.riW*f); P.roW = Math.round(st.roW*f);
+    requestBuild();
+  } else if(dragH.name === 'hgt'){
+    P.H = Math.max(400, Math.min(750, Math.round((_hitPt.y - 44)/10)*10));
+    requestBuild();
+  } else if(dragH.name === 'blg'){
+    // 拖外缸短邊中段 → 反解 R，四個 R 等比連動（維持內外弧關係）
+    const target = Math.max(P.obW/2 + 10, Math.min(P.W/2*1.0, Math.abs(_hitPt.z) - 46));
+    const Rnew = _solveR([st.obW/2, 0], [st.W/2, h], h*0.5, target);
+    const f = Math.max(0.4, Math.min(4, Rnew/st.roW));
+    P.roW = Math.round(st.roW*f); P.roL = Math.round(st.roL*f);
+    P.riW = Math.round(st.riW*f); P.riL = Math.round(st.riL*f);
+    requestBuild();
+  }
+});
+window.addEventListener('pointerup', ()=>{ dragH = null; });
 
 // ===================== 滑鼠 / 觸控（360° 自由旋轉） =====================
 let dragging=false, lastX=0, lastY=0, pinchD=0;
-canvas.addEventListener('pointerdown', e=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+canvas.addEventListener('pointerdown', e=>{ if(dragH) return; dragging=true; lastX=e.clientX; lastY=e.clientY; });
 window.addEventListener('pointermove', e=>{
-  if(!dragging) return;
+  if(!dragging || dragH) return;
   orbit.theta += (e.clientX-lastX)*0.006;
   orbit.phi   -= (e.clientY-lastY)*0.006;
   lastX=e.clientX; lastY=e.clientY;
@@ -2436,11 +2745,13 @@ function animate(){
 // ?clean=1 攝影棚模式：隱藏介面/格線，背景米白，供擷取產品渲染圖
 const q = new URLSearchParams(location.search);
 if(q.get('preset') === 'photo') applyPhotoPreset();
-['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid','skirtH','waistK','skirtR'].forEach(k=>{ if(q.get(k) !== null) P[k] = +q.get(k); });
+['L','W','H','t','b','r','dH','egg','taper','arc','slope','wallR','wallR2','wallMid','skirtH','waistK','skirtR',
+ 'lip','obL','obW','ibL','ibW','riL','riW','roL','roW','ovfDrop'].forEach(k=>{ if(q.get(k) !== null) P[k] = +q.get(k); });
 if(q.get('skirt') !== null) P.skirt = q.get('skirt') === '1';
+if(q.get('ovf') !== null) P.ovf = q.get('ovf') === '1';
 ['shape','rim','drain'].forEach(k=>{ if(q.get(k)) P[k] = q.get(k); });
 if(q.get('undercut') !== null) P.undercut = q.get('undercut') === '1';
-if(q.get('wallMode') && ['curve','arc','s'].includes(q.get('wallMode'))) P.wallMode = q.get('wallMode');
+if(q.get('wallMode') && ['factory','curve','arc','s'].includes(q.get('wallMode'))) P.wallMode = q.get('wallMode');
 else if(q.get('wallArc') === '1') P.wallMode = 'arc';
 if(q.get('color')) P.color = '#' + q.get('color').replace('#','');
 if(q.get('water')) P.water = q.get('water') === '1';
@@ -2453,9 +2764,11 @@ if(q.get('clean') === '1'){
   scene.background = new THREE.Color(cream);
   floor.visible = false;
   grid.visible = false;
-  document.querySelector('header').style.display = 'none';
+  const hd = document.querySelector('header');
+  if(hd) hd.style.display = 'none';
   document.getElementById('panel').style.display = 'none';
   document.getElementById('hint').style.display = 'none';
+  window._noHandles = true;
 }
 // ?shot=檔名：渲染穩定後輸出 canvas 高解析 PNG（產品渲染圖批次輸出用）
 // 優先 POST 到本機收檔伺服器（開發批次用），失敗則觸發瀏覽器下載
@@ -2493,6 +2806,11 @@ if(langSel){
     applyLang();
   });
 }
+// 模式初始化：預設簡易模式；?designer=1 或上次選過設計師模式則進設計師模式
+let _modePref = 's';
+try { _modePref = localStorage.getItem('ka_studio_mode') || 's'; } catch(e){}
+if(q.get('designer') === '1') _modePref = 'd';
+setStudioMode(_modePref !== 'd');
 applyLang();
 buildTub();
 animate();
