@@ -2959,17 +2959,32 @@ function buildHandles(){
   }
   if(extGroup || !tubGroup || !tubGroup.children.length || window._noHandles) return;
   handleGroup = new THREE.Group();
-  const mk = name => {
-    const m = new THREE.Mesh(
-      new THREE.SphereGeometry(30, 20, 14),
-      new THREE.MeshStandardMaterial({color:0x9a7b43, roughness:0.35, metalness:0.2, emissive:0x2e2410})
+  // 小型金色「雙向箭頭」：一眼看出可以抓著往哪個方向拉
+  const hMat = ()=> new THREE.MeshStandardMaterial({color:0x9a7b43, roughness:0.3, metalness:0.25, emissive:0x2e2410});
+  const mkArrow = (name, axis) => {
+    const g = new THREE.Group();
+    const mat = hMat();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(6.5, 6.5, 64, 12), mat);
+    const tipA = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 15, 26, 14), mat);   // 尖端朝 +Y
+    tipA.position.y = 32 + 13;
+    const tipB = tipA.clone();
+    tipB.rotation.z = Math.PI;                                                        // 尖端朝 −Y
+    tipB.position.y = -(32 + 13);
+    g.add(shaft, tipA, tipB);
+    // 隱形命中球：箭頭視覺纖細，但拖曳判定維持好抓（含觸控）
+    const hitS = new THREE.Mesh(
+      new THREE.SphereGeometry(48, 8, 6),
+      new THREE.MeshBasicMaterial({transparent:true, opacity:0, depthWrite:false})
     );
-    m.userData.h = name;
-    handleGroup.add(m);
-    return m;
+    g.add(hitS);
+    if(axis === 'x') g.rotation.z = Math.PI/2;        // 雙向箭頭沿 X（長度方向）
+    else if(axis === 'z') g.rotation.x = Math.PI/2;   // 沿 Z（寬度方向）
+    g.userData.h = name;                              // 'y' 維持直立（高度方向）
+    handleGroup.add(g);
+    return g;
   };
-  mk('len'); mk('wid'); mk('hgt');
-  if(isFactory()) mk('blg');
+  mkArrow('len', 'x'); mkArrow('wid', 'z'); mkArrow('hgt', 'y');
+  if(isFactory()) mkArrow('blg', 'z');
   scene.add(handleGroup);
   updateHandles();
 }
@@ -2988,7 +3003,9 @@ let _pendingBuild = false;
 function requestBuild(){
   if(_pendingBuild) return;
   _pendingBuild = true;
-  requestAnimationFrame(()=>{ _pendingBuild = false; syncUI(); buildTub(); });
+  const run = ()=>{ if(!_pendingBuild) return; _pendingBuild = false; syncUI(); buildTub(); };
+  requestAnimationFrame(run);
+  setTimeout(run, 60);   // 分頁被遮蔽時 rAF 會被節流 → 保險用 timeout 補跑
 }
 // 弧半徑 ↔ 中點鼓度換算（外缸短邊剖面為基準）
 function _sagX(R, p, qEnd, zm){ return arcBetween(p, qEnd, R, +1, zm); }
@@ -3007,11 +3024,14 @@ canvas.addEventListener('pointerdown', e=>{
   const r = canvas.getBoundingClientRect();
   _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
   _ray.setFromCamera(_mv, camera);
-  const hit = _ray.intersectObjects(handleGroup.children)[0];
+  const hit = _ray.intersectObjects(handleGroup.children, true)[0];   // 箭頭是 Group，遞迴命中後往上找名稱
   if(!hit) return;
+  let hObj = hit.object;
+  while(hObj && !hObj.userData.h) hObj = hObj.parent;
+  if(!hObj) return;
   const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
-  _dragPlane.setFromNormalAndCoplanarPoint(camDir, hit.object.position.clone());
-  dragH = { name: hit.object.userData.h, start: { L:P.L, W:P.W, H:P.H, obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW, roL:P.roL, roW:P.roW, riL:P.riL, riW:P.riW, wallR:P.wallR, taper:P.taper } };
+  _dragPlane.setFromNormalAndCoplanarPoint(camDir, hObj.position.clone());
+  dragH = { name: hObj.userData.h, start: { L:P.L, W:P.W, H:P.H, obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW, roL:P.roL, roW:P.roW, riL:P.riL, riW:P.riW, wallR:P.wallR, taper:P.taper } };
   dragging = false;                       // 壓住把手時不旋轉視角
   e.stopImmediatePropagation();
 }, true);
