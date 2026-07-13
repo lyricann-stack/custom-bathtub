@@ -189,7 +189,7 @@
   <div class="btns">
     <button class="btn btn-upl designer-only" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
     <button class="btn btn-dxf" onclick="exportConceptPDF(this)">⬇ Concept PDF (free)</button>
-    <button class="btn btn-json" id="cadPackBtn" onclick="requestCadPack()">⬇ CAD pack (DXF + spec)</button>
+    <button class="btn btn-json" id="cadPackBtn" onclick="requestCadPack(this)">⬇ CAD pack (DXF + spec + renders)</button>
     <input type="file" id="cadFile" accept=".dxf,.stl,.json" style="display:none">
   </div>
 </div>
@@ -546,6 +546,9 @@ const I18N = {
   'None (vertical demould)': ['无（垂直出模）', 'ไม่มี (ถอดแม่พิมพ์แนวดิ่ง)', '無（垂直出模）'],
   'Yes (split mould)': ['有（左右合模）', 'มี (แม่พิมพ์แยกซ้ายขวา)', '有（左右合模）'],
   '⬇ CAD pack (DXF + spec)': ['⬇ CAD 制造包（DXF＋规格）', '⬇ ชุดไฟล์ CAD (DXF + สเปก)', '⬇ CAD 製造包（DXF＋規格）'],
+  '⬇ CAD pack (DXF + spec + renders)': ['⬇ CAD 制造包（DXF＋规格＋渲染图）', '⬇ ชุดไฟล์ CAD (DXF + สเปก + ภาพเรนเดอร์)', '⬇ CAD 製造包（DXF＋規格＋渲染圖）'],
+  '🔒 CAD pack (DXF + spec + renders)': ['🔒 CAD 制造包（DXF＋规格＋渲染图）', '🔒 ชุดไฟล์ CAD (DXF + สเปก + ภาพเรนเดอร์)', '🔒 CAD 製造包（DXF＋規格＋渲染圖）'],
+  'Preparing CAD pack…': ['正在打包 CAD 制造包…', 'กำลังเตรียมชุดไฟล์ CAD…', '正在打包 CAD 製造包…'],
   'Side wall arc R': ['侧壁弧度 R', 'รัศมีโค้งผนังข้าง R', '側壁弧度 R'],
   'Designer mode': ['设计师模式', 'โหมดนักออกแบบ', '設計師模式'],
   'Simple mode': ['简易模式', 'โหมดง่าย', '簡易模式'],
@@ -1640,7 +1643,7 @@ function drawToleranceNote(x, y){
   lines.forEach((s2, i)=> E.text(x, y - i*100, i ? 46 : 52, s2, 'TEXT'));
 }
 
-function exportDXF(){
+function exportDXF(noDownload){
   const inn = innerDims(), spec = computeSpec(), s = baseK();
   const HB = P.H + P.dH;
   dxf = dxfHeaderTables();
@@ -1724,11 +1727,13 @@ function exportDXF(){
   E.text(M + 30, 16, 22, paramsJson, 'PARAMS');
 
   dxf += '0\nENDSEC\n0\nEOF\n';
-  download(dxf, `${DESIGN_ID}_${code}_${P.L}x${P.W}x${inn.D}-${HB}.dxf`, 'application/dxf');
+  const filename = `${DESIGN_ID}_${code}_${P.L}x${P.W}x${inn.D}-${HB}.dxf`;
+  if(noDownload) return { content: dxf, filename };
+  download(dxf, filename, 'application/dxf');
 }
 
 // ===================== JSON 規格表輸出 =====================
-function exportJSON(){
+function exportJSON(noDownload){
   const s = computeSpec();
   const spec = {
     文件類型: 'Custom bathtub design specification',
@@ -1762,6 +1767,7 @@ function exportJSON(){
       估計重量_kg: +s.weight.toFixed(1), 材質假設: P.material==='solid' ? 'Solid surface (density 1.75 g/cm³)' : 'Premium acrylic (density 1.19 g/cm³)'
     }
   };
+  if(noDownload) return { content: JSON.stringify(spec, null, 2), filename: `${DESIGN_ID}_design-spec.json` };
   download(JSON.stringify(spec, null, 2), `bathtub_spec_${Date.now()}.json`, 'application/json');
 }
 
@@ -1848,15 +1854,94 @@ async function sendQuote(btn){
 //   只在客戶送出設計（＋收訂金）後隨正式報價寄出（MASA 的審核機制）。
 //   目前 false = 測試模式：按鈕直接下載 DXF＋規格 JSON。
 const CAD_GATE = false;
-function requestCadPack(){
+function requestCadPack(btn){
   if(CAD_GATE){ showCadGate(); return; }
-  exportDXF();
-  exportJSON();
+  exportCadPackZip(btn);
 }
 (function initCadBtn(){
   const b = document.getElementById('cadPackBtn');
-  if(b && CAD_GATE) b.textContent = '🔒 CAD pack (DXF + spec)';
+  if(b && CAD_GATE) b.textContent = '🔒 CAD pack (DXF + spec + renders)';
 })();
+
+// ---------- 多角度 3D 渲染圖（CAD 包附件） ----------
+// 截圖時：隱藏把手/地板/格線、換乾淨米白背景、固定 1600×1200，完成後全部還原
+const RENDER_SHOTS = [
+  ['view-1_three-quarter',   Math.PI/4,   Math.PI/3.2 ],
+  ['view-2_front-long-side', Math.PI/2,   Math.PI/2.05],
+  ['view-3_end-short-side',  0,           Math.PI/2.05],
+  ['view-4_rear-three-quarter', -Math.PI*0.75, Math.PI/3.2],
+  ['view-5_top-plan',        Math.PI/4,   0.06        ],
+  ['view-6_interior',        Math.PI/2,   Math.PI/4.8 ]
+];
+function captureRenders(){
+  const saved = { theta:orbit.theta, phi:orbit.phi, radius:orbit.radius };
+  const savedBg = scene.background, savedFloor = floor.visible, savedGrid = grid.visible;
+  const savedHandles = handleGroup ? handleGroup.visible : null;
+  scene.background = new THREE.Color(0xf4f1ea);
+  floor.visible = false; grid.visible = false;
+  if(handleGroup) handleGroup.visible = false;
+  const savedPR = renderer.getPixelRatio();
+  renderer.setPixelRatio(1);                          // 固定輸出 1600×1200，避免高 DPI 檔案過大
+  renderer.setSize(1600, 1200, false);
+  camera.aspect = 1600/1200; camera.updateProjectionMatrix();
+  const fit = Math.max(P.L, P.W, (P.H + P.dH)*2.6) * 1.9;
+  const out = [];
+  RENDER_SHOTS.forEach(([name, th, ph])=>{
+    orbit.theta = th; orbit.phi = Math.max(0.05, ph); orbit.radius = fit;
+    updateCamera();
+    renderer.render(scene, camera);
+    out.push([name, renderer.domElement.toDataURL('image/png')]);
+  });
+  // 還原場景與視角
+  orbit.theta = saved.theta; orbit.phi = saved.phi; orbit.radius = saved.radius;
+  scene.background = savedBg; floor.visible = savedFloor; grid.visible = savedGrid;
+  if(handleGroup && savedHandles !== null) handleGroup.visible = savedHandles;
+  renderer.setPixelRatio(savedPR);
+  resize(); updateCamera(); renderer.render(scene, camera);
+  return out;
+}
+
+// ---------- CAD 製造包 ZIP（DXF＋規格 JSON＋六角度渲染圖） ----------
+let _jszipP = null;
+function loadJSZip(){
+  if(!_jszipP) _jszipP = new Promise((res, rej)=>{
+    if(window.JSZip) return res(window.JSZip);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload = ()=>res(window.JSZip);
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+  return _jszipP;
+}
+async function exportCadPackZip(btn){
+  const old = btn ? btn.textContent : null;
+  if(btn){ btn.disabled = true; btn.textContent = t('Preparing CAD pack…'); }
+  try {
+    const JSZip = await loadJSZip();
+    const zip = new JSZip();
+    const d = exportDXF(true);
+    zip.file(d.filename, d.content);
+    const j = exportJSON(true);
+    zip.file(j.filename, j.content);
+    const rd = zip.folder('renders');
+    captureRenders().forEach(([name, url])=> rd.file(name + '.png', url.split(',')[1], {base64:true}));
+    const blob = await zip.generateAsync({type:'blob'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${DESIGN_ID}_CAD-pack_${P.L}x${P.W}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(e){
+    console.error(e);
+    alert(t('❌ Something went wrong — please try again, or email concierge@kreinergroups.com directly.'));
+  }
+  if(btn){
+    btn.disabled = false;
+    btn.textContent = t('⬇ CAD pack (DXF + spec + renders)');
+    if(btn.firstChild) i18nNodes.push([btn.firstChild, '⬇ CAD pack (DXF + spec + renders)']);
+  }
+}
 
 // ---------- CAD 閘門：免費層不提供可製造檔案 ----------
 function showCadGate(){
