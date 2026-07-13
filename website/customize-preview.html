@@ -938,6 +938,22 @@ function shellKxy(v, inner){
   const k = wallK(v, baseK(), inner ? 1.03 : 1.07, inner);
   return [k, k];
 }
+// 底部尺寸順序硬限制：外缸底必須大於內缸底（兩側合計至少 BASE_GAP，每側 5mm 壁厚）
+// 調整哪個參數就 clamp 哪個（滑桿拉到界限自動停住）；匯入/網址參數用 sanitizeBase() 統一修正
+const BASE_GAP = 10;
+function enforceBaseOrder(key){
+  let changed = false;
+  if(key === 'ibL' && P.ibL > P.obL - BASE_GAP){ P.ibL = P.obL - BASE_GAP; changed = true; }
+  if(key === 'ibW' && P.ibW > P.obW - BASE_GAP){ P.ibW = P.obW - BASE_GAP; changed = true; }
+  if(key === 'obL' && P.obL < P.ibL + BASE_GAP){ P.obL = P.ibL + BASE_GAP; changed = true; }
+  if(key === 'obW' && P.obW < P.ibW + BASE_GAP){ P.obW = P.ibW + BASE_GAP; changed = true; }
+  return changed;
+}
+function sanitizeBase(){
+  if(P.ibL > P.obL - BASE_GAP) P.ibL = P.obL - BASE_GAP;   // 來源不明時以外缸底為準、內縮內缸底
+  if(P.ibW > P.obW - BASE_GAP) P.ibW = P.obW - BASE_GAP;
+}
+
 // 內外殼最小壁厚掃描（factory 模式防呆：全高度、長寬兩軸取最小水平間距）
 function minWallGap(){
   if(!isFactory()) return 99;
@@ -2127,6 +2143,7 @@ function applyParams(p){
   if(p.rim) P.rim = p.rim;
   if(p.drain) P.drain = p.drain;
   if(p.shape) P.shape = p.shape;
+  sanitizeBase();   // 匯入來源（DXF PARAMS / JSON）也不得違反外>內缸底
   document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim === P.rim));
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain === P.drain));
   syncUI();
@@ -2352,10 +2369,17 @@ const sliderMap = [
 ];
 sliderMap.forEach(([rid,nid,key])=>{
   const r=document.getElementById(rid), n=document.getElementById(nid);
-  r.addEventListener('input', ()=>{ n.value=r.value; P[key]=+r.value; buildTub(); });
+  r.addEventListener('input', ()=>{
+    n.value=r.value; P[key]=+r.value;
+    if(enforceBaseOrder(key)){ r.value=P[key]; n.value=P[key]; }   // 外/內缸底順序硬限制
+    buildTub();
+  });
   n.addEventListener('change', ()=>{
     let v=Math.max(+r.min, Math.min(+r.max, +n.value || +r.min));
-    n.value=v; r.value=v; P[key]=v; buildTub();
+    P[key]=v;
+    enforceBaseOrder(key);
+    n.value=P[key]; r.value=P[key];
+    buildTub();
   });
 });
 
@@ -2892,6 +2916,7 @@ if(q.get('wallMode') && ['factory','curve','arc','s'].includes(q.get('wallMode')
 else if(q.get('wallArc') === '1') P.wallMode = 'arc';
 if(q.get('color')) P.color = '#' + q.get('color').replace('#','');
 if(q.get('water')) P.water = q.get('water') === '1';
+sanitizeBase();   // 網址參數也不得違反外>內缸底
 syncUI();
 if(q.get('phi')) orbit.phi = +q.get('phi');
 if(q.get('theta')) orbit.theta = +q.get('theta');
