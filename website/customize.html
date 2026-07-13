@@ -151,8 +151,17 @@
   .studio-strip .sub { color:#66614f; font-size:12.5px; margin-top:4px; }
   .studio-strip .btns { display:flex; gap:8px; flex-wrap:wrap; }
   @media (max-width:900px){ [data-nav-links]{ display:none !important; } }
-  /* 簡易模式（預設）：把設計師參數全部收起來，客人只看到造型／材質色彩／價格／送出 */
-  body.simple .designer-only { display:none !important; }
+  /* 精靈（引導設計）視窗：四款提案卡片 */
+  #propGrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .prop-card { border:1px solid #ddd8cc; border-radius:14px; overflow:hidden; background:#fff; cursor:pointer; transition:box-shadow .15s, border-color .15s; }
+  .prop-card:hover { border-color:#9a7b43; box-shadow:0 4px 14px rgba(154,123,67,.18); }
+  .prop-card img { width:100%; display:block; aspect-ratio:4/3; object-fit:cover; }
+  .pc-body { padding:8px 10px 10px; display:flex; flex-direction:column; gap:2px; }
+  .pc-body b { font-size:13px; color:#1b1a16; }
+  .pc-body span { font-size:11px; color:#8a8478; }
+  .pc-body .pc-price { color:#9a7b43; font-weight:600; font-size:12px; margin-top:2px; }
+  #wizModal .rim-label { margin-top:12px; }
+  @media (max-width:700px){ #propGrid { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -187,7 +196,7 @@
     <div class="sub">Sketch any shape · sculpt it live in 3D · export designer-ready CAD — we build it from there</div>
   </div>
   <div class="btns">
-    <button class="btn btn-upl designer-only" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
+    <button class="btn btn-upl" onclick="document.getElementById('cadFile').click()">⬆ Upload CAD File</button>
     <button class="btn btn-dxf" onclick="exportConceptPDF(this)">⬇ Concept PDF (free)</button>
     <button class="btn btn-json" id="cadPackBtn" onclick="requestCadPack(this)">⬇ CAD pack (DXF + spec + renders)</button>
     <input type="file" id="cadFile" accept=".dxf,.stl,.json" style="display:none">
@@ -195,10 +204,7 @@
 </div>
 <main>
   <div id="panel">
-    <div id="modeBar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
-      <span class="tip" id="modeTip" style="margin:0">Drag the gold dots on the tub to shape it — everything else updates automatically.</span>
-      <button id="modeBtn" class="preset" style="width:auto;margin:0;padding:7px 13px;flex-shrink:0"></button>
-    </div>
+    <button class="preset" style="margin:0 0 12px;padding:11px" onclick="openWizard()">✨ Guided design — answer 5 questions, get 4 tailored tubs</button>
     <div class="group">
       <h3>① Tub Shape (Freestanding)</h3>
       <div class="shape-btns">
@@ -221,7 +227,7 @@
         <button onclick="applyClassic('darwin',this)">Darwin</button>
       </div>
     </div>
-    <div class="group designer-only">
+    <div class="group">
       <h3>② Dimensions (mm)</h3>
       <div class="row"><label>Overall length</label><input type="range" id="rL" min="1200" max="2200" step="10" value="1600"><div class="val"><input id="nL" value="1600"><span>mm</span></div></div>
       <div class="row"><label>Overall width</label><input type="range" id="rW" min="600" max="1200" step="10" value="800"><div class="val"><input id="nW" value="800"><span>mm</span></div></div>
@@ -230,15 +236,15 @@
       <div class="row"><label>Base thickness</label><input type="range" id="rB" min="20" max="200" step="5" value="130"><div class="val"><input id="nB" value="130"><span>mm</span></div></div>
       <div class="row" id="radiusRow" style="display:none"><label>Corner radius</label><input type="range" id="rR" min="50" max="300" step="10" value="150"><div class="val"><input id="nR" value="150"><span>mm</span></div></div>
       <div class="row" id="lipRow"><label>Rim edge width</label><input type="range" id="rLip" min="10" max="40" step="1" value="20"><div class="val"><input id="nLip" value="20"><span>mm</span></div></div>
-      <div class="row" id="obLRow"><label>Outer base length</label><input type="range" id="rObL" min="600" max="2000" step="2" value="1190"><div class="val"><input id="nObL" value="1190"><span>mm</span></div></div>
-      <div class="row" id="obWRow"><label>Outer base width</label><input type="range" id="rObW" min="300" max="1000" step="2" value="600"><div class="val"><input id="nObW" value="600"><span>mm</span></div></div>
       <div class="row" id="ibLRow"><label>Inner base length</label><input type="range" id="rIbL" min="500" max="1900" step="2" value="1108"><div class="val"><input id="nIbL" value="1108"><span>mm</span></div></div>
       <div class="row" id="ibWRow"><label>Inner base width</label><input type="range" id="rIbW" min="250" max="950" step="2" value="518"><div class="val"><input id="nIbW" value="518"><span>mm</span></div></div>
+      <div class="row" id="obLRow"><label>Outer base length</label><input type="range" id="rObL" min="600" max="2000" step="2" value="1190"><div class="val"><input id="nObL" value="1190"><span>mm</span></div></div>
+      <div class="row" id="obWRow"><label>Outer base width</label><input type="range" id="rObW" min="300" max="1000" step="2" value="600"><div class="val"><input id="nObW" value="600"><span>mm</span></div></div>
       <div id="warn">⚠ Invalid parameters: interior space too small, please adjust</div>
       <div id="lenWarn" class="tip" style="display:none;color:#b3541e">⚠ Interior length under 950mm — only suitable for seated / crouched bathing (leg-to-hip ≈ 900mm).</div>
       <div id="thinWarn" class="tip" style="display:none;color:#b3541e">⚠ Wall thickness below 5mm between inner and outer shells — adjust base sizes or arc R.</div>
     </div>
-    <div class="group designer-only">
+    <div class="group">
       <h3>③ Asymmetry Parameters</h3>
       <div class="row"><label>Backrest rise (rear)</label><input type="range" id="rDH" min="0" max="250" step="10" value="0"><div class="val"><input id="nDH" value="0"><span>mm</span></div></div>
       <div class="row"><label>Rise curvature</label><input type="range" id="rArc" min="0" max="100" step="5" value="60"><div class="val"><input id="nArc" value="60"><span>%</span></div></div>
@@ -270,7 +276,7 @@
       <div class="tip">Vertical demoulding cannot have undercuts. Unchecked = walls auto-limited to never bulge beyond the rim (standard acrylic)</div>
       <div id="undercutWarn" class="tip" style="display:none;color:#b3541e">⚠ Undercut on acrylic needs a split mould and hand-finished seams — high cost. Consider solid surface, or continue as premium bespoke.</div>
     </div>
-    <div class="group designer-only">
+    <div class="group">
       <h3>④ Drain & Floor Slope</h3>
       <div class="drain-btns">
         <button data-drain="center" class="active" onclick="setDrain('center',this)">Center</button>
@@ -349,7 +355,7 @@
       <button id="quoteBtn" onclick="sendQuote(this)" style="width:100%;background:#1b1a16;color:#f4f1ea;border:none;padding:14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer">Submit design & get a firm quote →</button>
       <div id="quoteBanner" style="display:none;margin-top:10px;padding:12px;border-radius:10px;font-size:13px;line-height:1.5"></div>
     </div>
-    <div class="group designer-only">
+    <div class="group">
       <h3>Production Flow</h3>
       <div class="flow" id="flowBox">
         <b>Customer</b>: adjust shape &amp; parameters here with live 3D preview<br><b>↓ One-click export</b><br><b>Designer</b>: DXF 3-view drawing (editable in AutoCAD) + JSON spec sheet<br><b>↓ Designer review / fine-tune</b><br><b>Factory</b>: acrylic = mould + thermoforming; solid surface = CNC shaping + hand finishing
@@ -392,6 +398,53 @@
     <div class="sk-actions">
       <button class="cancel" onclick="closeSketch()">Cancel</button>
       <button class="ok" onclick="confirmSketch()">✔ Generate 3D Model</button>
+    </div>
+  </div>
+</div>
+
+<!-- 精靈（引導設計）視窗：問答 → 四款提案 → 選一款回頁面微調 -->
+<div id="wizModal" style="display:none;position:fixed;inset:0;background:rgba(15,25,35,.55);z-index:100;align-items:center;justify-content:center">
+  <div class="sk-box" style="width:min(680px,94vw)">
+    <div id="wizQ">
+      <h2>✨ Guided design</h2>
+      <div class="sk-sub">Answer a few questions — we design four tubs around you, then you fine-tune the one you like.</div>
+      <div class="rim-label" style="margin-top:0">Installation space</div>
+      <div class="row"><label>Space length</label><input type="range" id="rSpL" min="1300" max="4000" step="50" value="2400"><div class="val"><input id="nSpL" value="2400"><span>mm</span></div></div>
+      <div class="row"><label>Space width</label><input type="range" id="rSpW" min="700" max="3000" step="50" value="1600"><div class="val"><input id="nSpW" value="1600"><span>mm</span></div></div>
+      <div class="tip">We keep at least 50mm clearance on each side for installation and cleaning.</div>
+      <div class="rim-label">Main bather's height</div>
+      <div class="row"><label>Height</label><input type="range" id="rBh" min="140" max="200" step="1" value="170"><div class="val"><input id="nBh" value="170"><span>cm</span></div></div>
+      <div class="rim-label">How do you like to soak?</div>
+      <div class="drain-btns" id="postureBtns">
+        <button data-pos="recline" class="active">Recline, knees relaxed</button>
+        <button data-pos="stretch">Lie flat, legs straight</button>
+        <button data-pos="deep">Deep soak, seated</button>
+      </div>
+      <div class="rim-label">Bathing for</div>
+      <div class="drain-btns" id="bathersBtns">
+        <button data-n="1" class="active">One person</button>
+        <button data-n="2">Two people</button>
+      </div>
+      <div class="rim-label">Which look speaks to you?</div>
+      <div class="drain-btns" id="lookBtns">
+        <button data-look="organic" class="active">Soft organic</button>
+        <button data-look="rounded">Rounded ends</button>
+        <button data-look="linear">Clean lines</button>
+      </div>
+      <div class="sk-actions">
+        <button class="cancel" onclick="closeWizard()">Cancel</button>
+        <button class="ok" onclick="generateProposals()">✨ Design my four tubs →</button>
+      </div>
+    </div>
+    <div id="wizP" style="display:none">
+      <h2>Your four proposals</h2>
+      <div class="sk-sub">Built around your space and body — pick one, then fine-tune it.</div>
+      <div id="propGrid"></div>
+      <div class="tip" style="margin-top:10px">Sized for your space with 50mm clearance per side, and for the main bather's height. Pick one — everything stays adjustable.</div>
+      <div class="sk-actions">
+        <button class="cancel" onclick="wizBack()">← Change answers</button>
+        <button class="cancel" onclick="closeWizard()">Cancel</button>
+      </div>
     </div>
   </div>
 </div>
@@ -569,6 +622,36 @@ const I18N = {
   'Overflow': ['溢水口', 'ช่องน้ำล้น', '溢水口'],
   'Yes (factory std)': ['有（工厂标准件）', 'มี (มาตรฐานโรงงาน)', '有（工廠標準件）'],
   '⚠ Wall thickness below 5mm between inner and outer shells — adjust base sizes or arc R.': ['⚠ 内外缸之间壁厚不足 5mm——请调整底部尺寸或弧度 R。', '⚠ ความหนาผนังระหว่างเปลือกในและนอกต่ำกว่า 5 มม. — โปรดปรับขนาดฐานหรือรัศมี R', '⚠ 內外缸之間壁厚不足 5mm——請調整底部尺寸或弧度 R。'],
+  '✨ Guided design — answer 5 questions, get 4 tailored tubs': ['✨ 引导设计——回答 5 个问题，获得 4 款量身方案', '✨ ออกแบบพร้อมไกด์ — ตอบ 5 ข้อ รับอ่าง 4 แบบ', '✨ 引導設計——回答 5 個問題，獲得 4 款量身方案'],
+  '✨ Guided design': ['✨ 引导设计', '✨ ออกแบบพร้อมไกด์', '✨ 引導設計'],
+  'Answer a few questions — we design four tubs around you, then you fine-tune the one you like.': ['回答几个问题——我们为你量身设计四款浴缸，选中后再自行微调。', 'ตอบคำถามสั้น ๆ — เราออกแบบอ่าง 4 แบบให้คุณ แล้วค่อยปรับแบบที่ชอบ', '回答幾個問題——我們為你量身設計四款浴缸，選中後再自行微調。'],
+  'Installation space': ['安装空间', 'พื้นที่ติดตั้ง', '安裝空間'],
+  'Space length': ['空间长度', 'ความยาวพื้นที่', '空間長度'],
+  'Space width': ['空间宽度', 'ความกว้างพื้นที่', '空間寬度'],
+  'We keep at least 50mm clearance on each side for installation and cleaning.': ['我们会在四周各保留至少 50mm 的安装与清洁间隙。', 'เราเว้นระยะอย่างน้อยข้างละ 50 มม. สำหรับติดตั้งและทำความสะอาด', '我們會在四周各保留至少 50mm 的安裝與清潔間隙。'],
+  "Main bather's height": ['主要使用者身高', 'ส่วนสูงของผู้ใช้หลัก', '主要使用者身高'],
+  'Height': ['身高', 'ส่วนสูง', '身高'],
+  'How do you like to soak?': ['你喜欢怎么泡？', 'คุณชอบแช่แบบไหน?', '你喜歡怎麼泡？'],
+  'Recline, knees relaxed': ['半躺·膝盖放松', 'เอนหลัง งอเข่าสบาย ๆ', '半躺·膝蓋放鬆'],
+  'Lie flat, legs straight': ['全躺·双腿伸直', 'นอนราบ เหยียดขาตรง', '全躺·雙腿伸直'],
+  'Deep soak, seated': ['深汤·坐姿深泡', 'แช่ลึกแบบนั่ง', '深湯·坐姿深泡'],
+  'Bathing for': ['使用人数', 'สำหรับกี่คน', '使用人數'],
+  'One person': ['一人', 'หนึ่งคน', '一人'],
+  'Two people': ['两人', 'สองคน', '兩人'],
+  'Which look speaks to you?': ['你喜欢哪种造型语言？', 'ชอบลุคแบบไหน?', '你喜歡哪種造型語言？'],
+  'Soft organic': ['柔和有机', 'ออร์แกนิกนุ่มนวล', '柔和有機'],
+  'Rounded ends': ['圆端经典', 'ปลายโค้งมน', '圓端經典'],
+  'Clean lines': ['利落直线', 'เส้นสายเรียบคม', '俐落直線'],
+  '✨ Design my four tubs →': ['✨ 为我设计四款浴缸 →', '✨ ออกแบบอ่าง 4 แบบให้ฉัน →', '✨ 為我設計四款浴缸 →'],
+  'Your four proposals': ['你的四款方案', 'ข้อเสนอ 4 แบบของคุณ', '你的四款方案'],
+  'Built around your space and body — pick one, then fine-tune it.': ['依你的空间与身形而生——选一款，再细调。', 'ออกแบบตามพื้นที่และสรีระของคุณ — เลือกหนึ่งแบบแล้วปรับต่อ', '依你的空間與身形而生——選一款，再細調。'],
+  "Sized for your space with 50mm clearance per side, and for the main bather's height. Pick one — everything stays adjustable.": ['已按四周各留 50mm 与主要使用者身高设定尺寸。选一款——所有参数仍可调整。', 'ปรับขนาดตามพื้นที่ (เว้นข้างละ 50 มม.) และส่วนสูงผู้ใช้หลัก เลือกหนึ่งแบบ — ทุกค่ายังปรับได้', '已按四周各留 50mm 與主要使用者身高設定尺寸。選一款——所有參數仍可調整。'],
+  '← Change answers': ['← 修改答案', '← แก้คำตอบ', '← 修改答案'],
+  'Compact fit': ['贴身省空间', 'กระชับพื้นที่', '貼身省空間'],
+  'Full stretch': ['舒展全躺', 'เหยียดตัวเต็มที่', '舒展全躺'],
+  'Deep soak': ['深汤', 'แช่ลึก', '深湯'],
+  'Sculptural': ['雕塑造型', 'เชิงประติมากรรม', '雕塑造型'],
+  'Depth': ['深', 'ลึก', '深'],
   'Side wall profile': ['侧壁剖面', 'โปรไฟล์ผนังข้าง', '側壁剖面'],
   'Default curve': ['预设曲线', 'เส้นโค้งมาตรฐาน', '預設曲線'],
   'Arc R': ['圆弧 R', 'โค้ง R', '圓弧 R'],
@@ -639,8 +722,7 @@ function applyLang(){
   document.documentElement.lang = LANG === 'en' ? 'en' : (LANG === 'th' ? 'th' : (LANG === 'zhS' ? 'zh-Hans' : 'zh-Hant'));
   if(typeof padTop !== 'undefined'){ padTop.redraw(); padSide.redraw(); }
   if(typeof updateSpec === 'function' && tubGroup) updateSpec();
-  if(typeof setStudioMode === 'function' && document.getElementById('modeBtn'))
-    setStudioMode(document.body.classList.contains('simple'));   // 重整模式按鈕文字（不在 i18nNodes 內）
+  try { if(PROPS.length) renderProposalCards(); } catch(e){}   // 語言切換時重繪提案卡
 }
 // 語言完全交由站上導覽列的 langSel 控制（見檔尾接線），設計器不再有自己的語言選項
 
@@ -1919,11 +2001,12 @@ function captureRenders(opts){
   camera.aspect = RW/RH; camera.updateProjectionMatrix();
   const fit = Math.max(P.L, P.W, (P.H + P.dH)*2.6) * 1.9;
   const out = [];
-  RENDER_SHOTS.forEach(([name, th, ph])=>{
+  (opts.shots || RENDER_SHOTS).forEach(([name, th, ph])=>{
     orbit.theta = th; orbit.phi = Math.max(0.05, ph); orbit.radius = fit;
     updateCamera();
     renderer.render(scene, camera);
-    out.push([name, watermarkFrame(renderer.domElement, RW, RH, mime, quality)]);
+    out.push([name, opts.noWatermark ? renderer.domElement.toDataURL(mime, quality)
+                                     : watermarkFrame(renderer.domElement, RW, RH, mime, quality)]);
   });
   // 還原場景與視角
   orbit.theta = saved.theta; orbit.phi = saved.phi; orbit.radius = saved.radius;
@@ -2748,14 +2831,120 @@ document.getElementById('undercutToggle').addEventListener('change', e=>{ P.unde
 document.getElementById('skirtToggle').addEventListener('change', e=>{ P.skirt = e.target.checked; syncUI(); buildTub(); });
 document.getElementById('ovfToggle').addEventListener('change', e=>{ P.ovf = e.target.checked; buildTub(); });
 
-// ===================== 簡易 / 設計師模式切換 =====================
-function setStudioMode(simple){
-  document.body.classList.toggle('simple', simple);
-  const b = document.getElementById('modeBtn');
-  if(b) b.textContent = t(simple ? 'Designer mode' : 'Simple mode');
-  try { localStorage.setItem('ka_studio_mode', simple ? 's' : 'd'); } catch(e){}
+// ===================== 精靈（引導設計）：選用按鈕，頁面本身維持完整設計師版面 =====================
+function openWizard(){
+  document.getElementById('wizQ').style.display = '';
+  document.getElementById('wizP').style.display = 'none';
+  document.getElementById('wizModal').style.display = 'flex';
 }
-document.getElementById('modeBtn').addEventListener('click', ()=> setStudioMode(!document.body.classList.contains('simple')));
+function closeWizard(){ document.getElementById('wizModal').style.display = 'none'; }
+function wizBack(){
+  document.getElementById('wizP').style.display = 'none';
+  document.getElementById('wizQ').style.display = '';
+}
+
+// ---------- 需求問答狀態 ----------
+const BRIEF = { spL:2400, spW:1600, height:170, posture:'recline', bathers:1, look:'organic' };
+[['postureBtns','pos','posture'], ['bathersBtns','n','bathers'], ['lookBtns','look','look']].forEach(([id, attr, key])=>{
+  document.querySelectorAll('#'+id+' button').forEach(b=> b.addEventListener('click', ()=>{
+    document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    BRIEF[key] = attr === 'n' ? +b.dataset[attr] : b.dataset[attr];
+  }));
+});
+[['rSpL','nSpL','spL'], ['rSpW','nSpW','spW'], ['rBh','nBh','height']].forEach(([rid, nid, key])=>{
+  const r = document.getElementById(rid), n = document.getElementById(nid);
+  r.addEventListener('input', ()=>{ n.value = r.value; BRIEF[key] = +r.value; });
+  n.addEventListener('change', ()=>{ let v = Math.max(+r.min, Math.min(+r.max, +n.value || +r.min)); n.value = v; r.value = v; BRIEF[key] = v; });
+});
+
+// ---------- 人體工學 → 四款提案 ----------
+// 規則（v1，可依設計部門實測校準；全部以「內缸口長」為人體基準）：
+//   半躺屈膝 recline：內口長 ≈ 身高×0.82｜全伸腿 stretch：≈ 身高×0.93｜深湯坐泡 deep：≈ 身高×0.62、內深 540
+//   坐姿底線：內口長 ≥ 950（既有工廠規則）｜標準內深 450（總高=內深+130）
+//   單人內口寬 580–640；兩人 內口寬 ≥ 720、長 +150、排水中央
+//   安裝間隙：每側 50mm → 外缸 ≤ 空間 − 100
+// 底部尺寸與四個 R 按達爾文比例隨外缸縮放（obL/L=0.744、obW/W=0.75、ibL/L=0.6925、ibW/W=0.6475）
+const LOOK_SHAPE = { organic:'ellipse', rounded:'stadium', linear:'rect' };
+function darwinScaled(L, W, D, extra){
+  return Object.assign({
+    L, W, H: D + 130, b: 130, t: 20, lip: 20, r: 150,
+    obL: Math.round(L*0.744/2)*2, obW: Math.round(W*0.75/2)*2,
+    ibL: Math.round(L*0.6925/2)*2, ibW: Math.round(W*0.6475/2)*2,
+    riL: Math.round(1001*L/1600), riW: Math.round(1152*W/800),
+    roL: Math.round(887*L/1600),  roW: Math.round(1743*W/800),
+    wallMode:'factory', dH:0, egg:0, arc:60, taper:74, rim:'flat',
+    drain:'center', slope:1.5, ovf:true, ovfDrop:75, undercut:false, skirt:false
+  }, extra || {});
+}
+function briefTargets(){
+  const hmm = BRIEF.height * 10;
+  const two = BRIEF.bathers === 2;
+  const maxL = Math.min(2200, (BRIEF.spL || 4000) - 100);
+  const maxW = Math.min(1200, (BRIEF.spW || 3000) - 100);
+  const innerL = { recline: hmm*0.82, stretch: hmm*0.93, deep: hmm*0.62 };
+  const clampL = v => Math.max(1200, Math.min(maxL, Math.round((v + 40 + (two?150:0))/10)*10));
+  const clampW = v => Math.max(600, Math.min(maxW, Math.round((v + 40)/10)*10));
+  return { two, innerL, clampL, clampW };
+}
+let PROPS = [];
+function generateProposals(){
+  const T = briefTargets();
+  const shape = LOOK_SHAPE[BRIEF.look] || 'ellipse';
+  const wBase = T.two ? 760 : 600;   // 內口寬目標
+  const defs = [
+    { key:'compact', name:'Compact fit',  L:T.clampL(T.innerL.recline), W:T.clampW(wBase - 40), D:450, extra:{shape} },
+    { key:'stretch', name:'Full stretch', L:T.clampL(T.innerL.stretch), W:T.clampW(wBase + 20), D:450, extra:{shape} },
+    { key:'deep',    name:'Deep soak',    L:T.clampL(T.innerL.deep),    W:T.clampW(wBase + 20), D:540, extra:{shape} },
+    { key:'sculpt',  name:'Sculptural',   L:T.clampL(T.innerL.recline), W:T.clampW(wBase + 20), D:460,
+      extra:{ shape, dH:90, rim:'round', egg: BRIEF.look==='organic' ? 10 : 0 } }
+  ];
+  const saved = {}; Object.keys(P).forEach(k=>{ saved[k] = P[k]; });
+  PROPS = defs.map(d=>{
+    const params = darwinScaled(d.L, d.W, d.D, d.extra);
+    Object.assign(P, params);
+    P.customPts = null; P.customProfile = null;
+    buildTub();
+    const spec = computeSpec();
+    const price = priceParts().total;
+    const img = captureRenders({ w:520, h:390, mime:'image/jpeg', q:0.82, shots:[['thumb', Math.PI/4, Math.PI/3.2]], noWatermark:true })[0][1];
+    return { name:d.name, params, img, dims:`${d.L} × ${d.W} × ${params.H} mm`, depth:d.D, cap:spec.fullVol.toFixed(0), price };
+  });
+  Object.keys(saved).forEach(k=>{ P[k] = saved[k]; });
+  syncUI(); buildTub();
+  renderProposalCards();
+  document.getElementById('wizQ').style.display = 'none';
+  document.getElementById('wizP').style.display = '';
+}
+function renderProposalCards(){
+  const g = document.getElementById('propGrid');
+  g.innerHTML = '';
+  PROPS.forEach((p, i)=>{
+    const card = document.createElement('div');
+    card.className = 'prop-card';
+    card.innerHTML = `<img src="${p.img}" alt="${p.name}">
+      <div class="pc-body">
+        <b>${t(p.name)}</b>
+        <span>${p.dims}</span>
+        <span>${t('Depth')} ${p.depth}mm · ~${p.cap} L</span>
+        <span class="pc-price">${fromStr(p.price)}</span>
+      </div>`;
+    card.addEventListener('click', ()=> applyProposal(i));
+    g.appendChild(card);
+  });
+}
+function applyProposal(i){
+  const p = PROPS[i];
+  if(!p) return;
+  Object.assign(P, p.params);
+  P.customPts = null; P.customProfile = null;
+  sanitizeBase();
+  document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim === P.rim));
+  document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain === P.drain));
+  document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.toggle('active', b.dataset.shape === P.shape));
+  syncUI(); updateRowVis(); buildTub();
+  closeWizard();
+}
 
 // ===================== 拖曳把手（簡易模式核心：直接在缸體上拉外型） =====================
 // 4 顆金色把手：長度（+x 端）／寬度（+z 側）／高度（後端缸緣）／弧度飽滿度（−z 側，僅 factory 模式）
@@ -2968,11 +3157,8 @@ if(langSel){
     applyLang();
   });
 }
-// 模式初始化：預設簡易模式；?designer=1 或上次選過設計師模式則進設計師模式
-let _modePref = 's';
-try { _modePref = localStorage.getItem('ka_studio_mode') || 's'; } catch(e){}
-if(q.get('designer') === '1') _modePref = 'd';
-setStudioMode(_modePref !== 'd');
+// ?wizard=1 → 開啟引導設計視窗（分享連結用）
+if(q.get('wizard') === '1') openWizard();
 applyLang();
 buildTub();
 animate();
