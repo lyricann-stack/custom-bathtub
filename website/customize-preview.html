@@ -1837,7 +1837,21 @@ async function sendQuote(btn){
       計算規格: { 滿水容量_L: +s.fullVol.toFixed(1), 估計重量_kg: +s.weight.toFixed(1) }
     };
     fd.append('attachment', new Blob([JSON.stringify(spec, null, 2)], {type:'application/json'}), 'design-spec.json');
-    const r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
+    // 六角度 3D 渲染圖（郵件用 1200×900 JPEG，總量約 1MB）；截圖失敗不影響送單
+    const renderFields = [];
+    try {
+      if(!extGroup) captureRenders({w:1200, h:900, mime:'image/jpeg', q:0.85}).forEach(([name, url], i)=>{
+        const fld = 'render_' + (i+1);
+        fd.append(fld, dataURLtoBlob(url), `${DESIGN_ID}_${name}.jpg`);
+        renderFields.push(fld);
+      });
+    } catch(e){ console.warn('render attach skipped:', e); }
+    let r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
+    if(!r.ok && renderFields.length && fd.delete){
+      // 附件過大/被拒 → 退回只帶規格重送一次，確保詢價一定送出
+      renderFields.forEach(f=>fd.delete(f));
+      r = await fetch('https://formsubmit.co/ajax/concierge@kreinergroups.com', { method:'POST', headers:{'Accept':'application/json'}, body: fd });
+    }
     if(!r.ok) throw new Error('HTTP ' + r.status);
     show('#eef4ee', '#9cc7a6', '#2f5d3a', t('✅ Your design is in! We\'ll reply with a firm quote and next steps within one business day.'));
   } catch(e){
@@ -1873,7 +1887,10 @@ const RENDER_SHOTS = [
   ['view-5_top-plan',        Math.PI/4,   0.06        ],
   ['view-6_interior',        Math.PI/2,   Math.PI/4.8 ]
 ];
-function captureRenders(){
+function captureRenders(opts){
+  opts = opts || {};
+  const RW = opts.w || 1600, RH = opts.h || 1200;
+  const mime = opts.mime || 'image/png', quality = opts.q;
   const saved = { theta:orbit.theta, phi:orbit.phi, radius:orbit.radius };
   const savedBg = scene.background, savedFloor = floor.visible, savedGrid = grid.visible;
   const savedHandles = handleGroup ? handleGroup.visible : null;
@@ -1881,16 +1898,16 @@ function captureRenders(){
   floor.visible = false; grid.visible = false;
   if(handleGroup) handleGroup.visible = false;
   const savedPR = renderer.getPixelRatio();
-  renderer.setPixelRatio(1);                          // 固定輸出 1600×1200，避免高 DPI 檔案過大
-  renderer.setSize(1600, 1200, false);
-  camera.aspect = 1600/1200; camera.updateProjectionMatrix();
+  renderer.setPixelRatio(1);                          // 固定輸出解析度，避免高 DPI 檔案過大
+  renderer.setSize(RW, RH, false);
+  camera.aspect = RW/RH; camera.updateProjectionMatrix();
   const fit = Math.max(P.L, P.W, (P.H + P.dH)*2.6) * 1.9;
   const out = [];
   RENDER_SHOTS.forEach(([name, th, ph])=>{
     orbit.theta = th; orbit.phi = Math.max(0.05, ph); orbit.radius = fit;
     updateCamera();
     renderer.render(scene, camera);
-    out.push([name, renderer.domElement.toDataURL('image/png')]);
+    out.push([name, renderer.domElement.toDataURL(mime, quality)]);
   });
   // 還原場景與視角
   orbit.theta = saved.theta; orbit.phi = saved.phi; orbit.radius = saved.radius;
@@ -1899,6 +1916,14 @@ function captureRenders(){
   renderer.setPixelRatio(savedPR);
   resize(); updateCamera(); renderer.render(scene, camera);
   return out;
+}
+
+// dataURL → Blob（附件用）
+function dataURLtoBlob(u){
+  const parts = u.split(','), mime = parts[0].match(/data:(.*?);/)[1];
+  const bin = atob(parts[1]), arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type: mime});
 }
 
 // ---------- CAD 製造包 ZIP（DXF＋規格 JSON＋六角度渲染圖） ----------
