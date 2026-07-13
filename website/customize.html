@@ -2230,6 +2230,8 @@ function syncUI(){
     document.getElementById(nid).value = P[key];
   });
   document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.toggle('active', b.dataset.shape===P.shape));
+  document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim===P.rim));
+  document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
   document.getElementById('undercutToggle').checked = P.undercut;
   document.querySelectorAll('.wallmode-btns button').forEach(b=>b.classList.toggle('active', b.dataset.wallmode===P.wallMode));
   const fac = P.wallMode==='factory';
