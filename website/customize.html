@@ -1907,7 +1907,7 @@ function captureRenders(opts){
     orbit.theta = th; orbit.phi = Math.max(0.05, ph); orbit.radius = fit;
     updateCamera();
     renderer.render(scene, camera);
-    out.push([name, renderer.domElement.toDataURL(mime, quality)]);
+    out.push([name, watermarkFrame(renderer.domElement, RW, RH, mime, quality)]);
   });
   // 還原場景與視角
   orbit.theta = saved.theta; orbit.phi = saved.phi; orbit.radius = saved.radius;
@@ -1916,6 +1916,31 @@ function captureRenders(opts){
   renderer.setPixelRatio(savedPR);
   resize(); updateCamera(); renderer.render(scene, camera);
   return out;
+}
+
+// 渲染圖浮水印：斜向平鋪品牌＋設計編號（半透明）＋右下角版權列
+function watermarkFrame(srcCanvas, W, H, mime, quality){
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(srcCanvas, 0, 0, W, H);
+  ctx.save();
+  ctx.translate(W/2, H/2);
+  ctx.rotate(-28*Math.PI/180);
+  ctx.globalAlpha = 0.13;
+  ctx.fillStyle = '#9a7b43';
+  ctx.font = '700 ' + Math.round(W/22) + 'px "DM Sans","Noto Sans TC",sans-serif';
+  ctx.textAlign = 'center';
+  for(let y = -H; y <= H; y += Math.round(H/3.2)){
+    ctx.fillText('KREINER ATELIER — ' + DESIGN_ID, 0, y);
+  }
+  ctx.restore();
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = '#66614f';
+  ctx.font = Math.round(W/70) + 'px "DM Sans",sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('(c) Kreiner Atelier · ' + DESIGN_ID + ' · concierge@kreinergroups.com', W - 18, H - 16);
+  return c.toDataURL(mime, quality);
 }
 
 // dataURL → Blob（附件用）
