@@ -602,6 +602,7 @@ const I18N = {
   '⬇ CAD pack (DXF + spec + renders)': ['⬇ CAD 制造包（DXF＋规格＋渲染图）', '⬇ ชุดไฟล์ CAD (DXF + สเปก + ภาพเรนเดอร์)', '⬇ CAD 製造包（DXF＋規格＋渲染圖）'],
   '🔒 CAD pack (DXF + spec + renders)': ['🔒 CAD 制造包（DXF＋规格＋渲染图）', '🔒 ชุดไฟล์ CAD (DXF + สเปก + ภาพเรนเดอร์)', '🔒 CAD 製造包（DXF＋規格＋渲染圖）'],
   'Preparing CAD pack…': ['正在打包 CAD 制造包…', 'กำลังเตรียมชุดไฟล์ CAD…', '正在打包 CAD 製造包…'],
+  'Downloaded to your Downloads folder:': ['已下载到你的下载文件夹：', 'ดาวน์โหลดไปยังโฟลเดอร์ Downloads แล้ว:', '已下載到你的下載資料夾：'],
   'Side wall arc R': ['侧壁弧度 R', 'รัศมีโค้งผนังข้าง R', '側壁弧度 R'],
   'Designer mode': ['设计师模式', 'โหมดนักออกแบบ', '設計師模式'],
   'Simple mode': ['简易模式', 'โหมดง่าย', '簡易模式'],
@@ -2081,6 +2082,7 @@ async function exportCadPackZip(btn){
     a.download = `${DESIGN_ID}_CAD-pack_${P.L}x${P.W}.zip`;
     a.click();
     URL.revokeObjectURL(a.href);
+    showDlToast(a.download);
   } catch(e){
     console.error(e);
     alert(t('❌ Something went wrong — please try again, or email concierge@kreinergroups.com directly.'));
@@ -2162,6 +2164,7 @@ async function exportConceptPDF(btn){
     doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(150,145,130);
     doc.text('(c) Kreiner Atelier - ' + DESIGN_ID + ' - concierge@kreinergroups.com', 105, 292, {align:'center'});
     doc.save(DESIGN_ID + '-concept.pdf');
+    showDlToast(DESIGN_ID + '-concept.pdf');
   } catch(e){
     console.error(e);
     alert(t('❌ Something went wrong — please try again, or email concierge@kreinergroups.com directly.'));
@@ -2181,6 +2184,24 @@ function download(content, filename, mime){
   a.download = filename;
   a.click();
   URL.revokeObjectURL(a.href);
+  showDlToast(filename);
+}
+
+// 下載成功提示（Neville 2026-07-20 反饋：檔案默默進下載夾＝以為「什麼都沒發生」）
+let _dlToastT = null;
+function showDlToast(filename){
+  let el = document.getElementById('dlToast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'dlToast';
+    el.style.cssText = 'position:absolute;top:16px;left:50%;transform:translateX(-50%);background:rgba(27,26,22,.93);color:#f4f1ea;font-size:13.5px;padding:11px 20px;border-radius:999px;z-index:60;max-width:86%;box-shadow:0 6px 18px rgba(0,0,0,.28);line-height:1.4;text-align:center';
+    const viewer = document.getElementById('viewer');
+    if(viewer) viewer.appendChild(el); else document.body.appendChild(el);
+  }
+  el.innerHTML = '<b style="color:#d4b36a">✓ </b>' + t('Downloaded to your Downloads folder:') + ' <b>' + filename + '</b>';
+  el.style.display = 'block';
+  clearTimeout(_dlToastT);
+  _dlToastT = setTimeout(()=>{ el.style.display = 'none'; }, 9000);
 }
 
 // ===================== CAD 檔案匯入（DXF / STL / JSON） =====================
