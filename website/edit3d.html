@@ -3253,6 +3253,24 @@ if(EDIT_MODE){ (function(){
   document.querySelectorAll('.btns .btn').forEach(b=>{
     if(b.textContent.includes('Concept PDF')) b.style.display = 'none';
   });
+  // 缸緣造型（平面/圓弧/斜角）從隱藏的 ① 群組搬出來，成為獨立一區（沿用原 setRim 邏輯與按鈕）
+  (function(){
+    const rimBtns = panel.querySelector('.rim-btns');
+    if(!rimBtns) return;
+    const g = document.createElement('div');
+    g.className = 'group';
+    g.id = 'rimProfileGroup';
+    const h = document.createElement('h3');
+    h.textContent = '◐ Rim Profile';
+    const tip = document.createElement('div');
+    tip.className = 'tip';
+    tip.textContent = 'Flat = square edge · Rounded = soft bullnose curve · Beveled = chamfered edge. Applies around the whole rim.';
+    g.appendChild(h); g.appendChild(rimBtns); g.appendChild(tip);
+    const specGroup = [...panel.querySelectorAll(':scope > .group')].find(x=>{
+      const hh = x.querySelector('h3'); return hh && hh.textContent.includes('⑤');
+    });
+    panel.insertBefore(g, specGroup || null);
+  })();
   panel.insertAdjacentHTML('afterbegin', `
   <div class="group" id="editIntro">
     <h3>⬆ Upload → 3D</h3>
