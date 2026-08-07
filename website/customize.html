@@ -470,6 +470,7 @@ const P = {
   ovf:true, ovfDrop:75,             // 溢水口（工廠標準件）＋距缸緣距離 mm
   skirt:false, skirtH:180, waistK:58, skirtR:400,   // 裙擺式底座（Oneida 式，僅外殼、legacy 模式）：裙擺高 mm / 收腰寬 % / 裙擺弧 R
   customPts:null,                   // 手繪俯視輪廓（normalized 至 ±0.5 bbox，96 點）
+  customPtsInner:null,              // 手繪內缸口輪廓（與外輪廓同座標系：除以 L/W 正規化；null＝均勻邊寬）
   customProfile:null                // 手繪側牆剖面 k(v)，25 個取樣值，k[24]=1
 };
 
@@ -822,6 +823,13 @@ function outlinePts(shape, L, W, r, eggPct, N){
   });
 }
 
+// 內缸口輪廓（中央函式）：有獨立手繪內輪廓（customPtsInner，與外輪廓同座標系）就用它 →
+// 邊寬可繞周變化；否則照舊由外形等比縮出（均勻邊寬），完全向下相容。
+function innerOutlinePts(inn, N){
+  if(P.customPtsInner) return P.customPtsInner.map(p=>[p[0]*P.L, p[1]*P.W]);
+  return outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N||N_SEG);
+}
+
 // 缸緣高度：沿長度方向變化（後端 -x 較高）
 // Rise curvature P.arc：0%=直線；越高 S 曲線越彎（冪次混合函數，p=1 時退化為線性）
 function rimH(x, L, H, dH){
@@ -1058,6 +1066,14 @@ const N_SEG = 96, M_RING = 24;
 
 function innerDims(){
   const e = isFactory() ? P.lip : P.t;   // factory 模式：內缸口＝外缸口 − 2×邊寬
+  if(P.customPtsInner){                  // 獨立內輪廓：尺寸＝其 bbox（邊寬可不均勻）
+    let mnx=1e9, mxx=-1e9, mny=1e9, mxy=-1e9;
+    P.customPtsInner.forEach(p=>{
+      const x=p[0]*P.L, y=p[1]*P.W;
+      if(x<mnx)mnx=x; if(x>mxx)mxx=x; if(y<mny)mny=y; if(y>mxy)mxy=y;
+    });
+    return { L:mxx-mnx, W:mxy-mny, D:P.H-P.b, r:Math.max(P.r-e,10) };
+  }
   return { L:P.L-2*e, W:P.W-2*e, D:P.H-P.b, r:Math.max(P.r-e,10) };
 }
 
@@ -1172,7 +1188,7 @@ function buildTub(){
   if(!valid){ scene.add(tubGroup); return; }
 
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG);
-  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N_SEG);
+  const innerPts = innerOutlinePts(inn, N_SEG);
   const [obx, oby] = shellKxy(0, false), [ibx, iby] = shellKxy(0, true);
   const mat = new THREE.MeshStandardMaterial({ color:P.color, roughness:P.material==='solid'?0.6:0.22, metalness:0.05, side:THREE.DoubleSide });
 
@@ -1251,7 +1267,7 @@ function computeSpec(){
   let taperF = 0;
   for(let i=0;i<=32;i++){ const ks = shellKxy(i/32, true); taperF += ks[0]*ks[1]; }   // 內腔容積：不含裙擺
   taperF /= 33;
-  const Ai = shoelace(outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, N_SEG));
+  const Ai = shoelace(innerOutlinePts(inn, N_SEG));
   const Ao = shoelace(outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG));
   const fullVol = Ai*inn.D*taperF/1e6;
   const useVol = fullVol*0.8;                   // 與水位模擬一致：八成滿
@@ -1522,7 +1538,7 @@ function floorCurveQ(q1, q2, axis){
 function drawSectionView(cx, by, axis, tag){
   const inn=innerDims(), d=drainXY();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
-  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
+  const innerPts = innerOutlinePts(inn, 96);
   const so = sectionSpan(outerPts, axis), si = sectionSpan(innerPts, axis);
   const kbO2 = shellKxy(0, false), kbI2 = shellKxy(0, true);
   const sO = axis==='L' ? kbO2[0] : kbO2[1];   // 外殼底部縮放（該軸）
@@ -1642,7 +1658,7 @@ function drawSectionView(cx, by, axis, tag){
 function drawPlanView(cx, cy){
   const inn=innerDims(), d=drainXY();
   const outerPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, 96);
-  const innerPts = outlinePts(P.shape, inn.L, inn.W, inn.r, P.egg, 96);
+  const innerPts = innerOutlinePts(inn, 96);
   const kbO = shellKxy(0, false), kbI = shellKxy(0, true);
   E.poly(outerPts, cx, cy, 'OUTLINE');
   E.poly(innerPts, cx, cy, 'OUTLINE');
@@ -1844,6 +1860,7 @@ function exportJSON(noDownload){
       造型: {rect:'Rounded Rect', stadium:'Rounded Ends', ellipse:'Oval', custom:'Custom sketch'}[P.shape],
       shape_code: P.shape,
       手繪俯視輪廓_normalized: P.customPts ? P.customPts.map(p=>[+p[0].toFixed(4), +p[1].toFixed(4)]) : null,
+      手繪內缸口輪廓_normalized: P.customPtsInner ? P.customPtsInner.map(p=>[+p[0].toFixed(4), +p[1].toFixed(4)]) : null,
       手繪側牆剖面_k: P.customProfile ? P.customProfile.map(k=>+k.toFixed(4)) : null,
       外部長度_mm: P.L, 外部寬度_mm: P.W,
       缸緣高度_前端_mm: P.H, 缸緣高度_後端_mm: P.H+P.dH, 靠背增高_mm: P.dH,
@@ -1932,7 +1949,7 @@ async function sendQuote(btn){
         內缸弧R_長邊剖面_mm: P.riL, 內缸弧R_短邊剖面_mm: P.riW, 外缸弧R_長邊剖面_mm: P.roL, 外缸弧R_短邊剖面_mm: P.roW,
         溢水口: P.ovf, 溢水口距缸緣_mm: P.ovfDrop,
         裙擺式底座: P.skirt, 裙擺高度_mm: P.skirtH, 收腰寬度_pct: P.waistK, 裙擺弧R_mm: P.skirtR,
-        手繪俯視輪廓_normalized: P.customPts, 手繪側牆剖面_k: P.customProfile },
+        手繪俯視輪廓_normalized: P.customPts, 手繪內缸口輪廓_normalized: P.customPtsInner, 手繪側牆剖面_k: P.customProfile },
       計算規格: { 滿水容量_L: +s.fullVol.toFixed(1), 估計重量_kg: +s.weight.toFixed(1) }
     };
     fd.append('attachment', new Blob([JSON.stringify(spec, null, 2)], {type:'application/json'}), 'design-spec.json');
@@ -2271,6 +2288,7 @@ function importSpecJSON(text){
     skirtH: d.裙擺高度_mm, waistK: d.收腰寬度_pct, skirtR: d.裙擺弧R_mm
   });
   if(d.手繪俯視輪廓_normalized) P.customPts = d.手繪俯視輪廓_normalized;
+  P.customPtsInner = d.手繪內缸口輪廓_normalized || null;
   if(d.手繪側牆剖面_k) P.customProfile = d.手繪側牆剖面_k;
   if(d.material_code === 'solid' || d.material_code === 'acrylic'){
     P.material = d.material_code;
@@ -2381,7 +2399,7 @@ function importDXF(text){
   const bw = maxX-minX, bh = maxY-minY, cx=(minX+maxX)/2, cy=(minY+maxY)/2;
   let pts = resample(best, N_SEG).map(p=>[(p[0]-cx)/bw, (p[1]-cy)/bh]);
   if(shoelaceSigned(pts) < 0) pts.reverse();
-  P.customPts = pts;
+  P.customPts = pts; P.customPtsInner = null;
   P.shape = 'custom';
   P.L = Math.round(Math.max(bw, bh));
   P.W = Math.round(Math.min(bw, bh));
@@ -2564,7 +2582,7 @@ const CLASSICS = {
 };
 function applyClassic(k){
   Object.assign(P, CLASSICS[k]);
-  P.customPts = null; P.customProfile = null;
+  P.customPts = null; P.customPtsInner = null; P.customProfile = null;
   document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim===P.rim));
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
   syncUI();
@@ -2820,7 +2838,7 @@ function confirmSketch(){
   const raw = uploadedContour || padTop.pts;
   const norm = processTopSketch(raw);
   if(!norm){ skErr(t('⚠ Please draw (or upload) a closed rim outline first — the line needs to be long enough.')); return; }
-  P.customPts = norm;
+  P.customPts = norm; P.customPtsInner = null;
   P.customProfile = processSideSketch(padSide.pts);   // 沒畫 → null → 用參數剖面
   P.shape = 'custom';
   document.querySelectorAll('.shape-btns button').forEach(b=>b.classList.toggle('active', b.dataset.shape==='custom'));
@@ -2924,7 +2942,7 @@ function generateProposals(){
   PROPS = defs.map(d=>{
     const params = darwinScaled(d.L, d.W, d.D, d.extra);
     Object.assign(P, params);
-    P.customPts = null; P.customProfile = null;
+    P.customPts = null; P.customPtsInner = null; P.customProfile = null;
     buildTub();
     const spec = computeSpec();
     const price = priceParts().total;
@@ -2958,7 +2976,7 @@ function applyProposal(i){
   const p = PROPS[i];
   if(!p) return;
   Object.assign(P, p.params);
-  P.customPts = null; P.customProfile = null;
+  P.customPts = null; P.customPtsInner = null; P.customProfile = null;
   sanitizeBase();
   document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim === P.rim));
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain === P.drain));
@@ -3201,6 +3219,399 @@ if(langSel){
 // ?wizard=1 → 開啟引導設計視窗（分享連結用）
 if(q.get('wizard') === '1') openWizard();
 applyLang();
+// ===================== 2D→3D 支線：上傳專用＋雙邊節點編輯（EDIT_MODE） =====================
+// 流程：上傳規格 JSON / DXF / STL → 3D 渲染 → 點邊選取（外缸口＝金色、內盆口＝銅色）
+//       → 點選取的邊加節點 → 拖節點塑形。內外輪廓各自獨立 → 邊寬可繞周變化（兩端寬、腰部窄）。
+const EDIT_MODE = true;
+if(EDIT_MODE){ (function(){
+  window._noHandles = true;   // 編輯模式：關閉尺寸箭頭把手，場景只留邊與節點
+
+  // ---- 面板精簡：只留規格表，其餘隱藏；注入上傳說明＋節點參數區 ----
+  const panel = document.getElementById('panel');
+  panel.querySelectorAll(':scope > .group, :scope > button.preset').forEach(g=>{
+    const h = g.querySelector ? g.querySelector('h3') : null;
+    if(!h || !h.textContent.includes('⑦')) g.style.display = 'none';
+  });
+  document.querySelectorAll('.btns .btn').forEach(b=>{
+    if(b.textContent.includes('Concept PDF')) b.style.display = 'none';
+  });
+  panel.insertAdjacentHTML('afterbegin', `
+  <div class="group" id="editIntro">
+    <h3>⬆ Upload → 3D</h3>
+    <div class="tip">Upload a design spec JSON / DXF / STL with the button above — the 3D model renders instantly. Then reshape it directly on the model.</div>
+  </div>
+  <div class="group" id="edgeEditGroup">
+    <h3>✎ Edge Editing</h3>
+    <div class="tip" id="edgeTip">① Hover the model — the <b style="color:#9a7b43">outer rim</b> glows gold, the <b style="color:#a3652f">inner bowl rim</b> glows copper. Click one to <b>select that edge</b>.<br>② Click the selected edge again to <b>add a node</b>.<br>③ <b>Drag a node</b> to reshape that edge — pull the outer edge out (inner stays) and the rim gets wider there.</div>
+    <div id="rimGapWarn" class="tip" style="display:none;color:#b3541e">⚠ Inner bowl rim is outside / too close to the outer rim (min edge = wall thickness). Pull it back in.</div>
+    <div id="nodePanel" style="display:none">
+      <div class="tip" id="nodeEdgeLabel" style="font-weight:600"></div>
+      <div class="row"><label>Node X (length)</label><input type="range" id="rNodeX" min="-1200" max="1200" step="1" value="0"><div class="val"><input id="nNodeX" value="0"><span>mm</span></div></div>
+      <div class="row"><label>Node Y (width)</label><input type="range" id="rNodeY" min="-700" max="700" step="1" value="0"><div class="val"><input id="nNodeY" value="0"><span>mm</span></div></div>
+      <div class="row"><label>Influence range</label><input type="range" id="rNodeS" min="2" max="24" step="1" value="6"><div class="val"><input id="nNodeS" value="6"><span>pt</span></div></div>
+      <div class="drain-btns" style="margin-top:8px">
+        <button id="delNodeBtn">🗑 Delete node</button>
+        <button id="resetOutlineBtn">↺ Reset outlines</button>
+      </div>
+      <div class="tip">X/Y move the selected node — neighbouring points follow with a smooth falloff. Influence = how many neighbours follow (in outline points).</div>
+    </div>
+  </div>`);
+
+  // ---- 狀態 ----
+  // 邊註冊表：外缸口（金）＋內盆口（銅）。內外輪廓同座標系（正規化除以 P.L/P.W）。
+  const EDGE_DEF = {
+    outer: { color: 0xc9a227, label: 'Outer rim edge',
+             getPts: () => P.customPts,
+             setPts: a => { P.customPts = a; },
+             ensure: () => {
+               if(P.shape !== 'custom' || !P.customPts){
+                 P.customPts = outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG).map(p=>[p[0]/P.L, p[1]/P.W]);
+                 P.shape = 'custom'; P.egg = 0;
+               }
+             } },
+    inner: { color: 0xb0703c, label: 'Inner bowl edge',
+             getPts: () => P.customPtsInner,
+             setPts: a => { P.customPtsInner = a; },
+             ensure: () => {
+               if(!P.customPtsInner)
+                 P.customPtsInner = innerOutlinePts(innerDims(), N_SEG).map(p=>[p[0]/P.L, p[1]/P.W]);
+             } }
+  };
+  let edgeGrp = null, tubes = {}, hiTubes = {};
+  let selectedEdge = null, hoverEdge = null;
+  let nodeGrp = null, nodes = [], selNode = null, dragN = null, outlineSnap = null;
+
+  // ---- 幾何輔助 ----
+  function edgeMM(edge){
+    return edge === 'outer'
+      ? outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG)
+      : innerOutlinePts(innerDims(), N_SEG);
+  }
+  function edgePts3(edge){
+    return edgeMM(edge).map(p=>new THREE.Vector3(p[0], rimH(p[0], P.L, P.H, P.dH) + 2, p[1]));
+  }
+  function nodePos3(nd){
+    const p = edgeMM(nd.edge)[((nd.i % N_SEG) + N_SEG) % N_SEG];
+    return new THREE.Vector3(p[0], rimH(p[0], P.L, P.H, P.dH) + 2, p[1]);
+  }
+  function takeSnap(){
+    if(!outlineSnap) outlineSnap = {
+      L: P.L, W: P.W, shape: P.shape, egg: P.egg,
+      pts: P.customPts ? P.customPts.map(p=>p.slice()) : null,
+      ptsInner: P.customPtsInner ? P.customPtsInner.map(p=>p.slice()) : null
+    };
+  }
+  function disposeGrp(g){
+    if(!g) return;
+    scene.remove(g);
+    g.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); });
+  }
+
+  // ---- 邊與節點的 3D 標示 ----
+  function buildEdges(light){
+    disposeGrp(edgeGrp); edgeGrp = null; tubes = {}; hiTubes = {};
+    if((typeof extGroup !== 'undefined' && extGroup) || !tubGroup || !tubGroup.children.length){
+      disposeGrp(nodeGrp); nodeGrp = null;
+      return;
+    }
+    edgeGrp = new THREE.Group();
+    Object.keys(EDGE_DEF).forEach(key=>{
+      const curve = new THREE.CatmullRomCurve3(edgePts3(key), true);
+      const hi = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 192, 5, 6, true),
+        new THREE.MeshBasicMaterial({color:EDGE_DEF[key].color, transparent:true,
+          opacity:selectedEdge===key ? 0.95 : 0, depthTest:false})
+      );
+      hi.renderOrder = 5;
+      hiTubes[key] = hi;
+      edgeGrp.add(hi);
+      if(!light){
+        const pick = new THREE.Mesh(
+          new THREE.TubeGeometry(curve, 96, 34, 6, true),
+          new THREE.MeshBasicMaterial({transparent:true, opacity:0, depthWrite:false})
+        );
+        pick.userData.edge = key;
+        tubes[key] = pick;
+        edgeGrp.add(pick);
+      }
+    });
+    scene.add(edgeGrp);
+    buildNodes();
+    checkRimGap();
+  }
+  function buildNodes(){
+    disposeGrp(nodeGrp); nodeGrp = new THREE.Group();
+    nodes.forEach(nd=>{
+      const sel = nd === selNode;
+      const base = EDGE_DEF[nd.edge].color;
+      const m = new THREE.Mesh(
+        new THREE.SphereGeometry(16, 12, 10),
+        new THREE.MeshStandardMaterial({color:base, roughness:0.35, metalness:0.3,
+          emissive: sel ? 0x666048 : 0x1a1408, depthTest:false})
+      );
+      m.renderOrder = 6;
+      m.scale.setScalar(sel ? 1.3 : 1);
+      m.position.copy(nodePos3(nd));
+      m.userData.node = nd;
+      const hit = new THREE.Mesh(
+        new THREE.SphereGeometry(42, 8, 6),
+        new THREE.MeshBasicMaterial({transparent:true, opacity:0, depthWrite:false})
+      );
+      hit.position.copy(m.position);
+      hit.userData.node = nd;
+      nodeGrp.add(m, hit);
+    });
+    scene.add(nodeGrp);
+  }
+
+  // ---- 內外最小間隙檢查（邊寬 ≥ 壁厚），越界亮警告 ----
+  function checkRimGap(){
+    const warn = document.getElementById('rimGapWarn');
+    if(!P.customPtsInner){ warn.style.display = 'none'; return; }
+    const outer = edgeMM('outer'), inner = edgeMM('inner');
+    const minGap = Math.max(5, P.t);
+    let bad = false;
+    for(let i=0;i<inner.length && !bad;i++){
+      const q = inner[i];
+      // 最近外輪廓點距離
+      let dmin = Infinity;
+      for(let j=0;j<outer.length;j++){
+        const d = Math.hypot(outer[j][0]-q[0], outer[j][1]-q[1]);
+        if(d < dmin) dmin = d;
+      }
+      // 點在外輪廓內？（射線法）
+      let insideCnt = false;
+      for(let j=0, k=outer.length-1; j<outer.length; k=j++){
+        const a=outer[j], b=outer[k];
+        if((a[1]>q[1]) !== (b[1]>q[1]) && q[0] < (b[0]-a[0])*(q[1]-a[1])/(b[1]-a[1])+a[0])
+          insideCnt = !insideCnt;
+      }
+      if(!insideCnt || dmin < minGap) bad = true;
+    }
+    warn.style.display = bad ? 'block' : 'none';
+  }
+
+  // ---- 揀選 ----
+  function pickAt(e, objs){
+    if(!objs || !objs.length) return null;
+    const r = canvas.getBoundingClientRect();
+    _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    _ray.setFromCamera(_mv, camera);
+    return _ray.intersectObjects(objs, false)[0] || null;
+  }
+
+  // ---- 節點變形核心：高斯衰減局部位移（作用於節點所屬邊的輪廓） ----
+  function applyNodeTarget(nd, snap, tx, ty){
+    const def = EDGE_DEF[nd.edge];
+    const pts = def.getPts();
+    if(!pts) return;
+    const i = nd.i, s = Math.max(1, nd.sigma);
+    const sx = snap[i][0]*P.L, sy = snap[i][1]*P.W;
+    const dx = tx - sx, dy = ty - sy;
+    for(let j=0;j<N_SEG;j++){
+      let d = Math.abs(j - i); d = Math.min(d, N_SEG - d);
+      const w = Math.exp(-(d*d)/(2*s*s));
+      if(w < 0.01) continue;
+      pts[j][0] = snap[j][0] + (dx*w)/P.L;
+      pts[j][1] = snap[j][1] + (dy*w)/P.W;
+    }
+    requestBuild();
+    syncNodePanel();
+  }
+
+  // ---- 外輪廓拖完重新正規化：bbox → 更新 L/W、置中；內輪廓（同座標系）同步變換 ----
+  function renormalize(){
+    if(P.shape !== 'custom' || !P.customPts) return;
+    const oldL = P.L, oldW = P.W;
+    let minx=1e9, maxx=-1e9, miny=1e9, maxy=-1e9;
+    P.customPts.forEach(p=>{
+      const x=p[0]*oldL, y=p[1]*oldW;
+      if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y;
+    });
+    const newL = Math.max(400, Math.round(maxx-minx)), newW = Math.max(300, Math.round(maxy-miny));
+    const cx=(minx+maxx)/2, cy=(miny+maxy)/2;
+    P.customPts = P.customPts.map(p=>[ (p[0]*oldL-cx)/newL, (p[1]*oldW-cy)/newW ]);
+    if(P.customPtsInner)
+      P.customPtsInner = P.customPtsInner.map(p=>[ (p[0]*oldL-cx)/newL, (p[1]*oldW-cy)/newW ]);
+    P.L = newL; P.W = newW;
+    P.obL = Math.min(P.obL, P.L-40); P.obW = Math.min(P.obW, P.W-40);
+    P.ibL = Math.min(P.ibL, P.obL-10); P.ibW = Math.min(P.ibW, P.obW-10);
+    if(typeof sanitizeBase === 'function') sanitizeBase();
+  }
+
+  // ---- 節點面板 ----
+  const $ = id => document.getElementById(id);
+  function showNodePanel(){
+    $('nodePanel').style.display = selNode ? 'block' : 'none';
+    if(selNode) $('nodeEdgeLabel').textContent = '● ' + EDGE_DEF[selNode.edge].label +
+      ' — node #' + selNode.i;
+    $('edgeTip').innerHTML = selectedEdge
+      ? (selNode
+        ? 'Drag the node on the model, or use the sliders below. Click empty space to deselect the node.'
+        : ('<b>' + EDGE_DEF[selectedEdge].label + '</b> selected — click anywhere on it to <b>add a node</b>. Click the other edge to switch.'))
+      : '① Hover the model — the <b style="color:#9a7b43">outer rim</b> glows gold, the <b style="color:#a3652f">inner bowl rim</b> glows copper. Click one to <b>select that edge</b>.<br>② Click the selected edge again to <b>add a node</b>.<br>③ <b>Drag a node</b> to reshape that edge.';
+    syncNodePanel();
+  }
+  let _syncing = false;
+  function syncNodePanel(){
+    if(!selNode || _syncing) return;
+    _syncing = true;
+    const o = edgeMM(selNode.edge)[selNode.i];
+    const lim = v => Math.round(v);
+    $('rNodeX').min = -lim(P.L*0.75); $('rNodeX').max = lim(P.L*0.75);
+    $('rNodeY').min = -lim(P.W*0.75); $('rNodeY').max = lim(P.W*0.75);
+    $('rNodeX').value = $('nNodeX').value = Math.round(o[0]);
+    $('rNodeY').value = $('nNodeY').value = Math.round(o[1]);
+    $('rNodeS').value = $('nNodeS').value = selNode.sigma;
+    _syncing = false;
+  }
+  function panelMove(axis, val){
+    if(!selNode || _syncing) return;
+    EDGE_DEF[selNode.edge].ensure();
+    const pts = EDGE_DEF[selNode.edge].getPts();
+    const snap = pts.map(p=>p.slice());
+    const o = edgeMM(selNode.edge)[selNode.i];
+    applyNodeTarget(selNode, snap, axis==='x' ? val : o[0], axis==='y' ? val : o[1]);
+  }
+  ['input','change'].forEach(ev=>{
+    $('rNodeX').addEventListener(ev, e=>panelMove('x', +e.target.value));
+    $('rNodeY').addEventListener(ev, e=>panelMove('y', +e.target.value));
+  });
+  $('nNodeX').addEventListener('change', e=>panelMove('x', +e.target.value || 0));
+  $('nNodeY').addEventListener('change', e=>panelMove('y', +e.target.value || 0));
+  ['rNodeX','rNodeY'].forEach(id=>$(id).addEventListener('change', ()=>{
+    if(selNode && selNode.edge === 'outer') renormalize();
+    requestBuild();
+    setTimeout(syncNodePanel, 120);
+  }));
+  $('rNodeS').addEventListener('input', e=>{ if(selNode){ selNode.sigma = +e.target.value; $('nNodeS').value = e.target.value; } });
+  $('nNodeS').addEventListener('change', e=>{ if(selNode){ selNode.sigma = Math.max(2, Math.min(24, +e.target.value || 6)); syncNodePanel(); } });
+  $('delNodeBtn').addEventListener('click', ()=>{
+    if(!selNode) return;
+    nodes = nodes.filter(n=>n !== selNode);
+    selNode = null;
+    buildNodes(); showNodePanel();
+  });
+  $('resetOutlineBtn').addEventListener('click', ()=>{
+    if(!outlineSnap) return;
+    P.L = outlineSnap.L; P.W = outlineSnap.W;
+    P.shape = outlineSnap.shape; P.egg = outlineSnap.egg;
+    P.customPts = outlineSnap.pts ? outlineSnap.pts.map(p=>p.slice()) : null;
+    P.customPtsInner = outlineSnap.ptsInner ? outlineSnap.ptsInner.map(p=>p.slice()) : null;
+    nodes = []; selNode = null;
+    requestBuild(); showNodePanel();
+  });
+
+  // ---- 滑鼠事件（window 捕獲階段，搶在 orbit 之前） ----
+  function selectNode(nd){ selNode = nd; selectedEdge = nd.edge; buildNodes(); showNodePanel(); }
+  function addNodeAt(edge, pt){
+    takeSnap();
+    EDGE_DEF[edge].ensure();
+    const o = edgeMM(edge);
+    let best = 0, bd = Infinity;
+    o.forEach((p,i)=>{
+      const d = (p[0]-pt.x)*(p[0]-pt.x) + (p[1]-pt.z)*(p[1]-pt.z);
+      if(d < bd){ bd = d; best = i; }
+    });
+    let nd = nodes.find(n=>n.edge === edge && n.i === best);
+    if(!nd){ nd = { edge, i:best, sigma:6 }; nodes.push(nd); }
+    selectNode(nd);
+  }
+  window.addEventListener('pointermove', e=>{
+    if(dragN){
+      const r = canvas.getBoundingClientRect();
+      _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+      _ray.setFromCamera(_mv, camera);
+      if(_ray.ray.intersectPlane(_dragPlane, _hitPt))
+        applyNodeTarget(dragN.nd, dragN.snap, _hitPt.x, _hitPt.z);
+      return;
+    }
+    if(!edgeGrp || dragging || dragH || e.target !== canvas) return;
+    let cur = '';
+    hoverEdge = null;
+    if(nodeGrp && pickAt(e, nodeGrp.children)) cur = 'grab';
+    else {
+      const hit = pickAt(e, Object.values(tubes));
+      if(hit){ cur = 'pointer'; hoverEdge = hit.object.userData.edge; }
+    }
+    Object.keys(hiTubes).forEach(k=>{
+      hiTubes[k].material.opacity = selectedEdge===k ? 0.95 : (hoverEdge===k ? 0.5 : 0);
+    });
+    canvas.style.cursor = cur;
+  });
+  window.addEventListener('pointerdown', e=>{
+    if(e.target !== canvas || !edgeGrp) return;
+    const nh = nodeGrp && pickAt(e, nodeGrp.children);
+    if(nh){
+      const nd = nh.object.userData.node;
+      takeSnap();
+      EDGE_DEF[nd.edge].ensure();
+      selectNode(nd);
+      _dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0), nodePos3(nd));
+      dragN = { nd, snap: EDGE_DEF[nd.edge].getPts().map(p=>p.slice()) };
+      e.stopPropagation(); e.preventDefault();
+      return;
+    }
+    const eh = pickAt(e, Object.values(tubes));
+    if(eh){
+      const key = eh.object.userData.edge;
+      if(selectedEdge !== key){
+        selectedEdge = key;
+        Object.keys(hiTubes).forEach(k=>{ hiTubes[k].material.opacity = k===key ? 0.95 : 0; });
+        showNodePanel();
+      } else addNodeAt(key, eh.point);
+      e.stopPropagation(); e.preventDefault();
+      return;
+    }
+    if(selNode){ selNode = null; buildNodes(); showNodePanel(); }
+  }, true);
+  window.addEventListener('pointerup', ()=>{
+    if(!dragN) return;
+    const wasOuter = dragN.nd.edge === 'outer';
+    dragN = null;
+    if(wasOuter) renormalize();
+    requestBuild();
+    setTimeout(syncNodePanel, 120);   // 重新正規化後回填面板數值
+  });
+
+  // ---- 掛勾：buildTub 之後重建邊/節點；渲染截圖時隱藏編輯標示 ----
+  const _origBuildTub = buildTub;
+  buildTub = function(){
+    _origBuildTub();
+    buildEdges(!!dragN);   // 拖曳中省略揀選管（省效能），拖完全量重建
+  };
+  if(typeof captureRenders === 'function'){
+    const _cr = captureRenders;
+    captureRenders = async function(...a){
+      const ev = edgeGrp ? edgeGrp.visible : null, nv = nodeGrp ? nodeGrp.visible : null;
+      if(edgeGrp) edgeGrp.visible = false;
+      if(nodeGrp) nodeGrp.visible = false;
+      try { return await _cr.apply(this, a); }
+      finally {
+        if(edgeGrp && ev !== null) edgeGrp.visible = ev;
+        if(nodeGrp && nv !== null) nodeGrp.visible = nv;
+      }
+    };
+  }
+  // ?spec=<url>：載入指定規格檔（測試連結用，例 ?spec=demo_peanut_variable_rim_spec.json）
+  const _specUrl = new URLSearchParams(location.search).get('spec');
+  if(_specUrl && /^[\w./-]+\.json$/.test(_specUrl))
+    setTimeout(()=>{ fetch(_specUrl).then(r=>r.text()).then(t=>importSpecJSON(t)).catch(()=>{}); }, 300);
+
+  // 匯入新檔＝重置編輯狀態
+  ['importSpecJSON','importDXF','importSTL'].forEach(fn=>{
+    if(typeof window[fn] === 'function'){
+      const _f = window[fn];
+      window[fn] = function(...a){
+        nodes = []; selNode = null; outlineSnap = null; selectedEdge = null;
+        const r = _f.apply(this, a);
+        showNodePanel();
+        return r;
+      };
+    }
+  });
+})(); }
+
 buildTub();
 animate();
 </script>
