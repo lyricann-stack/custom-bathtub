@@ -3247,7 +3247,8 @@ if(EDIT_MODE){ (function(){
   const panel = document.getElementById('panel');
   panel.querySelectorAll(':scope > .group, :scope > button.preset').forEach(g=>{
     const h = g.querySelector ? g.querySelector('h3') : null;
-    if(!h || !h.textContent.includes('⑦')) g.style.display = 'none';
+    const keep = h && (h.textContent.includes('⑦') || h.textContent.includes('⑤'));   // 規格表＋材質顏色（白色難看清細節，留色票）
+    if(!keep) g.style.display = 'none';
   });
   document.querySelectorAll('.btns .btn').forEach(b=>{
     if(b.textContent.includes('Concept PDF')) b.style.display = 'none';
