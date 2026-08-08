@@ -3880,16 +3880,77 @@ if(EDIT_MODE){ (function(){
       document.head.appendChild(s);
     });
   }
-  const traceFail = ()=> alert('⚠ Could not detect a clear outline in this file.\nBest input: a clean top-view drawing (dark lines on light background), one shape per image.\nPhotos with soft shadows often fail — send those to the concierge instead.');
+  const traceFail = ()=> alert('⚠ Could not detect a clear outline in this file.\nBest input: a TOP-VIEW image with clear contrast (light tub on dark floor, or dark lines on light background), one tub per image.\nAngled/perspective photos and soft-shadow shots are better handled by the concierge.');
+  // 前處理：暗色背景（白缸配深地板）自動反相 → 符合描圖引擎「深形淺底」假設
+  function normalizeForTrace(src){
+    const w = src.naturalWidth || src.width, h = src.naturalHeight || src.height;
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(src, 0, 0, w, h);
+    const im = ctx.getImageData(0, 0, w, h), d = im.data;
+    // 取邊框一圈的平均亮度（步進取樣）
+    let sum=0, n=0;
+    const lum = i => 0.299*d[i*4] + 0.587*d[i*4+1] + 0.114*d[i*4+2];
+    const step = Math.max(1, Math.floor(w/200));
+    for(let x=0;x<w;x+=step){ sum+=lum(x)+lum((h-1)*w+x); n+=2; }
+    for(let y=0;y<h;y+=step){ sum+=lum(y*w)+lum(y*w+w-1); n+=2; }
+    if(sum/n < 112){                       // 暗底 → 反相
+      for(let i=0;i<d.length;i+=4){ d[i]=255-d[i]; d[i+1]=255-d[i+1]; d[i+2]=255-d[i+2]; }
+      ctx.putImageData(im, 0, 0);
+    }
+    return cv;
+  }
   function importTracedImage(src){
     let raw = null;
-    try { raw = traceImage(src); } catch(err){ console.error(err); }
+    try { raw = traceImage(normalizeForTrace(src)); } catch(err){ console.error(err); }
     if(!raw){ traceFail(); return; }
     let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
     raw.forEach(p=>{ if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; });
     if((mxy-mny) > (mxx-mnx)) raw = raw.map(p=>[p[1], -p[0]]);
-    const norm = processTopSketch(raw);
+    let norm = processTopSketch(raw);
     if(!norm){ traceFail(); return; }
+    // 水龍頭/陰影遮擋修補：橡皮筋外拉——只撫平「尖銳窄內凹」（遮擋切痕），寬大的設計凹弧（花生腰等）曲率平緩不受影響
+    norm = (function bridgeNotches(pts){
+      const n = pts.length, out = pts.map(p=>p.slice());
+      const TOL = 0.0035;
+      for(let it=0; it<3; it++){     // 僅去像素雜訊——迭代多了會擴散、把寬大設計凹弧（花生腰）也吃掉；主修補靠第二道
+
+        let moved = false;
+        for(let i=0;i<n;i++){
+          const a = out[(i-1+n)%n], b = out[(i+1)%n], p = out[i];
+          const mx = (a[0]+b[0])/2, my = (a[1]+b[1])/2;
+          const rr = Math.hypot(p[0], p[1]) || 1;
+          const dot = ((mx-p[0])*p[0] + (my-p[1])*p[1]) / rr;   // 鄰點中點在 p 徑向外側 → 尖銳凹陷
+          if(dot > TOL){ out[i] = [(p[0]+mx)/2, (p[1]+my)/2]; moved = true; }
+        }
+        if(!moved) break;
+      }
+      // 第二道：陡壁窄谷修補——水龍頭切痕＝相鄰點半徑「驟降→驟升」（垂直壁），
+      // 設計凹弧（花生腰）＝緩坡（每點變化小一個數量級），不會誤判。
+      const n2 = out.length, TH = 0.02, SPAN = 10;
+      for(let pass=0; pass<2; pass++){
+        const rad = out.map(p=>Math.hypot(p[0], p[1]));
+        for(let i=0;i<n2;i++){
+          const drop = rad[(i+1)%n2] - rad[i];
+          if(drop > -TH) continue;                        // 找驟降入口
+          for(let j=i+1; j<=i+SPAN; j++){
+            const rise = rad[(j+1)%n2] - rad[j%n2];
+            if(rise > TH){                                // 對應的驟升出口 → i+1..j 是切痕
+              const rA = rad[i], rB = rad[(j+1)%n2], len = j-i;
+              for(let k=1;k<=len;k++){
+                const jj=(i+k)%n2, f=k/(len+1);
+                const rNew = rA + (rB-rA)*f;
+                const th = Math.atan2(out[jj][1], out[jj][0]);
+                out[jj]=[rNew*Math.cos(th), rNew*Math.sin(th)];
+              }
+              i = j;
+              break;
+            }
+          }
+        }
+      }
+      return out;
+    })(norm);
     // 防呆：浴缸輪廓近乎凸形，圖紙雜訊呈刺蝟狀 → 面積/凸包比過低即判失敗
     const hull = (pts=>{
       const s = pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
