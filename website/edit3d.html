@@ -472,6 +472,7 @@ const P = {
   customPts:null,                   // 手繪俯視輪廓（normalized 至 ±0.5 bbox，96 點）
   customPtsInner:null,              // 手繪內缸口輪廓（與外輪廓同座標系：除以 L/W 正規化；null＝均勻邊寬）
   wallMod:null,                     // 側壁外形修飾層（33 取樣，外殼縮放乘 1+mod(v)；null＝無修飾。裙邊等節點造型用）
+  rimMod:null,                      // 缸緣高度修飾層（96 點，逐輪廓點高度偏移 mm；null＝無修飾。局部抬高/壓低缸緣用）
   customProfile:null                // 手繪側牆剖面 k(v)，25 個取樣值，k[24]=1
 };
 
@@ -1043,6 +1044,12 @@ function wallModAt(v){
   const j = Math.floor(t), f = t - j;
   return a[j] + (a[Math.min(j + 1, a.length - 1)] - a[j]) * f;
 }
+// 缸緣高度修飾取值：依輪廓點索引（外殼/內壁/缸緣帶同索引對齊）
+function rimModI(i){
+  const a = P.rimMod;
+  if(!a || !a.length) return 0;
+  return a[((i % a.length) + a.length) % a.length] || 0;
+}
 // 底部尺寸順序硬限制：外缸底必須大於內缸底（兩側合計至少 BASE_GAP，每側 5mm 壁厚）
 // 調整哪個參數就 clamp 哪個（滑桿拉到界限自動停住）；匯入/網址參數用 sanitizeBase() 統一修正
 const BASE_GAP = 10;
@@ -1100,7 +1107,7 @@ function loftGeometry(pts, L, z0, H, dH, z0f, inner){
     const v=m/M_RING, [kx, ky]=shellKxy(v, inner);
     for(let i=0;i<N_SEG;i++){
       const [x,y]=pts[i];
-      const zTop=rimH(x, L, H, dH);
+      const zTop=rimH(x, L, H, dH) + rimModI(i);
       const zB = z0f ? z0f(x*kbx, y*kby) : z0;
       pos.push(x*kx, zB+v*(zTop-zB), y*ky);
     }
@@ -1131,7 +1138,7 @@ function stripGeometry(ptsA, LA, ptsB, LB, H, dH){
     for(let i=0;i<N_SEG;i++){
       const [xa,ya]=ptsA[i], [xb,yb]=ptsB[i];
       const x = xa+(xb-xa)*u, y = ya+(yb-ya)*u;
-      pos.push(x, rimH(x, LA+(LB-LA)*u, H, dH) + bump(u), y);
+      pos.push(x, rimH(x, LA+(LB-LA)*u, H, dH) + rimModI(i) + bump(u), y);
     }
   }
   for(let m=0;m<RM;m++)
@@ -1876,6 +1883,7 @@ function exportJSON(noDownload){
       手繪俯視輪廓_normalized: P.customPts ? P.customPts.map(p=>[+p[0].toFixed(4), +p[1].toFixed(4)]) : null,
       手繪內缸口輪廓_normalized: P.customPtsInner ? P.customPtsInner.map(p=>[+p[0].toFixed(4), +p[1].toFixed(4)]) : null,
       側壁外形修飾_33: P.wallMod ? P.wallMod.map(x=>+(+x).toFixed(4)) : null,
+      缸緣高度修飾_96: P.rimMod ? P.rimMod.map(x=>Math.round(+x)) : null,
       手繪側牆剖面_k: P.customProfile ? P.customProfile.map(k=>+k.toFixed(4)) : null,
       外部長度_mm: P.L, 外部寬度_mm: P.W,
       缸緣高度_前端_mm: P.H, 缸緣高度_後端_mm: P.H+P.dH, 靠背增高_mm: P.dH,
@@ -2305,6 +2313,7 @@ function importSpecJSON(text){
   if(d.手繪俯視輪廓_normalized) P.customPts = d.手繪俯視輪廓_normalized;
   P.customPtsInner = d.手繪內缸口輪廓_normalized || null;
   P.wallMod = d.側壁外形修飾_33 || null;
+  P.rimMod = d.缸緣高度修飾_96 || null;
   if(d.手繪側牆剖面_k) P.customProfile = d.手繪側牆剖面_k;
   if(d.material_code === 'solid' || d.material_code === 'acrylic'){
     P.material = d.material_code;
@@ -2598,7 +2607,7 @@ const CLASSICS = {
 };
 function applyClassic(k){
   Object.assign(P, CLASSICS[k]);
-  P.customPts = null; P.customPtsInner = null; P.customProfile = null;
+  P.customPts = null; P.customPtsInner = null; P.customProfile = null; P.wallMod = null; P.rimMod = null;
   document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim===P.rim));
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain===P.drain));
   syncUI();
@@ -2958,7 +2967,7 @@ function generateProposals(){
   PROPS = defs.map(d=>{
     const params = darwinScaled(d.L, d.W, d.D, d.extra);
     Object.assign(P, params);
-    P.customPts = null; P.customPtsInner = null; P.customProfile = null;
+    P.customPts = null; P.customPtsInner = null; P.customProfile = null; P.wallMod = null; P.rimMod = null;
     buildTub();
     const spec = computeSpec();
     const price = priceParts().total;
@@ -2992,7 +3001,7 @@ function applyProposal(i){
   const p = PROPS[i];
   if(!p) return;
   Object.assign(P, p.params);
-  P.customPts = null; P.customPtsInner = null; P.customProfile = null;
+  P.customPts = null; P.customPtsInner = null; P.customProfile = null; P.wallMod = null; P.rimMod = null;
   sanitizeBase();
   document.querySelectorAll('.rim-btns button').forEach(b=>b.classList.toggle('active', b.dataset.rim === P.rim));
   document.querySelectorAll('.drain-btns button[data-drain]').forEach(b=>b.classList.toggle('active', b.dataset.drain === P.drain));
@@ -3235,10 +3244,10 @@ if(langSel){
 // ?wizard=1 → 開啟引導設計視窗（分享連結用）
 if(q.get('wizard') === '1') openWizard();
 applyLang();
-// ===================== 2D→3D 支線：上傳專用＋三類邊節點編輯 v3（EDIT_MODE） =====================
-// 可編輯的邊：外缸口（金）／內盆口（銅）／底部外緣（鋼藍）／側面剖面 ×4（鼠尾草綠）。
+// ===================== 2D→3D 支線：上傳專用＋節點編輯 v4（EDIT_MODE） =====================
+// 可編輯的邊：外缸口（金，3 軸拖曳：水平塑形＋垂直改缸緣高度）／內盆口（銅）／底部外緣（鋼藍）／側面剖面 ×4（綠）。
 // 節點＝疊加層：曲線＝基準形＋Σ節點高斯貢獻。雙擊節點＝刪除＝該區自動恢復原形。
-// 側面節點改 wallMod（外殼縮放 ×(1+mod(v))，底與缸口錨定不動）→ 可拉出裙邊等造型。
+// 硬防呆 shellsOK()：外殼任何取樣點不得進入內殼＋壁厚——拖到邊界自動停住。
 const EDIT_MODE = true;
 if(EDIT_MODE){ (function(){
   window._noHandles = true;
@@ -3247,30 +3256,12 @@ if(EDIT_MODE){ (function(){
   const panel = document.getElementById('panel');
   panel.querySelectorAll(':scope > .group, :scope > button.preset').forEach(g=>{
     const h = g.querySelector ? g.querySelector('h3') : null;
-    const keep = h && (h.textContent.includes('⑦') || h.textContent.includes('⑤'));   // 規格表＋材質顏色（白色難看清細節，留色票）
+    const keep = h && (h.textContent.includes('⑦') || h.textContent.includes('⑤'));
     if(!keep) g.style.display = 'none';
   });
   document.querySelectorAll('.btns .btn').forEach(b=>{
     if(b.textContent.includes('Concept PDF')) b.style.display = 'none';
   });
-  // 缸緣造型（平面/圓弧/斜角）從隱藏的 ① 群組搬出來，成為獨立一區（沿用原 setRim 邏輯與按鈕）
-  (function(){
-    const rimBtns = panel.querySelector('.rim-btns');
-    if(!rimBtns) return;
-    const g = document.createElement('div');
-    g.className = 'group';
-    g.id = 'rimProfileGroup';
-    const h = document.createElement('h3');
-    h.textContent = '◐ Rim Profile';
-    const tip = document.createElement('div');
-    tip.className = 'tip';
-    tip.textContent = 'Flat = square edge · Rounded = soft bullnose curve · Beveled = chamfered edge. Applies around the whole rim.';
-    g.appendChild(h); g.appendChild(rimBtns); g.appendChild(tip);
-    const specGroup = [...panel.querySelectorAll(':scope > .group')].find(x=>{
-      const hh = x.querySelector('h3'); return hh && hh.textContent.includes('⑤');
-    });
-    panel.insertBefore(g, specGroup || null);
-  })();
   panel.insertAdjacentHTML('afterbegin', `
   <div class="group" id="editIntro">
     <h3>⬆ Upload → 3D</h3>
@@ -3284,14 +3275,43 @@ if(EDIT_MODE){ (function(){
       <div class="tip" id="nodeEdgeLabel" style="font-weight:600"></div>
       <div class="row" id="rowA"><label id="labA">Node X (length)</label><input type="range" id="rNodeA" min="-1200" max="1200" step="1" value="0"><div class="val"><input id="nNodeA" value="0"><span id="unitA">mm</span></div></div>
       <div class="row" id="rowB"><label id="labB">Node Y (width)</label><input type="range" id="rNodeB" min="-700" max="700" step="1" value="0"><div class="val"><input id="nNodeB" value="0"><span id="unitB">mm</span></div></div>
+      <div class="row" id="rowD"><label id="labD">Height Δ (up/down)</label><input type="range" id="rNodeD" min="-250" max="400" step="1" value="0"><div class="val"><input id="nNodeD" value="0"><span>mm</span></div></div>
       <div class="row" id="rowC"><label id="labC">Influence range</label><input type="range" id="rNodeC" min="2" max="24" step="1" value="6"><div class="val"><input id="nNodeC" value="6"><span id="unitC">pt</span></div></div>
       <div class="drain-btns" style="margin-top:8px">
         <button id="delNodeBtn">🗑 Delete node (or double-click it)</button>
         <button id="resetOutlineBtn">↺ Reset all edits</button>
       </div>
-      <div class="tip">Deleting a node restores that region to its original curve. Double-click any node on the model to delete it.</div>
+      <div class="tip">Deleting a node restores that region to its original curve. The outer shell can never cross inside the inner bowl — drags stop at the limit.</div>
     </div>
   </div>`);
+  // 缸緣造型（平面/圓弧/斜角）從隱藏的 ① 群組搬出來
+  (function(){
+    const rimBtns = panel.querySelector('.rim-btns');
+    if(!rimBtns) return;
+    const g = document.createElement('div');
+    g.className = 'group'; g.id = 'rimProfileGroup';
+    const h = document.createElement('h3'); h.textContent = '◐ Rim Profile';
+    const tip = document.createElement('div'); tip.className = 'tip';
+    tip.textContent = 'Flat = square edge · Rounded = soft bullnose curve · Beveled = chamfered edge. Applies around the whole rim.';
+    g.appendChild(h); g.appendChild(rimBtns); g.appendChild(tip);
+    const specGroup = [...panel.querySelectorAll(':scope > .group')].find(x=>{
+      const hh = x.querySelector('h3'); return hh && hh.textContent.includes('⑤');
+    });
+    panel.insertBefore(g, specGroup || null);
+  })();
+  // 長×寬拉條（原 ② 群組的兩列搬出來，沿用引擎的滑桿邏輯）
+  (function(){
+    const rowL = document.getElementById('rL') && document.getElementById('rL').closest('.row');
+    const rowW = document.getElementById('rW') && document.getElementById('rW').closest('.row');
+    if(!rowL || !rowW) return;
+    const g = document.createElement('div');
+    g.className = 'group'; g.id = 'dimGroup';
+    const h = document.createElement('h3'); h.textContent = '↔ Length & Width';
+    const tip = document.createElement('div'); tip.className = 'tip';
+    tip.textContent = 'Overall length / width (mm). Traced or node-edited outlines scale to fit.';
+    g.appendChild(h); g.appendChild(rowL); g.appendChild(rowW); g.appendChild(tip);
+    panel.insertBefore(g, document.getElementById('rimProfileGroup') || null);
+  })();
 
   // ---- 邊定義 ----
   const SIDE_IDX = [0, 24, 48, 72];
@@ -3302,24 +3322,26 @@ if(EDIT_MODE){ (function(){
     side:   { color:0x6e9b6a, label:'Side profile' }
   };
 
-  // ---- 狀態：節點＝疊加層 ----
-  let nodes = [];                       // {edge,i0,v,sigma,dx,dy,dk,dL,dW,createdAt}
-  let baseO = null, baseI = null, baseB = null;   // 基準（mm／絕對值）
-  let origSnap = null;                  // Reset 用
-  let edgeGrp = null, tubes = {}, hiTubes = {};   // key: outer/inner/base/side_<i0>
+  // ---- 狀態 ----
+  let nodes = [];                       // {edge,i0,v,sigma,dx,dy,dz,dk,dL,dW,createdAt}
+  let baseO = null, baseI = null, baseB = null;
+  let origSnap = null;
+  let edgeGrp = null, tubes = {}, hiTubes = {};
   let nodeGrp = null, selectedEdge = null, hoverKey = null, selNode = null, dragN = null;
+  let _lastL = P.L, _lastW = P.W;       // L/W 滑桿與節點基準（mm）的同步縮放
 
   // ---- 幾何輔助 ----
   const outMM = () => outlinePts(P.shape, P.L, P.W, P.r, P.egg, N_SEG);
   const innMM = () => innerOutlinePts(innerDims(), N_SEG);
   const gaussI = (d, s) => { d = Math.abs(d); d = Math.min(d, N_SEG - d); return Math.exp(-(d*d)/(2*s*s)); };
-  const zTopAt = x => rimH(x, P.L, P.H, P.dH);
+  const rimTopAt = (x, i) => rimH(x, P.L, P.H, P.dH) + rimModI(i);
   function captureOrig(){
     if(!origSnap) origSnap = {
       shape:P.shape, egg:P.egg, L:P.L, W:P.W, obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW,
       pts:P.customPts ? P.customPts.map(p=>p.slice()) : null,
       ptsI:P.customPtsInner ? P.customPtsInner.map(p=>p.slice()) : null,
-      wallMod:P.wallMod ? P.wallMod.slice() : null
+      wallMod:P.wallMod ? P.wallMod.slice() : null,
+      rimMod:P.rimMod ? P.rimMod.slice() : null
     };
   }
   function ensureBaseO(){
@@ -3345,8 +3367,20 @@ if(EDIT_MODE){ (function(){
     captureOrig();
     if(!baseB) baseB = { obL:P.obL, obW:P.obW, ibL:P.ibL, ibW:P.ibW };
   }
+  // L/W 滑桿改變 → 節點基準（mm）等比縮放，避免下一次節點操作把尺寸彈回
+  function syncBaseScale(){
+    const fx = P.L/_lastL, fy = P.W/_lastW;
+    if(Math.abs(fx-1)<1e-9 && Math.abs(fy-1)<1e-9) return;
+    [baseO, baseI].forEach(b=>{ if(b) b.pts.forEach(p=>{ p[0]*=fx; p[1]*=fy; }); });
+    nodes.forEach(n=>{ if(typeof n.dx==='number'){ n.dx*=fx; n.dy*=fy; } });
+    _lastL = P.L; _lastW = P.W;
+  }
+  ['rL','nL','rW','nW'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ ['input','change'].forEach(ev=>el.addEventListener(ev, ()=>setTimeout(syncBaseScale, 0))); }
+  });
 
-  // ---- 重算（基準＋節點貢獻） ----
+  // ---- 重算（基準＋節點貢獻），不觸發重建 ----
   function recomputeOutline(){
     if(!baseO && !baseI) return;
     const on = nodes.filter(n=>n.edge==='outer'), inn = nodes.filter(n=>n.edge==='inner');
@@ -3378,6 +3412,7 @@ if(EDIT_MODE){ (function(){
     P.obL=Math.min(P.obL,P.L-40); P.obW=Math.min(P.obW,P.W-40);
     P.ibL=Math.min(P.ibL,P.obL-10); P.ibW=Math.min(P.ibW,P.obW-10);
     if(typeof sanitizeBase==='function') sanitizeBase();
+    _lastL = P.L; _lastW = P.W;
   }
   function recomputeSide(){
     const sn = nodes.filter(n=>n.edge==='side');
@@ -3392,6 +3427,19 @@ if(EDIT_MODE){ (function(){
       return +s.toFixed(4);
     });
   }
+  function recomputeRim(){
+    const rn = nodes.filter(n=>n.edge==='outer' && Math.abs(n.dz||0) > 0.5);
+    if(!rn.length){
+      P.rimMod = origSnap && origSnap.rimMod ? origSnap.rimMod.slice() : null;
+      return;
+    }
+    const base = origSnap && origSnap.rimMod ? origSnap.rimMod : null;
+    P.rimMod = Array.from({length:N_SEG}, (_,j)=>{
+      let s = base ? (base[j]||0) : 0;
+      rn.forEach(n=>{ const w=gaussI(j-n.i0, n.sigma); if(w>0.01) s+=n.dz*w; });
+      return Math.round(s*10)/10;
+    });
+  }
   function recomputeBase(){
     if(!baseB) return;
     let dL=0,dW=0;
@@ -3402,21 +3450,59 @@ if(EDIT_MODE){ (function(){
     P.ibW = Math.min(P.obW-10, Math.round(P.obW*baseB.ibW/baseB.obW));
     if(typeof sanitizeBase==='function') sanitizeBase();
   }
-  function recomputeAll(){
-    recomputeOutline(); recomputeSide(); recomputeBase();
-    requestBuild(); syncNodePanel();
+  function recomputeData(){ recomputeOutline(); recomputeSide(); recomputeRim(); recomputeBase(); }
+  function recomputeAll(){ recomputeData(); requestBuild(); syncNodePanel(); }
+
+  // ---- 硬防呆：外殼任何取樣點不得進入內殼＋壁厚 ----
+  function shellsOK(){
+    const o = outMM(), q = innMM(), minGap = Math.max(5, P.t);
+    // a) 缸口平面：內輪廓在外輪廓之內且距離足夠（僅在獨立內輪廓時需檢查）
+    if(P.customPtsInner){
+      for(let i=0;i<q.length;i+=2){
+        let dmin=Infinity;
+        for(let j=0;j<o.length;j++){ const d=Math.hypot(o[j][0]-q[i][0], o[j][1]-q[i][1]); if(d<dmin)dmin=d; }
+        let inside=false;
+        for(let j=0,k=o.length-1;j<o.length;k=j++){
+          const a=o[j], b=o[k];
+          if((a[1]>q[i][1])!==(b[1]>q[i][1]) && q[i][0] < (b[0]-a[0])*(q[i][1]-a[1])/(b[1]-a[1])+a[0]) inside=!inside;
+        }
+        if(!inside || dmin < minGap) return false;
+      }
+    }
+    // b) 側壁全高度：外殼半徑 ≥ 內殼半徑＋間隙（v × 8 方位取樣）
+    for(let vi=1; vi<=9; vi++){
+      const v=vi/10, ko=shellKxy(v,false), ki=shellKxy(v,true);
+      for(const idx of [0,12,24,36,48,60,72,84]){
+        const po=o[idx], pi=q[idx];
+        const ro=Math.hypot(po[0]*ko[0], po[1]*ko[1]);
+        const ri=Math.hypot(pi[0]*ki[0], pi[1]*ki[1]);
+        if(ro < ri + 4) return false;
+      }
+    }
+    return true;
+  }
+  // 套用變更並驗證；違反內外缸限制就還原（拖曳停在邊界）
+  function applyChecked(mutate, revert){
+    mutate();
+    recomputeData();
+    if(!shellsOK()){
+      revert();
+      recomputeData();
+      return false;
+    }
+    return true;
   }
 
   // ---- 邊的 3D 曲線 ----
   function edgePts3(key){
-    if(key==='outer') return outMM().map(p=>new THREE.Vector3(p[0], zTopAt(p[0])+2, p[1]));
-    if(key==='inner') return innMM().map(p=>new THREE.Vector3(p[0], zTopAt(p[0])+2, p[1]));
+    if(key==='outer') return outMM().map((p,i)=>new THREE.Vector3(p[0], rimTopAt(p[0], i)+2, p[1]));
+    if(key==='inner') return innMM().map((p,i)=>new THREE.Vector3(p[0], rimTopAt(p[0], i)+2, p[1]));
     if(key==='base'){
       const k = shellKxy(0,false);
       return outMM().map(p=>new THREE.Vector3(p[0]*k[0], 2, p[1]*k[1]));
     }
-    const i0 = +key.split('_')[1];                     // side_<i0>
-    const p = outMM()[i0], zt = zTopAt(p[0]), pts=[];
+    const i0 = +key.split('_')[1];
+    const p = outMM()[i0], zt = rimTopAt(p[0], i0), pts=[];
     for(let m=0;m<=32;m++){
       const v=m/32, k=shellKxy(v,false);
       pts.push(new THREE.Vector3(p[0]*k[0], v*zt, p[1]*k[1]));
@@ -3425,11 +3511,11 @@ if(EDIT_MODE){ (function(){
   }
   function edgeType(key){ return key.startsWith('side') ? 'side' : key; }
   function nodePos3(nd){
-    if(nd.edge==='outer'){ const p=outMM()[nd.i0]; return new THREE.Vector3(p[0], zTopAt(p[0])+2, p[1]); }
-    if(nd.edge==='inner'){ const p=innMM()[nd.i0]; return new THREE.Vector3(p[0], zTopAt(p[0])+2, p[1]); }
+    if(nd.edge==='outer'){ const p=outMM()[nd.i0]; return new THREE.Vector3(p[0], rimTopAt(p[0], nd.i0)+2, p[1]); }
+    if(nd.edge==='inner'){ const p=innMM()[nd.i0]; return new THREE.Vector3(p[0], rimTopAt(p[0], nd.i0)+2, p[1]); }
     if(nd.edge==='base'){ const p=outMM()[nd.i0], k=shellKxy(0,false); return new THREE.Vector3(p[0]*k[0], 2, p[1]*k[1]); }
     const p=outMM()[nd.i0], k=shellKxy(nd.v,false);
-    return new THREE.Vector3(p[0]*k[0], nd.v*zTopAt(p[0]), p[1]*k[1]);
+    return new THREE.Vector3(p[0]*k[0], nd.v*rimTopAt(p[0], nd.i0), p[1]*k[1]);
   }
   function disposeGrp(g){
     if(!g) return;
@@ -3447,14 +3533,12 @@ if(EDIT_MODE){ (function(){
       const closed = edgeType(key)!=='side';
       const curve = new THREE.CatmullRomCurve3(edgePts3(key), closed);
       const col = EDGE_DEF[edgeType(key)].color;
-      const selHere = selectedEdge===key || (edgeType(key)==='side' && selectedEdge && selectedEdge.startsWith('side'));
       const hi = new THREE.Mesh(
         new THREE.TubeGeometry(curve, closed?192:64, 5, 6, closed),
         new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:selectedEdge===key?0.95:0, depthTest:false})
       );
       hi.renderOrder=5; hiTubes[key]=hi; edgeGrp.add(hi);
       if(!light){
-        // 側邊的揀選管裁掉頭尾（v 0.08–0.92）：底部區讓給底邊、頂部讓給缸口邊，避免重疊搶點
         let pickCurve = curve;
         if(edgeType(key)==='side'){
           const full = edgePts3(key);
@@ -3493,25 +3577,13 @@ if(EDIT_MODE){ (function(){
   function checkRimGap(){
     const warn = document.getElementById('rimGapWarn');
     if(!P.customPtsInner){ warn.style.display='none'; return; }
-    const o = outMM(), q = innMM(), minGap = Math.max(5, P.t);
-    let bad = false;
-    for(let i=0;i<q.length && !bad;i++){
-      let dmin=Infinity;
-      for(let j=0;j<o.length;j++){ const d=Math.hypot(o[j][0]-q[i][0], o[j][1]-q[i][1]); if(d<dmin)dmin=d; }
-      let inside=false;
-      for(let j=0,k=o.length-1;j<o.length;k=j++){
-        const a=o[j], b=o[k];
-        if((a[1]>q[i][1])!==(b[1]>q[i][1]) && q[i][0] < (b[0]-a[0])*(q[i][1]-a[1])/(b[1]-a[1])+a[0]) inside=!inside;
-      }
-      if(!inside || dmin<minGap) bad=true;
-    }
-    warn.style.display = bad ? 'block' : 'none';
+    warn.style.display = shellsOK() ? 'none' : 'block';
   }
 
   // ---- 揀選 ----
   function pickAt(e, objs){
     if(!objs || !objs.length) return null;
-    if(nodeGrp) nodeGrp.updateMatrixWorld(true);   // rAF 被節流時矩陣可能過期，揀選前強制更新
+    if(nodeGrp) nodeGrp.updateMatrixWorld(true);
     if(edgeGrp) edgeGrp.updateMatrixWorld(true);
     const r = canvas.getBoundingClientRect();
     _mv.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
@@ -3521,12 +3593,13 @@ if(EDIT_MODE){ (function(){
 
   // ---- 面板 ----
   const $ = id=>document.getElementById(id);
-  const TIP0 = 'Editable edges on the model — <b style="color:#9a7b43">outer rim</b> (gold), <b style="color:#a3652f">inner bowl</b> (copper), <b style="color:#5c7f9c">base</b> (blue), <b style="color:#597f54">side profiles</b> (green).<br>① Click an edge to <b>select</b> it ② click it again to <b>add a node</b> ③ <b>drag the node</b> to reshape.<br><b>Double-click a node to delete it</b> — the curve springs back. Side nodes sculpt the whole shell (skirt-style), anchored at base and rim.';
+  const TIP0 = 'Editable edges — <b style="color:#9a7b43">outer rim</b> (gold, drag in any direction: sideways reshapes, <b>up/down changes local rim height</b>), <b style="color:#a3652f">inner bowl</b> (copper), <b style="color:#5c7f9c">base</b> (blue), <b style="color:#597f54">side profiles</b> (green, skirt-style).<br>① Click an edge to <b>select</b> ② click again to <b>add a node</b> ③ <b>drag</b> to reshape. <b>Double-click a node deletes it</b> and the curve springs back.';
   function showNodePanel(){
     $('nodePanel').style.display = selNode ? 'block' : 'none';
     if(selNode){
       $('nodeEdgeLabel').textContent = '● ' + EDGE_DEF[selNode.edge].label +
         (selNode.edge==='side' ? ' (whole shell)' : ' — node #'+selNode.i0);
+      $('rowD').style.display = selNode.edge==='outer' ? '' : 'none';
       if(selNode.edge==='side'){
         $('labA').textContent='Height position'; $('unitA').textContent='%';
         $('rNodeA').min=5; $('rNodeA').max=95;
@@ -3552,12 +3625,12 @@ if(EDIT_MODE){ (function(){
       }
     }
     $('edgeTip').innerHTML = selectedEdge
-      ? (selNode ? 'Drag the node on the model, or fine-tune below. <b>Double-click a node deletes it</b> and restores the curve. Click empty space to deselect.'
+      ? (selNode ? 'Drag the node on the model, or fine-tune below. <b>Double-click a node deletes it</b> and restores the curve. Outer shell stops at the inner-bowl limit automatically.'
                  : ('<b>'+EDGE_DEF[edgeType(selectedEdge)].label+'</b> selected — click anywhere on it to <b>add a node</b>. Click another edge to switch.'))
       : TIP0;
     syncNodePanel();
   }
-  function rRawAt(nd){   // side 節點：無修飾層時的原始半徑（乘 facK/wallK 但不乘 wallMod）
+  function rRawAt(nd){
     const p = outMM()[nd.i0];
     const saved = P.wallMod; P.wallMod = null;
     const k = shellKxy(nd.v, false);
@@ -3580,29 +3653,32 @@ if(EDIT_MODE){ (function(){
       $('rNodeA').value = $('nNodeA').value = Math.round(base[0]+selNode.dx);
       $('rNodeB').value = $('nNodeB').value = Math.round(base[1]+selNode.dy);
       $('rNodeC').value = $('nNodeC').value = selNode.sigma;
+      if(selNode.edge==='outer'){ $('rNodeD').value = $('nNodeD').value = Math.round(selNode.dz||0); }
     }
     _sync = false;
   }
   function panelSet(slot, val){
     if(!selNode || _sync) return;
     const nd = selNode;
+    let prev;
     if(nd.edge==='side'){
-      if(slot==='A') nd.v = Math.max(0.05, Math.min(0.95, val/100));
-      else if(slot==='B') nd.dk = val / Math.max(50, rRawAt(nd));
-      else nd.sigma = Math.max(0.04, Math.min(0.4, val/100));
+      if(slot==='A'){ prev=nd.v; applyChecked(()=>{ nd.v=Math.max(0.05,Math.min(0.95,val/100)); }, ()=>{ nd.v=prev; }); }
+      else if(slot==='B'){ prev=nd.dk; applyChecked(()=>{ nd.dk=val/Math.max(50,rRawAt(nd)); }, ()=>{ nd.dk=prev; }); }
+      else if(slot==='C'){ prev=nd.sigma; applyChecked(()=>{ nd.sigma=Math.max(0.04,Math.min(0.4,val/100)); }, ()=>{ nd.sigma=prev; }); }
     } else if(nd.edge==='base'){
       const others = nodes.filter(n=>n.edge==='base' && n!==nd);
-      if(slot==='A') nd.dL = val - baseB.obL - others.reduce((s,n)=>s+n.dL,0);
-      else if(slot==='B') nd.dW = val - baseB.obW - others.reduce((s,n)=>s+n.dW,0);
+      if(slot==='A'){ prev=nd.dL; applyChecked(()=>{ nd.dL=val-baseB.obL-others.reduce((s,n)=>s+n.dL,0); }, ()=>{ nd.dL=prev; }); }
+      else if(slot==='B'){ prev=nd.dW; applyChecked(()=>{ nd.dW=val-baseB.obW-others.reduce((s,n)=>s+n.dW,0); }, ()=>{ nd.dW=prev; }); }
     } else {
       const base = (nd.edge==='outer'?baseO:baseI).pts[nd.i0];
-      if(slot==='A') nd.dx = val - base[0];
-      else if(slot==='B') nd.dy = val - base[1];
-      else nd.sigma = Math.max(2, Math.min(24, val));
+      if(slot==='A'){ prev=nd.dx; applyChecked(()=>{ nd.dx=val-base[0]; }, ()=>{ nd.dx=prev; }); }
+      else if(slot==='B'){ prev=nd.dy; applyChecked(()=>{ nd.dy=val-base[1]; }, ()=>{ nd.dy=prev; }); }
+      else if(slot==='C'){ prev=nd.sigma; applyChecked(()=>{ nd.sigma=Math.max(2,Math.min(24,val)); }, ()=>{ nd.sigma=prev; }); }
+      else if(slot==='D' && nd.edge==='outer'){ prev=nd.dz||0; applyChecked(()=>{ nd.dz=Math.max(-300,Math.min(450,val)); }, ()=>{ nd.dz=prev; }); }
     }
-    recomputeAll();
+    requestBuild(); syncNodePanel();
   }
-  ['A','B','C'].forEach(slot=>{
+  ['A','B','C','D'].forEach(slot=>{
     ['input','change'].forEach(ev=>$('rNode'+slot).addEventListener(ev, e=>panelSet(slot, +e.target.value)));
     $('nNode'+slot).addEventListener('change', e=>panelSet(slot, +e.target.value||0));
   });
@@ -3619,7 +3695,9 @@ if(EDIT_MODE){ (function(){
     P.customPts = origSnap.pts ? origSnap.pts.map(p=>p.slice()) : null;
     P.customPtsInner = origSnap.ptsI ? origSnap.ptsI.map(p=>p.slice()) : null;
     P.wallMod = origSnap.wallMod ? origSnap.wallMod.slice() : null;
+    P.rimMod = origSnap.rimMod ? origSnap.rimMod.slice() : null;
     nodes=[]; baseO=null; baseI=null; baseB=null; selNode=null;
+    _lastL=P.L; _lastW=P.W;
     requestBuild(); showNodePanel();
   });
 
@@ -3633,7 +3711,7 @@ if(EDIT_MODE){ (function(){
       let best=0, bd=Infinity;
       o.forEach((p,i)=>{ const d=(p[0]-pt.x)**2+(p[1]-pt.z)**2; if(d<bd){bd=d;best=i;} });
       nd = nodes.find(n=>n.edge===type && n.i0===best);
-      if(!nd){ nd={edge:type, i0:best, sigma:6, dx:0, dy:0, createdAt:performance.now()}; nodes.push(nd); }
+      if(!nd){ nd={edge:type, i0:best, sigma:6, dx:0, dy:0, dz:0, createdAt:performance.now()}; nodes.push(nd); }
     } else if(type==='base'){
       ensureBaseB();
       const o = outMM(), k = shellKxy(0,false);
@@ -3644,7 +3722,7 @@ if(EDIT_MODE){ (function(){
     } else {
       captureOrig();
       const i0 = +key.split('_')[1];
-      const zt = zTopAt(outMM()[i0][0]);
+      const zt = rimTopAt(outMM()[i0][0], i0);
       const v = Math.max(0.1, Math.min(0.9, pt.y/Math.max(1,zt)));
       nd = nodes.find(n=>n.edge==='side' && n.i0===i0 && Math.abs(n.v-v)<0.06);
       if(!nd){ nd={edge:'side', i0, v, sigma:0.12, dk:0, createdAt:performance.now()}; nodes.push(nd); }
@@ -3660,28 +3738,45 @@ if(EDIT_MODE){ (function(){
       _ray.setFromCamera(_mv, camera);
       if(!_ray.ray.intersectPlane(_dragPlane, _hitPt)) return;
       const nd = dragN.nd;
-      if(nd.edge==='outer' || nd.edge==='inner'){
-        const base = (nd.edge==='outer'?baseO:baseI).pts[nd.i0];
-        nd.dx = _hitPt.x - base[0]; nd.dy = _hitPt.z - base[1];
+      if(nd.edge==='outer'){
+        // 3 軸拖曳（相機面板）：水平＝塑形、垂直＝缸緣高度
+        const dxm = _hitPt.x - dragN.start.x, dym = _hitPt.y - dragN.start.y, dzm = _hitPt.z - dragN.start.z;
+        const p={dx:nd.dx, dy:nd.dy, dz:nd.dz||0};
+        applyChecked(
+          ()=>{ nd.dx=dragN.snap.dx+dxm; nd.dy=dragN.snap.dy+dzm; nd.dz=Math.max(-300,Math.min(450,dragN.snap.dz+dym)); },
+          ()=>{ nd.dx=p.dx; nd.dy=p.dy; nd.dz=p.dz; }
+        );
+      } else if(nd.edge==='inner'){
+        const base = baseI.pts[nd.i0];
+        const p={dx:nd.dx, dy:nd.dy};
+        applyChecked(
+          ()=>{ nd.dx=_hitPt.x-base[0]; nd.dy=_hitPt.z-base[1]; },
+          ()=>{ nd.dx=p.dx; nd.dy=p.dy; }
+        );
       } else if(nd.edge==='base'){
-        const p = outMM()[nd.i0], k0=[baseB.obL/P.L, baseB.obW/P.W];
-        const bx=p[0]*k0[0], bz=p[1]*k0[1];
+        const po = outMM()[nd.i0], k0=[baseB.obL/P.L, baseB.obW/P.W];
+        const bx=po[0]*k0[0], bz=po[1]*k0[1];
         const others = nodes.filter(n=>n.edge==='base' && n!==nd);
-        if(Math.abs(bx) > P.L*0.15)
-          nd.dL = (Math.abs(_hitPt.x)-Math.abs(bx))*2 - others.reduce((s,n)=>s+n.dL,0);
-        if(Math.abs(bz) > P.W*0.15)
-          nd.dW = (Math.abs(_hitPt.z)-Math.abs(bz))*2 - others.reduce((s,n)=>s+n.dW,0);
+        const p={dL:nd.dL, dW:nd.dW};
+        applyChecked(()=>{
+          if(Math.abs(bx) > P.L*0.15) nd.dL = (Math.abs(_hitPt.x)-Math.abs(bx))*2 - others.reduce((s,n)=>s+n.dL,0);
+          if(Math.abs(bz) > P.W*0.15) nd.dW = (Math.abs(_hitPt.z)-Math.abs(bz))*2 - others.reduce((s,n)=>s+n.dW,0);
+        }, ()=>{ nd.dL=p.dL; nd.dW=p.dW; });
       } else {
-        const p = outMM()[nd.i0];
+        const po = outMM()[nd.i0];
         const saved=P.wallMod; P.wallMod=null; const k=shellKxy(nd.v,false); P.wallMod=saved;
-        const rx=p[0]*k[0], rz=p[1]*k[1], rr=Math.hypot(rx,rz);
+        const rx=po[0]*k[0], rz=po[1]*k[1], rr=Math.hypot(rx,rz);
         const ux=rx/rr, uz=rz/rr;
         const rTarget = _hitPt.x*ux + _hitPt.z*uz;
         const others = nodes.filter(n=>n.edge==='side' && n!==nd)
           .reduce((s,n)=>s + n.dk*Math.exp(-((nd.v-n.v)**2)/(2*n.sigma**2)), 0);
-        nd.dk = Math.max(-0.5, Math.min(2, rTarget/rr - 1 - others));
+        const p={dk:nd.dk};
+        applyChecked(
+          ()=>{ nd.dk = Math.max(-0.5, Math.min(2, rTarget/rr - 1 - others)); },
+          ()=>{ nd.dk=p.dk; }
+        );
       }
-      recomputeAll();
+      requestBuild(); syncNodePanel();
       return;
     }
     if(!edgeGrp || dragging || dragH || e.target!==canvas) return;
@@ -3702,10 +3797,21 @@ if(EDIT_MODE){ (function(){
     const nh = nodeGrp && pickAt(e, nodeGrp.children);
     if(nh){
       const nd = nh.object.userData.node;
+      if(nd.edge==='outer') ensureBaseO();
+      else if(nd.edge==='inner') ensureBaseI();
+      else if(nd.edge==='base') ensureBaseB();
+      else captureOrig();
       selNode = nd; selectedEdge = nd.edge==='side' ? 'side_'+nd.i0 : nd.edge;
       buildNodes(); showNodePanel();
-      _dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0), nodePos3(nd));
-      dragN = { nd };
+      const p3 = nodePos3(nd);
+      if(nd.edge==='outer'){
+        // 相機面板：垂直分量＝缸緣高度
+        const camDir = new THREE.Vector3(); camera.getWorldDirection(camDir);
+        _dragPlane.setFromNormalAndCoplanarPoint(camDir, p3);
+      } else {
+        _dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0,1,0), p3);
+      }
+      dragN = { nd, snap:{dx:nd.dx||0, dy:nd.dy||0, dz:nd.dz||0}, start:p3.clone() };
       e.stopPropagation(); e.preventDefault();
       return;
     }
@@ -3727,7 +3833,7 @@ if(EDIT_MODE){ (function(){
     const nh = pickAt(e, nodeGrp.children);
     if(!nh) return;
     const nd = nh.object.userData.node;
-    if(performance.now() - (nd.createdAt||0) < 600) return;   // 剛以雙擊誤加的節點不立刻刪
+    if(performance.now() - (nd.createdAt||0) < 600) return;
     deleteNode(nd);
     e.stopPropagation(); e.preventDefault();
   }, true);
@@ -3757,9 +3863,8 @@ if(EDIT_MODE){ (function(){
       }
     };
   }
+
   // ---- 上傳擴充：圖檔（PNG/JPG/WebP）與 PDF → 自動描俯視輪廓 → 3D ----
-  // 圖檔走引擎原生辨識鏈（traceImage 二值化＋邊界追蹤 → processTopSketch 平滑正規化）。
-  // 只能取得「缸口形狀」；深度/側壁/底部用現值，之後以節點微調。線圖/圖紙效果最好，實物照片對比不足會失敗。
   let _pdfjs = null;
   function ensurePdfJs(){
     if(_pdfjs) return Promise.resolve(_pdfjs);
@@ -3782,10 +3887,10 @@ if(EDIT_MODE){ (function(){
     if(!raw){ traceFail(); return; }
     let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
     raw.forEach(p=>{ if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; });
-    if((mxy-mny) > (mxx-mnx)) raw = raw.map(p=>[p[1], -p[0]]);   // 直向圖轉橫向
+    if((mxy-mny) > (mxx-mnx)) raw = raw.map(p=>[p[1], -p[0]]);
     const norm = processTopSketch(raw);
     if(!norm){ traceFail(); return; }
-    // 防呆：浴缸輪廓近乎凸形。描到圖紙雜訊（多視圖/標註線）會呈刺蝟狀 → 面積/凸包比過低即判失敗
+    // 防呆：浴缸輪廓近乎凸形，圖紙雜訊呈刺蝟狀 → 面積/凸包比過低即判失敗
     const hull = (pts=>{
       const s = pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
       const cross = (o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
@@ -3796,22 +3901,20 @@ if(EDIT_MODE){ (function(){
     })(norm);
     const area = a=>{ let s=0; for(let i=0;i<a.length;i++){ const p=a[i],q=a[(i+1)%a.length]; s+=p[0]*q[1]-q[0]*p[1]; } return Math.abs(s)/2; };
     if(area(norm) < area(hull)*0.75){ traceFail(); return; }
-    // 重置編輯狀態並套用輪廓
     nodes=[]; baseO=null; baseI=null; baseB=null; origSnap=null; selNode=null; selectedEdge=null;
-    P.customPts = norm; P.customPtsInner = null; P.wallMod = null;
+    P.customPts = norm; P.customPtsInner = null; P.wallMod = null; P.rimMod = null;
     P.shape = 'custom'; P.egg = 0;
-    // 長寬比取自輪廓 bbox：L 維持現值、W 依比例
     const rh = Math.max(1, Math.min(mxy-mny, mxx-mnx));
     const rl = Math.max(mxy-mny, mxx-mnx);
     P.W = Math.max(300, Math.min(1400, Math.round(P.L*(rh/rl)/10)*10));
     P.obL = Math.min(P.obL, P.L-40); P.obW = Math.min(P.obW, P.W-40);
     P.ibL = Math.min(P.ibL, P.obL-10); P.ibW = Math.min(P.ibW, P.obW-10);
     if(typeof sanitizeBase === 'function') sanitizeBase();
+    _lastL = P.L; _lastW = P.W;
     syncUI(); buildTub(); showNodePanel();
     $('edgeTip').innerHTML = '✓ <b>Outline traced from your file.</b> Length/width use the current scale (confirm real dims!), depth & walls use defaults — refine everything with the edges and nodes below.';
   }
-  window.importTracedImage = importTracedImage;   // 供自動化/除錯呼叫
-  // 換掉檔案輸入（clone 移除舊監聽器），統一處理 CAD＋圖檔＋PDF
+  window.importTracedImage = importTracedImage;
   (function(){
     const old = document.getElementById('cadFile');
     if(!old) return;
@@ -3873,6 +3976,7 @@ if(EDIT_MODE){ (function(){
       window[fn] = function(...a){
         nodes=[]; baseO=null; baseI=null; baseB=null; origSnap=null; selNode=null; selectedEdge=null;
         const r = _f.apply(this,a);
+        _lastL = P.L; _lastW = P.W;
         showNodePanel();
         return r;
       };
