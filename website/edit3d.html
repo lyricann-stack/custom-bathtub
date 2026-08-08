@@ -3274,7 +3274,7 @@ if(EDIT_MODE){ (function(){
   panel.insertAdjacentHTML('afterbegin', `
   <div class="group" id="editIntro">
     <h3>⬆ Upload → 3D</h3>
-    <div class="tip">Upload a design spec JSON / DXF / STL with the button above — the 3D model renders instantly. Then reshape it directly on the model.</div>
+    <div class="tip">Upload with the button above: <b>spec JSON / DXF / STL</b> render instantly. <b>Images (PNG/JPG) & PDF drawings</b> are auto-traced — a clean top-view outline becomes the tub shape (depth & walls use defaults; confirm real dimensions). Complex photos are better handled by the concierge.</div>
   </div>
   <div class="group" id="edgeEditGroup">
     <h3>✎ Edge Editing</h3>
@@ -3757,6 +3757,110 @@ if(EDIT_MODE){ (function(){
       }
     };
   }
+  // ---- 上傳擴充：圖檔（PNG/JPG/WebP）與 PDF → 自動描俯視輪廓 → 3D ----
+  // 圖檔走引擎原生辨識鏈（traceImage 二值化＋邊界追蹤 → processTopSketch 平滑正規化）。
+  // 只能取得「缸口形狀」；深度/側壁/底部用現值，之後以節點微調。線圖/圖紙效果最好，實物照片對比不足會失敗。
+  let _pdfjs = null;
+  function ensurePdfJs(){
+    if(_pdfjs) return Promise.resolve(_pdfjs);
+    return new Promise((res, rej)=>{
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = ()=>{
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        _pdfjs = window.pdfjsLib; res(_pdfjs);
+      };
+      s.onerror = ()=>rej(new Error('pdf.js load failed'));
+      document.head.appendChild(s);
+    });
+  }
+  const traceFail = ()=> alert('⚠ Could not detect a clear outline in this file.\nBest input: a clean top-view drawing (dark lines on light background), one shape per image.\nPhotos with soft shadows often fail — send those to the concierge instead.');
+  function importTracedImage(src){
+    let raw = null;
+    try { raw = traceImage(src); } catch(err){ console.error(err); }
+    if(!raw){ traceFail(); return; }
+    let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+    raw.forEach(p=>{ if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; });
+    if((mxy-mny) > (mxx-mnx)) raw = raw.map(p=>[p[1], -p[0]]);   // 直向圖轉橫向
+    const norm = processTopSketch(raw);
+    if(!norm){ traceFail(); return; }
+    // 防呆：浴缸輪廓近乎凸形。描到圖紙雜訊（多視圖/標註線）會呈刺蝟狀 → 面積/凸包比過低即判失敗
+    const hull = (pts=>{
+      const s = pts.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+      const cross = (o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+      const lo=[], up=[];
+      s.forEach(p=>{ while(lo.length>=2 && cross(lo[lo.length-2],lo[lo.length-1],p)<=0) lo.pop(); lo.push(p); });
+      s.slice().reverse().forEach(p=>{ while(up.length>=2 && cross(up[up.length-2],up[up.length-1],p)<=0) up.pop(); up.push(p); });
+      return lo.slice(0,-1).concat(up.slice(0,-1));
+    })(norm);
+    const area = a=>{ let s=0; for(let i=0;i<a.length;i++){ const p=a[i],q=a[(i+1)%a.length]; s+=p[0]*q[1]-q[0]*p[1]; } return Math.abs(s)/2; };
+    if(area(norm) < area(hull)*0.75){ traceFail(); return; }
+    // 重置編輯狀態並套用輪廓
+    nodes=[]; baseO=null; baseI=null; baseB=null; origSnap=null; selNode=null; selectedEdge=null;
+    P.customPts = norm; P.customPtsInner = null; P.wallMod = null;
+    P.shape = 'custom'; P.egg = 0;
+    // 長寬比取自輪廓 bbox：L 維持現值、W 依比例
+    const rh = Math.max(1, Math.min(mxy-mny, mxx-mnx));
+    const rl = Math.max(mxy-mny, mxx-mnx);
+    P.W = Math.max(300, Math.min(1400, Math.round(P.L*(rh/rl)/10)*10));
+    P.obL = Math.min(P.obL, P.L-40); P.obW = Math.min(P.obW, P.W-40);
+    P.ibL = Math.min(P.ibL, P.obL-10); P.ibW = Math.min(P.ibW, P.obW-10);
+    if(typeof sanitizeBase === 'function') sanitizeBase();
+    syncUI(); buildTub(); showNodePanel();
+    $('edgeTip').innerHTML = '✓ <b>Outline traced from your file.</b> Length/width use the current scale (confirm real dims!), depth & walls use defaults — refine everything with the edges and nodes below.';
+  }
+  window.importTracedImage = importTracedImage;   // 供自動化/除錯呼叫
+  // 換掉檔案輸入（clone 移除舊監聽器），統一處理 CAD＋圖檔＋PDF
+  (function(){
+    const old = document.getElementById('cadFile');
+    if(!old) return;
+    const input = old.cloneNode(true);
+    input.accept = '.dxf,.stl,.json,.png,.jpg,.jpeg,.webp,.pdf';
+    old.parentNode.replaceChild(input, old);
+    const cadFail = ()=> alert(t('⚠ Could not parse this CAD file (supported: DXF from this tool, 2D outline DXF, STL, spec JSON from this tool)'));
+    input.addEventListener('change', e=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const name = f.name.toLowerCase();
+      if(/\.(png|jpe?g|webp)$/.test(name)){
+        const url = URL.createObjectURL(f);
+        const img = new Image();
+        img.onload = ()=>{ importTracedImage(img); URL.revokeObjectURL(url); };
+        img.onerror = ()=>{ URL.revokeObjectURL(url); traceFail(); };
+        img.src = url;
+      } else if(name.endsWith('.pdf')){
+        ensurePdfJs()
+          .then(lib => f.arrayBuffer().then(buf => lib.getDocument({data:buf}).promise))
+          .then(doc => doc.getPage(1))
+          .then(page => {
+            const vp0 = page.getViewport({scale:1});
+            const scale = Math.min(3, 1400/vp0.width);
+            const vp = page.getViewport({scale});
+            const cv = document.createElement('canvas');
+            cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+            // intent:'print'：避開 rAF 渲染路徑（分頁被節流時 display intent 會停滯）
+            return page.render({canvasContext: cv.getContext('2d'), viewport: vp, intent:'print'}).promise.then(()=>cv);
+          })
+          .then(cv => importTracedImage(cv))
+          .catch(err => { console.error(err); traceFail(); });
+      } else {
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          try {
+            if(name.endsWith('.json'))      importSpecJSON(reader.result);
+            else if(name.endsWith('.dxf'))  importDXF(reader.result);
+            else if(name.endsWith('.stl'))  importSTL(reader.result);
+            else cadFail();
+          } catch(err){ console.error(err); cadFail(); }
+        };
+        if(name.endsWith('.stl')) reader.readAsArrayBuffer(f);
+        else reader.readAsText(f);
+      }
+      e.target.value = '';
+    });
+  })();
+
   // ?spec=<url>：載入指定規格檔（測試連結用）
   const _specUrl = new URLSearchParams(location.search).get('spec');
   if(_specUrl && /^[\w./-]+\.json$/.test(_specUrl))
