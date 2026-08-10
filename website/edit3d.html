@@ -3271,6 +3271,7 @@ if(EDIT_MODE){ (function(){
     <h3>✎ Edge Editing</h3>
     <div class="tip" id="edgeTip"></div>
     <div id="rimGapWarn" class="tip" style="display:none;color:#b3541e">⚠ Inner bowl rim is outside / too close to the outer rim (min edge = wall thickness). Pull it back in.</div>
+    <div id="obliqueWarn" class="tip" style="display:none;color:#b3541e">⚠ <b>This looks like an angled / perspective photo</b> — the traced shape is the 3D silhouette, not the true rim outline. For an accurate shape, upload a straight <b>top-down</b> image, or send the photo to the concierge flow.</div>
     <div id="nodePanel" style="display:none">
       <div class="tip" id="nodeEdgeLabel" style="font-weight:600"></div>
       <div class="row" id="rowA"><label id="labA">Node X (length)</label><input type="range" id="rNodeA" min="-1200" max="1200" step="1" value="0"><div class="val"><input id="nNodeA" value="0"><span id="unitA">mm</span></div></div>
@@ -3900,7 +3901,35 @@ if(EDIT_MODE){ (function(){
     }
     return cv;
   }
+  // 斜拍偵測：PCA 對齊主軸後量「長軸鏡射不對稱度」。俯視缸口幾乎必對稱於長軸
+  // （連靠牆 D 形也是）；斜拍剪影近側含側壁、遠側只有缸緣 → 前後兩側不對稱。
+  // 回傳值＝平均鏡射誤差 / 寬度（0＝完美對稱）。限制：正對缸端拍的照片量不到（罕見）。
+  function obliqueScore(pts){
+    let cx=0, cy=0;
+    pts.forEach(p=>{ cx+=p[0]; cy+=p[1]; });
+    cx/=pts.length; cy/=pts.length;
+    let sxx=0, syy=0, sxy=0;
+    pts.forEach(p=>{ const x=p[0]-cx, y=p[1]-cy; sxx+=x*x; syy+=y*y; sxy+=x*y; });
+    const th = 0.5*Math.atan2(2*sxy, sxx-syy);
+    const c=Math.cos(th), s=Math.sin(th);
+    const a = pts.map(p=>{ const x=p[0]-cx, y=p[1]-cy; return [x*c+y*s, -x*s+y*c]; });
+    let cy2=0; a.forEach(p=>cy2+=p[1]); cy2/=a.length;
+    let mny=1e9, mxy=-1e9;
+    a.forEach(p=>{ if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; });
+    let sum=0;
+    a.forEach(p=>{
+      const my = 2*cy2 - p[1];
+      let d=Infinity;
+      a.forEach(q=>{ const dd=Math.hypot(q[0]-p[0], q[1]-my); if(dd<d)d=dd; });
+      sum+=d;
+    });
+    return (sum/a.length)/Math.max(1e-6, mxy-mny);
+  }
+  // 門檻校準（2026-08-10 合成測試）：俯視橢圓 0.017／斜放25° 0.018／D形 0.007／花生 0.012；
+  // 斜拍剪影仰角 20°/45°/55°=0.058–0.066、65°=0.039、75°=0.004 → 0.035 抓到 ≤65° 斜拍，對俯視留約 2 倍邊際
+  const OBLIQUE_TH = 0.035;
   function importTracedImage(src){
+    document.getElementById('obliqueWarn').style.display = 'none';
     let raw = null;
     try { raw = traceImage(normalizeForTrace(src)); } catch(err){ console.error(err); }
     if(!raw){ traceFail(); return; }
@@ -3973,7 +4002,15 @@ if(EDIT_MODE){ (function(){
     if(typeof sanitizeBase === 'function') sanitizeBase();
     _lastL = P.L; _lastW = P.W;
     syncUI(); buildTub(); showNodePanel();
-    $('edgeTip').innerHTML = '✓ <b>Outline traced from your file.</b> Length/width use the current scale (confirm real dims!), depth & walls use defaults — refine everything with the edges and nodes below.';
+    // norm 被 processTopSketch 按軸各自正規化到 ±0.5（長寬比被抹掉）→ 先用原始 bbox 還原真實比例再評分
+    const obScore = obliqueScore(norm.map(p=>[p[0]*rl, p[1]*rh]));
+    window._lastObliqueScore = obScore;          // 無頭測試/門檻校準用
+    if(obScore > OBLIQUE_TH){
+      $('obliqueWarn').style.display = 'block';
+      $('edgeTip').innerHTML = '⚠ <b>Outline traced, but it may come from an angled photo</b> (front/back sides don\'t mirror). Treat the shape as approximate — see the warning below.';
+    } else {
+      $('edgeTip').innerHTML = '✓ <b>Outline traced from your file.</b> Length/width use the current scale (confirm real dims!), depth & walls use defaults — refine everything with the edges and nodes below.';
+    }
   }
   window.importTracedImage = importTracedImage;
   (function(){
@@ -4036,6 +4073,7 @@ if(EDIT_MODE){ (function(){
       const _f = window[fn];
       window[fn] = function(...a){
         nodes=[]; baseO=null; baseI=null; baseB=null; origSnap=null; selNode=null; selectedEdge=null;
+        const ow = document.getElementById('obliqueWarn'); if(ow) ow.style.display='none';
         const r = _f.apply(this,a);
         _lastL = P.L; _lastW = P.W;
         showNodePanel();
